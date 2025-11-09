@@ -248,13 +248,13 @@ export function DAOTreasuryManager({ walletAddress }: DAOTreasuryManagerProps) {
   const getProposalStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="info">Active</Badge>;
+        return <Badge variant="default">Active</Badge>;
       case 'passed':
-        return <Badge variant="success">Passed</Badge>;
+        return <Badge variant="secondary">Passed</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       case 'executed':
-        return <Badge variant="success">Executed</Badge>;
+        return <Badge variant="secondary">Executed</Badge>;
       default:
         return null;
     }
@@ -455,7 +455,7 @@ export function DAOTreasuryManager({ walletAddress }: DAOTreasuryManagerProps) {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm" variant="success">
+                  <Button size="sm" variant="default">
                     <Vote className="h-4 w-4 mr-2" />
                     Vote For
                   </Button>
