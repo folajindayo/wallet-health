@@ -104,7 +104,10 @@ wallet-health/
 │   │       ├── token-allowance-monitor.ts # Real-time allowance monitoring
 │   │       ├── wallet-activity-analyzer.ts # Deep activity pattern analysis
 │   │       ├── risk-prediction-engine.ts # Risk prediction based on patterns
-│   │       └── wallet-clustering.ts      # Wallet clustering & relationships
+│   │       ├── wallet-clustering.ts      # Wallet clustering & relationships
+│   │       ├── transaction-fee-optimizer.ts # Transaction fee optimization
+│   │       ├── wallet-security-audit.ts  # Comprehensive security audit
+│   │       └── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
 │   │       ├── wallet-health-report.ts   # Wallet health report generator
 │   │       ├── token-price-tracker.ts    # Token price tracking & portfolio value
 │   │       ├── portfolio-performance.ts  # Portfolio performance metrics
@@ -793,9 +796,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🔓 Token Unlock Tracker** - Track vesting schedules and upcoming unlocks
 - ✅ **🌉 Cross-Chain Bridges** - Track and analyze cross-chain bridge transactions
 - ✅ **💰 Staking Tracker** - Monitor staking positions, rewards, and performance
-- ✅ **🛡️ MEV Protection** - Analyze transactions for MEV protection and front-running risks
-- ✅ **🗳️ Governance Tracker** - Track DAO governance participation and voting history
-- ✅ **🔥 Activity Heatmap** - Visualize wallet activity patterns over time
 
 ## 💻 Usage Examples
 
