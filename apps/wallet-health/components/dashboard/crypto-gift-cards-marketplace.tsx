@@ -26,7 +26,8 @@ import {
   Filter,
   Plus,
   Activity,
-  Globe
+  Globe,
+  Eye
 } from 'lucide-react';
 import { useState } from 'react';
 
