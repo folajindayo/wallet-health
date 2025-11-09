@@ -441,6 +441,14 @@ The security score is calculated based on multiple risk factors:
 - ✅ **⚖️ Portfolio Rebalancing Suggestions** - Suggest portfolio rebalancing strategies
 - ✅ **🌾 Yield Farming Opportunity Finder** - Find yield farming opportunities
 - ✅ **📊 Wallet Activity Patterns Analyzer** - Analyze wallet activity patterns
+- ✅ **📦 Transaction Batch Optimizer** - Optimize batch transactions for gas efficiency
+- ✅ **⭐ Wallet Reputation Builder** - Build reputation based on on-chain activity
+- ✅ **🎯 Token Sniper Alert System** - Alert for new token launches and opportunities
+- ✅ **🛡️ DeFi Protocol Risk Analyzer** - Analyze DeFi protocol risks
+- ✅ **🖼️ NFT Collection Tracker** - Track NFT collections and their values
+- ✅ **🌉 Cross-chain Asset Tracker** - Track assets across multiple chains
+- ✅ **🔐 Wallet Recovery Assistant** - Help with wallet recovery processes
+- ✅ **⚔️ Gas War Monitor** - Monitor gas wars and high competition transactions
 
 ### Security & Recommendations
 
