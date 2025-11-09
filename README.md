@@ -379,7 +379,7 @@ The project includes an advanced automated git commit script (`commit.sh`) that 
 | `-d, --delay SECONDS` | Delay between commits | 1 |
 | `-f, --file FILE` | Path to commit messages file | wallet.txt |
 | `-b, --branch BRANCH` | Git branch to commit to | current branch |
-| `-l, --log FILE` | Log file path | farm.log |
+| `-l, --log FILE` | Log file path | commit.log |
 | `-n, --dry-run` | Show what would be done without committing | false |
 | `-v, --verbose` | Show detailed output | false |
 | `-s, --skip-empty` | Skip commits when no changes detected | false |
@@ -399,7 +399,7 @@ The script tracks and displays:
 - Time elapsed
 - Current branch
 
-Statistics are saved to `farm-stats.json` and displayed on exit (Ctrl+C).
+Statistics are saved to `commit-stats.json` and displayed on exit (Ctrl+C).
 
 #### Logging
 
