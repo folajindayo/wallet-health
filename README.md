@@ -396,6 +396,9 @@ The security score is calculated based on multiple risk factors:
 - ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across chains
 - ✅ **🔍 Security Audit** - Comprehensive security audit and compliance checking
 - ✅ **🌐 Cross-chain Portfolio Aggregator** - Aggregate portfolio across multiple chains
+- ✅ **✅ Smart Contract Verifier** - Verify and analyze smart contract source code
+- ✅ **📦 Token Approval Batch Manager** - Efficiently manage multiple approvals in batches
+- ✅ **🔮 Gas Price Predictor** - Predict optimal gas prices based on historical data
 
 ### Advanced DeFi Features
 
