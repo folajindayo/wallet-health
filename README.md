@@ -339,6 +339,27 @@ The security score is calculated based on multiple risk factors:
 
 - `POST /api/wallet/compare` - Compare two wallets side-by-side
 
+### Approval Revocation
+
+- `POST /api/approvals/revoke` - Analyze and generate revocation transactions
+
+### Health Trends
+
+- `POST /api/health/trends` - Track wallet health trends over time
+
+### Address Book
+
+- `GET /api/address-book` - Get, search, and manage address book
+- `POST /api/address-book` - Add, update, or import addresses
+
+### Transaction Batch Analysis
+
+- `POST /api/transactions/batch` - Analyze multiple transactions together
+
+### Recovery Phrase Security
+
+- `POST /api/recovery/check` - Check recovery phrase security (without storing)
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
@@ -1026,13 +1047,6 @@ console.log(`Success Rate: ${stats.successRate}%`);
 - ✅ Risk trend analysis
 - ✅ Approval optimization recommendations
 - ✅ Cross-chain bridge tracking
-- ✅ MEV protection analysis
-- ✅ Token unlock/vesting tracking
-- ✅ Governance participation tracking
-- ✅ Tax report generation
-- ✅ Liquidity pool analysis
-- ✅ Staking position tracking
-- ✅ Wallet backup management
 
 ### In Progress 🚧
 
