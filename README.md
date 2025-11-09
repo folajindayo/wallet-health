@@ -2290,6 +2290,14 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Portfolio rebalancing suggestions
 - ✅ Yield farming opportunity finder
 - ✅ Wallet activity patterns analyzer
+- ✅ Transaction batch optimizer
+- ✅ Wallet reputation builder
+- ✅ Token sniper alert system
+- ✅ DeFi protocol risk analyzer
+- ✅ NFT collection tracker
+- ✅ Cross-chain asset tracker
+- ✅ Wallet recovery assistant
+- ✅ Gas war monitor
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
