@@ -628,6 +628,50 @@ The security score is calculated based on multiple risk factors:
 - `POST /api/health/trends` - Add health snapshot or get trend analysis
 - `GET /api/health/trends` - Get wallet health trend analysis
 
+### Contract Risk Analysis
+
+- `POST /api/contracts/risk` - Analyze contract risk or interaction risk
+  - `action: analyze` - Analyze contract risk
+  - `action: analyze_interaction` - Analyze specific contract interaction risk
+  - `action: mark_vulnerable` - Mark contract as vulnerable
+  - `action: mark_safe` - Mark contract as safe
+
+### Activity Prediction
+
+- `POST /api/analytics/predict` - Predict wallet activity patterns
+  - `action: add_history` - Add activity history
+  - `action: predict` - Get activity predictions
+  - `action: get_history` - Get activity history
+
+### Multi-Wallet Portfolio
+
+- `POST /api/portfolio/multi-wallet` - Manage multi-wallet portfolios
+  - `action: add_wallet` - Add wallet to portfolio
+  - `action: remove_wallet` - Remove wallet from portfolio
+  - `action: get_summary` - Get portfolio summary
+  - `action: compare` - Compare multiple wallets
+  - `action: create_group` - Create wallet group
+  - `action: get_groups` - Get wallet groups
+  - `action: export` - Export portfolio data
+- `GET /api/portfolio/multi-wallet` - Get wallet(s) or portfolio summary
+
+### Cost Optimization
+
+- `POST /api/gas/optimize-cost` - Optimize transaction costs
+  - `action: optimize` - Optimize single transaction cost
+  - `action: optimize_batch` - Optimize batch transaction costs
+  - `action: compare_chains` - Compare costs across chains
+  - `action: add_gas_data` - Add gas price data point
+
+### Security Score Tracking
+
+- `POST /api/security/score-tracker` - Track security score history
+  - `action: add_snapshot` - Add security score snapshot
+  - `action: get_history` - Get security score history
+  - `action: get_statistics` - Get score statistics
+  - `action: export` - Export score history
+- `GET /api/security/score-tracker` - Get security score history
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
