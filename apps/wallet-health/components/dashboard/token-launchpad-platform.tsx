@@ -23,7 +23,8 @@ import {
   Share2,
   ExternalLink,
   ChevronRight,
-  Activity
+  Activity,
+  Bell
 } from 'lucide-react';
 import { useState } from 'react';
 
