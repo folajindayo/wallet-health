@@ -685,6 +685,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🔔 Alert System** - Configurable alerts with browser, email, push, and webhook notifications
 - ✅ **📜 Activity Timeline** - Chronological timeline with risk annotations and grouping
 - ✅ **📊 Advanced Analytics** - Portfolio optimization, risk modeling, and yield optimization
+- ✅ **🔓 Approval Revocation** - Safe token approval revocation with gas optimization
+- ✅ **📈 Health Trends** - Track wallet health score over time with predictions
+- ✅ **📇 Address Book** - Manage trusted addresses, labels, and contact groups
+- ✅ **🔍 Batch Analysis** - Analyze multiple transactions for patterns and risks
+- ✅ **🔐 Recovery Checker** - Security checks for recovery phrases (without storing)
 
 ## 💻 Usage Examples
 
