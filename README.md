@@ -1665,6 +1665,14 @@ console.log(`Portfolio Health Score: ${health.score}/100`);
 - ✅ Address book management
 - ✅ Gas price prediction
 - ✅ Smart contract deployment helper
+- ✅ DCA automation
+- ✅ Limit order management
+- ✅ Recurring payments management
+- ✅ Token swap aggregation
+- ✅ Carbon footprint tracking
+- ✅ Social recovery management
+- ✅ On-chain reputation system
+- ✅ Options & derivatives dashboard
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
