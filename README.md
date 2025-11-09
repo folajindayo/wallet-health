@@ -477,6 +477,19 @@ The security score is calculated based on multiple risk factors:
 
 ### MEV Protection
 
+- `POST /api/mev/analyze` - Analyze transactions for MEV risks and protection
+
+### Governance
+
+- `POST /api/governance/track` - Track DAO governance participation and voting
+
+### Watchlist
+
+- `GET /api/watchlist` - Get, search, and manage watchlists
+- `POST /api/watchlist` - Create, update watchlists and manage alerts
+
+### MEV Protection
+
 - `POST /api/mev/analyze` - Analyze transactions for MEV protection
 
 ### Governance
