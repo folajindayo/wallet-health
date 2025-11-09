@@ -123,10 +123,7 @@ wallet-health/
 │   │       ├── approval-history-tracker.ts # Approval history tracking
 │   │       ├── wallet-tagging.ts        # Wallet tagging & categorization
 │   │       ├── token-metadata-cache.ts  # Token metadata caching system
-│   │       ├── risk-trend-analyzer.ts   # Risk trend analysis over time
-│   │       ├── wallet-health-score-calculator.ts # Comprehensive health scoring
-│   │       ├── transaction-simulator-enhanced.ts # Enhanced transaction simulation
-│   │       └── wallet-backup-validator.ts # Backup validation & verification
+│   │       └── risk-trend-analyzer.ts   # Risk trend analysis over time
 │   │       ├── token-metadata-cache.ts    # Token metadata caching system
 │   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
 │   │       ├── wallet-tagging.ts         # Wallet tagging & categorization
@@ -390,9 +387,6 @@ The security score is calculated based on multiple risk factors:
 - ✅ **⛽ Gas Price Predictor** - Predict future gas prices
 - ✅ **🚀 Smart Contract Deployer Helper** - Safe contract deployment assistance
 - ✅ **📦 Transaction Batch Executor** - Execute multiple transactions efficiently
-- ✅ **📊 Wallet Health Score Calculator** - Comprehensive health scoring with detailed breakdown
-- ✅ **🔄 Enhanced Transaction Simulator** - Simulate transactions with risk assessment
-- ✅ **✅ Wallet Backup Validator** - Validate and verify backup integrity and security
 
 ### Trading & Automation Features
 
@@ -415,6 +409,14 @@ The security score is calculated based on multiple risk factors:
 - ✅ **🔔 Smart Alert Automation** - Automated alert rules and notifications
 - ✅ **🏛️ DAO Treasury Manager** - Manage DAO treasury analysis and tracking
 - ✅ **📅 Token Vesting Scheduler** - Schedule and track token vesting
+- ✅ **📸 Token Snapshot Manager** - Take snapshots of token balances at specific times
+- ✅ **🔍 Wallet Comparison Tool** - Compare multiple wallets side by side
+- ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across different networks
+- ✅ **📈 Token Price Tracker** - Track token prices over time with alerts
+- ✅ **📤 Wallet Activity Exporter** - Export wallet activity data in various formats
+- ✅ **🌐 Multi-chain Portfolio Aggregator** - Aggregate portfolios across multiple chains
+- ✅ **📊 Token Distribution Analyzer** - Analyze token distribution and holder patterns
+- ✅ **🔗 Wallet Clustering Tool** - Cluster wallets by behavior patterns
 
 ### Security & Recommendations
 
@@ -2041,6 +2043,14 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Smart alert automation
 - ✅ DAO treasury manager
 - ✅ Token vesting scheduler
+- ✅ Token snapshot manager
+- ✅ Wallet comparison tool
+- ✅ Transaction fee optimizer
+- ✅ Token price tracker
+- ✅ Wallet activity exporter
+- ✅ Multi-chain portfolio aggregator
+- ✅ Token distribution analyzer
+- ✅ Wallet clustering tool
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
