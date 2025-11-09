@@ -130,6 +130,9 @@ wallet-health/
 │   │       ├── liquidity-pool-position-analyzer.ts  # LP position analysis
 │   │       ├── staking-rewards-calculator.ts         # Staking rewards calculation
 │   │       ├── wallet-backup-validator.ts           # Backup validation
+│   │       ├── token-approval-simulator.ts # Approval change simulation
+│   │       ├── wallet-risk-calculator.ts  # Comprehensive risk calculation
+│   │       ├── security-checklist-generator.ts # Security checklist generation
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
