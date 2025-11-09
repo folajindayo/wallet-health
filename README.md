@@ -54,7 +54,7 @@ wallet-health/
 │   │       ├── transaction-simulator.ts    # Transaction simulation & preview
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
-│   │       └── yield-optimizer.ts          # Yield farming optimization
+│   │       └── yield-optimizer.ts          # Yield optimization
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
