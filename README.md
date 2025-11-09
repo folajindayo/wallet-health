@@ -457,6 +457,14 @@ The security score is calculated based on multiple risk factors:
 - ✅ **🌉 Cross-chain Asset Tracker** - Track assets across multiple chains
 - ✅ **🔐 Wallet Recovery Assistant** - Help with wallet recovery processes
 - ✅ **⚔️ Gas War Monitor** - Monitor gas wars and high competition transactions
+- ✅ **🔔 Token Price Alert Manager** - Advanced token price alert management
+- ✅ **🔥 Wallet Activity Heatmap Generator** - Generate visual heatmap of wallet activity
+- ✅ **🔒 Smart Contract Security Scanner** - Deep security analysis of smart contracts
+- ✅ **🔓 Token Unlock Tracker** - Track token vesting and unlock schedules
+- ✅ **🗳️ Governance Proposal Tracker** - Track DAO governance proposals and voting
+- ✅ **💧 Liquidity Pool Position Analyzer** - Analyze LP positions and impermanent loss
+- ✅ **💰 Staking Rewards Calculator** - Calculate staking rewards and APY
+- ✅ **✅ Wallet Backup Validator** - Validate wallet backups and recovery phrases
 
 ### Security & Recommendations
 
