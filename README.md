@@ -2151,6 +2151,9 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Address book manager
 - ✅ Gas optimization calculator
 - ✅ Wallet health report generator
+- ✅ Wallet health score calculator
+- ✅ Enhanced transaction simulator
+- ✅ Wallet backup validator
 - ✅ Wallet recovery phrase checker
 - ✅ Token allowance real-time monitor
 - ✅ Wallet activity pattern analyzer
