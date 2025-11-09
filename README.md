@@ -90,6 +90,14 @@ wallet-health/
 │   │       ├── social-recovery-manager.ts           # Social recovery wallet management
 │   │       ├── on-chain-reputation-system.ts        # On-chain reputation scoring
 │   │       ├── options-derivatives-dashboard.ts     # Options & derivatives tracking
+│   │       ├── token-launchpad-platform.ts           # Token launch tracking
+│   │       ├── profit-loss-calculator.ts             # P&L calculation
+│   │       ├── network-status-monitor.ts            # Network status monitoring
+│   │       ├── quick-actions-manager.ts              # Quick actions management
+│   │       ├── security-badge-generator.ts          # Security badge generation
+│   │       ├── smart-alert-automation.ts            # Automated alert rules
+│   │       ├── dao-treasury-manager.ts              # DAO treasury management
+│   │       ├── token-vesting-scheduler.ts           # Token vesting scheduling
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
@@ -118,10 +126,7 @@ wallet-health/
 │   │       ├── wallet-clustering.ts      # Wallet clustering & relationships
 │   │       ├── transaction-fee-optimizer.ts # Transaction fee optimization
 │   │       ├── wallet-security-audit.ts  # Comprehensive security audit
-│   │       ├── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
-│   │       ├── smart-contract-verifier.ts # Smart contract verification & analysis
-│   │       ├── token-approval-batch-manager.ts # Batch approval management
-│   │       └── gas-price-predictor.ts    # Gas price prediction & forecasting
+│   │       └── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
 │   │       ├── token-unlock-tracker.ts  # Token vesting & unlock tracking
 │   │       ├── cross-chain-bridge-tracker.ts # Cross-chain bridge tracking
 │   │       ├── staking-tracker.ts       # Staking positions & rewards tracking
@@ -396,9 +401,6 @@ The security score is calculated based on multiple risk factors:
 - ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across chains
 - ✅ **🔍 Security Audit** - Comprehensive security audit and compliance checking
 - ✅ **🌐 Cross-chain Portfolio Aggregator** - Aggregate portfolio across multiple chains
-- ✅ **✅ Smart Contract Verifier** - Verify and analyze smart contract source code
-- ✅ **📦 Token Approval Batch Manager** - Efficiently manage multiple approvals in batches
-- ✅ **🔮 Gas Price Predictor** - Predict optimal gas prices based on historical data
 
 ### Advanced DeFi Features
 
