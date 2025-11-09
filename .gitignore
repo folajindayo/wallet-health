@@ -33,3 +33,4 @@ package-lock.json
 # wallet files
 wallet.txt
 farm.sh
+farm.log

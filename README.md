@@ -74,6 +74,22 @@ wallet-health/
 │   │       ├── airdrop-eligibility-checker.ts      # Airdrop eligibility checking
 │   │       ├── portfolio-rebalancer.ts             # Portfolio rebalancing strategies
 │   │       ├── yield-opportunity-finder.ts         # Yield farming opportunity finder
+│   │       ├── whale-watcher.ts                     # Whale activity tracking
+│   │       ├── rug-pull-detector.ts                 # Rug pull risk detection
+│   │       ├── transaction-batch-executor.ts        # Batch transaction execution
+│   │       ├── activity-timeline-generator.ts        # Activity timeline generation
+│   │       ├── token-metadata-fetcher.ts            # Token metadata fetching
+│   │       ├── address-book-manager.ts              # Address book management
+│   │       ├── gas-price-predictor.ts               # Gas price prediction
+│   │       ├── smart-contract-deployer-helper.ts    # Contract deployment helper
+│   │       ├── dca-automation.ts                    # DCA automation strategies
+│   │       ├── limit-order-manager.ts               # Limit order management
+│   │       ├── recurring-payments-manager.ts         # Recurring payments management
+│   │       ├── token-swap-aggregator.ts             # Token swap route aggregation
+│   │       ├── carbon-footprint-tracker.ts          # Carbon footprint tracking
+│   │       ├── social-recovery-manager.ts           # Social recovery wallet management
+│   │       ├── on-chain-reputation-system.ts        # On-chain reputation scoring
+│   │       ├── options-derivatives-dashboard.ts     # Options & derivatives tracking
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
@@ -92,11 +108,20 @@ wallet-health/
 │   │       ├── address-book.ts           # Address book manager
 │   │       ├── gas-optimization-calculator.ts # Gas optimization calculator
 │   │       ├── wallet-health-report.ts   # Wallet health report generator
-│   │       ├── token-price-tracker.ts    # Token price tracking & portfolio value
-│   │       ├── portfolio-performance.ts  # Portfolio performance metrics
-│   │       ├── contract-interaction-tracker.ts # Smart contract interaction tracking
-│   │       ├── gas-optimizer.ts          # Gas price optimization recommendations
-│   │       └── token-unlock-tracker.ts  # Token vesting & unlock tracking
+│   │       ├── wallet-recovery-checker.ts # Recovery phrase security checker
+│   │       ├── token-allowance-monitor.ts # Real-time allowance monitoring
+│   │       ├── wallet-activity-analyzer.ts # Deep activity pattern analysis
+│   │       ├── risk-prediction-engine.ts # Risk prediction based on patterns
+│   │       ├── wallet-clustering.ts      # Wallet clustering & relationships
+│   │       ├── transaction-fee-optimizer.ts # Transaction fee optimization
+│   │       ├── wallet-security-audit.ts  # Comprehensive security audit
+│   │       └── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
+│   │       ├── token-unlock-tracker.ts  # Token vesting & unlock tracking
+│   │       ├── cross-chain-bridge-tracker.ts # Cross-chain bridge tracking
+│   │       ├── staking-tracker.ts       # Staking positions & rewards tracking
+│   │       ├── mev-protection-analyzer.ts # MEV protection analysis
+│   │       ├── governance-tracker.ts    # DAO governance participation tracking
+│   │       └── activity-heatmap.ts      # Activity heatmap generation
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
@@ -288,6 +313,8 @@ The security score is calculated based on multiple risk factors:
 - **📝 Watchlist Manager** - Monitor multiple wallets with groups and alerts
 - **💾 Wallet Backup** - Secure wallet data export with encryption support
 - **📊 Health Report Generator** - Generate comprehensive wallet health reports
+- **🔗 Wallet Clustering** - Group related wallets based on patterns and relationships
+- **📊 Activity Analyzer** - Deep analysis of wallet activity patterns and behaviors
 
 ### Portfolio & Performance Features
 
@@ -328,6 +355,28 @@ The security score is calculated based on multiple risk factors:
 - ✅ **🌐 ENS Domain Manager** - Manage ENS domains and subdomains
 - ✅ **🎁 Airdrop Eligibility Checker** - Check eligibility for airdrop campaigns
 - ✅ **⚖️ Portfolio Rebalancer** - Suggest portfolio rebalancing strategies
+- ✅ **🐋 Whale Watcher** - Track large wallet movements and whale activity
+- ✅ **🚨 Rug Pull Detector** - Detect potential rug pull risks in tokens
+- ✅ **📜 Activity Timeline Generator** - Visual timeline of wallet activities
+- ✅ **📇 Token Metadata Fetcher** - Fetch and cache token metadata
+- ✅ **📖 Address Book Manager** - Manage frequently used addresses
+- ✅ **⛽ Gas Price Predictor** - Predict future gas prices
+- ✅ **🚀 Smart Contract Deployer Helper** - Safe contract deployment assistance
+- ✅ **📦 Transaction Batch Executor** - Execute multiple transactions efficiently
+
+### Trading & Automation Features
+
+- ✅ **📈 DCA Automation** - Automate dollar-cost averaging strategies
+- ✅ **📊 Limit Order Manager** - Manage limit orders for token swaps
+- ✅ **🔄 Recurring Payments Manager** - Manage recurring crypto payments
+- ✅ **🔄 Token Swap Aggregator** - Find best swap routes across DEXs
+
+### Sustainability & Social Features
+
+- ✅ **🌱 Carbon Footprint Tracker** - Track carbon footprint of transactions
+- ✅ **👥 Social Recovery Manager** - Manage social recovery wallets and guardians
+- ✅ **⭐ On-chain Reputation System** - Build reputation based on on-chain activity
+- ✅ **📊 Options & Derivatives Dashboard** - Track options and derivatives positions
 
 ### Security & Recommendations
 
@@ -335,6 +384,12 @@ The security score is calculated based on multiple risk factors:
 - ✅ **📜 Approval History Tracker** - Track token approval changes over time
 - ✅ **🔍 Token Metadata Cache** - Cache token metadata to reduce API calls
 - ✅ **📈 Risk Trend Analysis** - Analyze risk score trends and predict future risk levels
+- ✅ **🔐 Wallet Recovery Checker** - Check recovery phrase security and best practices
+- ✅ **👁️ Token Allowance Monitor** - Real-time monitoring of token allowances
+- ✅ **🔮 Risk Prediction Engine** - Predict future risks based on historical patterns
+- ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across chains
+- ✅ **🔍 Security Audit** - Comprehensive security audit and compliance checking
+- ✅ **🌐 Cross-chain Portfolio Aggregator** - Aggregate portfolio across multiple chains
 
 ### Advanced DeFi Features
 
@@ -408,6 +463,26 @@ The security score is calculated based on multiple risk factors:
 ### Token Unlocks
 
 - `POST /api/tokens/unlocks` - Track token vesting schedules and unlock events
+
+### Cross-Chain Bridges
+
+- `POST /api/bridges/track` - Track cross-chain bridge transactions
+
+### Staking
+
+- `POST /api/staking/track` - Track staking positions and rewards
+
+### MEV Protection
+
+- `POST /api/mev/analyze` - Analyze transactions for MEV protection
+
+### Governance
+
+- `POST /api/governance/track` - Track DAO governance participation and voting
+
+### Activity Heatmap
+
+- `POST /api/activity/heatmap` - Generate activity heatmaps and statistics
 
 ## 🎨 Dark Mode Theme
 
@@ -739,6 +814,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🔗 Contract Interactions** - Comprehensive smart contract interaction tracking
 - ✅ **⛽ Gas Optimizer** - Optimal transaction timing based on gas price patterns
 - ✅ **🔓 Token Unlock Tracker** - Track vesting schedules and upcoming unlocks
+- ✅ **🌉 Cross-Chain Bridges** - Track and analyze cross-chain bridge transactions
+- ✅ **💰 Staking Tracker** - Monitor staking positions, rewards, and performance
 
 ## 💻 Usage Examples
 
@@ -1339,6 +1416,206 @@ const markdown = walletHealthReportGenerator.exportAsMarkdown(report);
 const json = walletHealthReportGenerator.exportAsJSON(report);
 ```
 
+### Wallet Recovery Checker
+
+```typescript
+import { walletRecoveryChecker } from '@/lib/wallet-recovery-checker';
+
+// Check recovery phrase strength (without storing actual phrase)
+const check = walletRecoveryChecker.checkRecoveryPhrase(recoveryWords);
+
+console.log(`Strength: ${check.strength}`);
+console.log(`Score: ${check.score}/100`);
+check.issues.forEach(issue => {
+  console.log(`${issue.severity}: ${issue.description}`);
+});
+
+// Check best practices
+const practices = walletRecoveryChecker.checkBestPractices({
+  hasBackup: true,
+  isOffline: true,
+  multipleBackups: true,
+});
+
+console.log(`Best Practices Score: ${practices.score}/100`);
+```
+
+### Token Allowance Monitor
+
+```typescript
+import { tokenAllowanceMonitor } from '@/lib/token-allowance-monitor';
+
+// Create snapshot
+const snapshots = tokenAllowanceMonitor.createSnapshot(allowances);
+
+// Get change history
+const changes = tokenAllowanceMonitor.getChangeHistory('0x...', undefined, 10);
+changes.forEach(change => {
+  console.log(`${change.changeType}: ${change.tokenSymbol}`);
+});
+
+// Start monitoring
+const monitorId = tokenAllowanceMonitor.startMonitoring({
+  walletAddress: '0x...',
+  chainId: 1,
+  checkInterval: 60000, // 1 minute
+  alertOnChange: true,
+}, (change) => {
+  console.log('Allowance changed:', change);
+});
+```
+
+### Wallet Activity Analyzer
+
+```typescript
+import { walletActivityAnalyzer } from '@/lib/wallet-activity-analyzer';
+
+// Analyze activity
+const analysis = walletActivityAnalyzer.analyzeActivity(
+  '0x...',
+  transactions,
+  30 // last 30 days
+);
+
+console.log(`Total Transactions: ${analysis.summary.totalTransactions}`);
+console.log(`Most Active Hour: ${analysis.summary.mostActiveHour}`);
+console.log(`Is DeFi User: ${analysis.behaviors.isDeFiUser}`);
+
+// Compare two wallets
+const comparison = walletActivityAnalyzer.compareActivity(analysis1, analysis2);
+console.log(`Similarity: ${comparison.similarity}%`);
+```
+
+### Risk Prediction Engine
+
+```typescript
+import { riskPredictionEngine } from '@/lib/risk-prediction-engine';
+
+// Predict risks
+const predictions = riskPredictionEngine.predictRisks({
+  currentRiskScore: 65,
+  riskHistory: [...],
+  approvalCount: 15,
+  riskyApprovals: 3,
+  recentTransactions: 50,
+  failedTransactions: 5,
+  newContracts: 2,
+  spamTokens: 1,
+});
+
+predictions.forEach(prediction => {
+  console.log(`${prediction.severity}: ${prediction.description}`);
+  console.log(`Probability: ${prediction.probability}%`);
+});
+
+// Get summary
+const summary = riskPredictionEngine.getPredictionSummary(predictions);
+console.log(`Critical Predictions: ${summary.critical}`);
+```
+
+### Wallet Clustering
+
+```typescript
+import { walletClustering } from '@/lib/wallet-clustering';
+
+// Analyze wallets and create clusters
+const analysis = walletClustering.analyzeWallets(wallets);
+
+console.log(`Total Clusters: ${analysis.statistics.totalClusters}`);
+analysis.clusters.forEach(cluster => {
+  console.log(`${cluster.name}: ${cluster.wallets.length} wallets`);
+});
+
+// Create manual cluster
+const cluster = walletClustering.createManualCluster(
+  'My Wallets',
+  ['0x...', '0x...', '0x...']
+);
+
+// Get relationships
+analysis.relationships.forEach(rel => {
+  console.log(`${rel.wallet1} <-> ${rel.wallet2}: ${rel.relationshipType}`);
+});
+```
+
+### Transaction Fee Optimizer
+
+```typescript
+import { transactionFeeOptimizer } from '@/lib/transaction-fee-optimizer';
+
+// Optimize fee for a transaction
+const optimization = transactionFeeOptimizer.optimizeFee(
+  1, // Ethereum
+  21000, // gas limit
+  50, // current gas price (gwei)
+  { slow: 20, standard: 30, fast: 40 },
+  'medium'
+);
+
+console.log(`Savings: ${optimization.savings} ETH (${optimization.savingsPercentage}%)`);
+
+// Compare fees across chains
+const comparison = transactionFeeOptimizer.compareFeesAcrossChains(
+  21000,
+  gasPriceDataMap
+);
+
+console.log(`Cheapest: ${comparison.chains[0].chainName}`);
+```
+
+### Wallet Security Audit
+
+```typescript
+import { walletSecurityAudit } from '@/lib/wallet-security-audit';
+
+// Perform comprehensive audit
+const audit = walletSecurityAudit.performAudit('0x...', {
+  approvals,
+  tokens,
+  contracts,
+  transactions,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+});
+
+console.log(`Overall Score: ${audit.overallScore}/100`);
+console.log(`Risk Level: ${audit.riskLevel}`);
+console.log(`Critical Issues: ${audit.criticalIssues.length}`);
+
+// Get compliance results
+audit.compliance.forEach(compliance => {
+  console.log(`${compliance.standard}: ${compliance.passed ? 'PASS' : 'FAIL'}`);
+});
+```
+
+### Cross-chain Portfolio Aggregator
+
+```typescript
+import { crossChainPortfolioAggregator } from '@/lib/cross-chain-portfolio-aggregator';
+
+// Aggregate portfolio across chains
+const portfolio = crossChainPortfolioAggregator.aggregatePortfolio(
+  '0x...',
+  chainPortfolios
+);
+
+console.log(`Total Value: $${portfolio.totalValueUSD}`);
+console.log(`Chains: ${portfolio.summary.chainsWithAssets}`);
+console.log(`Diversification: ${portfolio.summary.diversification}%`);
+
+// Get top tokens
+const topTokens = crossChainPortfolioAggregator.getTopTokens(portfolio, 10);
+topTokens.forEach(token => {
+  console.log(`${token.symbol}: $${token.valueUSD}`);
+});
+
+// Calculate portfolio health
+const health = crossChainPortfolioAggregator.calculatePortfolioHealth(portfolio);
+console.log(`Portfolio Health Score: ${health.score}/100`);
+```
+
 ## 📊 Performance Metrics
 
 - **Scan Speed**: < 5 seconds for multi-chain wallet scan
@@ -1380,6 +1657,22 @@ const json = walletHealthReportGenerator.exportAsJSON(report);
 - ✅ Airdrop eligibility checking
 - ✅ Portfolio rebalancing
 - ✅ Yield opportunity finding
+- ✅ Whale activity tracking
+- ✅ Rug pull detection
+- ✅ Transaction batch execution
+- ✅ Activity timeline generation
+- ✅ Token metadata fetching
+- ✅ Address book management
+- ✅ Gas price prediction
+- ✅ Smart contract deployment helper
+- ✅ DCA automation
+- ✅ Limit order management
+- ✅ Recurring payments management
+- ✅ Token swap aggregation
+- ✅ Carbon footprint tracking
+- ✅ Social recovery management
+- ✅ On-chain reputation system
+- ✅ Options & derivatives dashboard
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
@@ -1391,6 +1684,14 @@ const json = walletHealthReportGenerator.exportAsJSON(report);
 - ✅ Address book manager
 - ✅ Gas optimization calculator
 - ✅ Wallet health report generator
+- ✅ Wallet recovery phrase checker
+- ✅ Token allowance real-time monitor
+- ✅ Wallet activity pattern analyzer
+- ✅ Risk prediction engine
+- ✅ Wallet clustering & relationships
+- ✅ Transaction fee optimizer
+- ✅ Comprehensive security audit
+- ✅ Cross-chain portfolio aggregator
 
 ### In Progress 🚧
 
