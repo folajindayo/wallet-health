@@ -276,7 +276,9 @@ The security score is calculated based on multiple risk factors:
 
 - ✅ **⚡ Approval Optimizer** - Get recommendations for optimal token approval amounts
 - ✅ **🌉 Cross-chain Bridge Tracker** - Track assets bridged across different chains
-- ✅ **⏱️ Gas Optimization** - Smart gas estimation and batch transaction optimization
+- ✅ **⏱️ Gas Optimization Calculator** - Calculate optimal gas prices and estimate costs
+- ✅ **🔄 Approval Revoker** - Safely revoke risky token approvals with batch support
+- ✅ **📊 Transaction Batch Analyzer** - Analyze multiple transactions for patterns and risks
 
 ### Advanced DeFi Features
 
