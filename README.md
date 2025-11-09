@@ -59,6 +59,13 @@ wallet-health/
 │   │       ├── risk-trend-analyzer.ts      # Risk trend analysis over time
 │   │       ├── approval-optimizer.ts       # Token approval optimization
 │   │       ├── cross-chain-bridge-tracker.ts      # Cross-chain bridge tracking
+│   │       ├── mev-protection-analyzer.ts         # MEV protection analysis
+│   │       ├── token-unlock-tracker.ts            # Token unlock/vesting tracking
+│   │       ├── governance-tracker.ts               # DAO governance participation
+│   │       ├── tax-report-generator.ts             # Tax report generation
+│   │       ├── liquidity-pool-analyzer.ts         # LP position analysis
+│   │       ├── staking-tracker.ts                  # Staking positions & rewards
+│   │       ├── wallet-backup-manager.ts           # Wallet backup management
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield farming optimization
