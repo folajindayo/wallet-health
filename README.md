@@ -208,25 +208,63 @@ The security score is calculated based on multiple risk factors:
   - Native token support
   - Bridge UI components
 
+## ✨ Features
+
+### Core Security Features
+
+- **🔍 Approval Scanner** - Comprehensive token approval analysis across all supported chains
+- **🛡️ Risk Detection** - Multi-factor risk assessment with detailed scoring
+- **🚨 Real-time Alerts** - Continuous monitoring with instant notifications for suspicious activity
+- **📊 Security Score** - 0-100 health score with actionable recommendations
+
+### Advanced Analytics
+
+- **💼 DeFi Exposure Analyzer** - Track and analyze DeFi protocol positions and risks
+- **🎨 NFT Security Scanner** - Detect suspicious NFTs, phishing attempts, and unverified collections
+- **⛽ Gas Tracker** - Real-time gas price tracking with optimization recommendations
+- **🔄 Transaction Simulator** - Preview transaction outcomes before execution
+- **📈 Portfolio Analytics** - Comprehensive portfolio performance and risk analysis
+- **🔗 Cross-chain Tracking** - Unified view across multiple blockchains
+
+### Monitoring & Alerts
+
+- **👁️ Real-time Monitoring** - Continuous wallet activity tracking
+- **🔔 Smart Alerts** - Configurable alerts for large transfers, new approvals, and suspicious contracts
+- **📜 Activity Timeline** - Complete transaction history with risk annotations
+- **📊 Historical Trends** - Track security score changes over time
+
+### Utility Features
+
+- **🔀 Wallet Comparison** - Compare multiple wallets side-by-side
+- **💾 Export Reports** - Export scan results as JSON, CSV, or PDF
+- **🔐 Multi-sig Support** - Analyze multi-signature wallet configurations
+- **🌐 ENS Integration** - Resolve ENS domains and verify ownership
+
 ## 📡 API Routes
 
 ### Scan Endpoints
 
-- `POST /api/scan/approvals` - Fetch token approvals
-- `POST /api/scan/tokens` - Get wallet token balances
-- `POST /api/scan/transactions` - Fetch recent transactions
+- `POST /api/scan/approvals` - Fetch token approvals for a wallet
+- `POST /api/scan/tokens` - Get wallet token balances and metadata
+- `POST /api/scan/transactions` - Fetch recent transaction history
+- `POST /api/scan/nfts` - Scan wallet NFTs and collections
 
 ### Risk Analysis
 
-- `POST /api/risk/calculate` - Calculate wallet health score
-- `POST /api/risk/check-contract` - Verify contract safety
-- `POST /api/risk/detect-spam` - Identify spam tokens
+- `POST /api/risk/calculate` - Calculate comprehensive wallet health score
+- `POST /api/risk/check-contract` - Verify contract safety and verification status
+- `POST /api/risk/detect-spam` - Identify spam and phishing tokens
+- `POST /api/risk/analyze-defi` - Analyze DeFi protocol exposure and risks
 
 ### Database Operations
 
-- `POST /api/db/save-scan` - Store scan results
-- `GET /api/db/scan-history` - Retrieve scan history
-- `GET|POST /api/db/preferences` - User preferences
+- `POST /api/db/save-scan` - Store scan results for historical tracking
+- `GET /api/db/scan-history` - Retrieve scan history with filtering
+- `GET|POST /api/db/preferences` - Manage user preferences and settings
+
+### Export & Reporting
+
+- `POST /api/export/report` - Generate comprehensive security reports
 
 ## 🎨 Dark Mode Theme
 
