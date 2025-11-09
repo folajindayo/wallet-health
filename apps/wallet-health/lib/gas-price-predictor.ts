@@ -1,344 +1,225 @@
 /**
- * Gas Price Predictor Utility
- * Predict optimal gas prices based on historical data and network conditions
+ * Gas Price Predictor
+ * Predicts optimal gas prices based on historical patterns
  */
 
 export interface GasPricePrediction {
   chainId: number;
-  predictedGasPrice: number; // gwei
-  confidence: number; // 0-100
-  timeframe: 'immediate' | '5min' | '15min' | '30min' | '1hour';
-  currentGasPrice: number;
+  currentPrice: number; // gwei
+  predictions: {
+    low: number;
+    standard: number;
+    fast: number;
+    instant: number;
+  };
+  confidence: 'high' | 'medium' | 'low';
+  recommendedPrice: number;
+  recommendedWaitTime: string;
+  historicalAverage: number;
   trend: 'increasing' | 'decreasing' | 'stable';
-  recommendation: string;
-  historicalAverage?: number;
+  factors: string[];
 }
 
 export interface GasPriceHistory {
   timestamp: number;
-  slow: number;
+  low: number;
   standard: number;
   fast: number;
-  instant?: number;
-}
-
-export interface NetworkConditions {
-  chainId: number;
-  pendingTransactions: number;
-  blockUtilization: number; // 0-100
-  networkCongestion: 'low' | 'medium' | 'high' | 'very-high';
-  estimatedWaitTime: number; // seconds
+  instant: number;
 }
 
 export class GasPricePredictor {
-  private history: Map<number, GasPriceHistory[]> = new Map();
+  private history: Map<number, GasPriceHistory[]> = new Map(); // chainId -> history
 
   /**
-   * Add gas price history entry
+   * Add gas price data point
    */
-  addHistoryEntry(chainId: number, history: GasPriceHistory): void {
+  addDataPoint(
+    chainId: number,
+    prices: { low: number; standard: number; fast: number; instant: number }
+  ): void {
     if (!this.history.has(chainId)) {
       this.history.set(chainId, []);
     }
 
-    const chainHistory = this.history.get(chainId)!;
-    chainHistory.push(history);
+    this.history.get(chainId)!.push({
+      timestamp: Date.now(),
+      ...prices,
+    });
 
-    // Keep only last 1000 entries
-    if (chainHistory.length > 1000) {
-      chainHistory.shift();
+    // Keep last 1000 data points per chain
+    const history = this.history.get(chainId)!;
+    if (history.length > 1000) {
+      history.shift();
     }
   }
 
   /**
-   * Predict gas price
+   * Predict gas prices
    */
-  predictGasPrice(
+  predict(
     chainId: number,
-    currentGasPrice: number,
-    timeframe: GasPricePrediction['timeframe'] = '15min',
-    networkConditions?: NetworkConditions
-  ): GasPricePrediction {
-    const chainHistory = this.history.get(chainId) || [];
-    
-    // Calculate trend
-    const trend = this.calculateTrend(chainHistory, currentGasPrice);
-    
-    // Predict based on trend and network conditions
-    let predictedGasPrice = currentGasPrice;
-    let confidence = 50;
-
-    if (chainHistory.length > 0) {
-      // Use moving average
-      const recent = chainHistory.slice(-10);
-      const avgStandard = recent.reduce((sum, h) => sum + h.standard, 0) / recent.length;
-      predictedGasPrice = avgStandard;
-      confidence = Math.min(100, 50 + recent.length * 5);
+    urgency: 'low' | 'medium' | 'high' = 'medium',
+    timeHorizon: '1h' | '6h' | '24h' = '1h'
+  ): GasPricePrediction | null {
+    const history = this.history.get(chainId);
+    if (!history || history.length < 10) {
+      return null; // Not enough data
     }
 
-    // Adjust based on trend
+    // Get recent history (last 24 hours)
+    const now = Date.now();
+    const cutoff = now - 24 * 60 * 60 * 1000;
+    const recent = history.filter(h => h.timestamp >= cutoff);
+
+    if (recent.length < 5) {
+      return null; // Not enough recent data
+    }
+
+    // Calculate current averages
+    const currentLow = recent[recent.length - 1].low;
+    const currentStandard = recent[recent.length - 1].standard;
+    const currentFast = recent[recent.length - 1].fast;
+    const currentInstant = recent[recent.length - 1].instant;
+
+    // Calculate historical averages
+    const avgLow = recent.reduce((sum, h) => sum + h.low, 0) / recent.length;
+    const avgStandard = recent.reduce((sum, h) => sum + h.standard, 0) / recent.length;
+    const avgFast = recent.reduce((sum, h) => sum + h.fast, 0) / recent.length;
+    const avgInstant = recent.reduce((sum, h) => sum + h.instant, 0) / recent.length;
+
+    // Simple trend detection
+    const firstHalf = recent.slice(0, Math.floor(recent.length / 2));
+    const secondHalf = recent.slice(Math.floor(recent.length / 2));
+
+    const firstAvg = firstHalf.reduce((sum, h) => sum + h.standard, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((sum, h) => sum + h.standard, 0) / secondHalf.length;
+
+    let trend: 'increasing' | 'decreasing' | 'stable';
+    const change = ((secondAvg - firstAvg) / firstAvg) * 100;
+
+    if (change > 10) trend = 'increasing';
+    else if (change < -10) trend = 'decreasing';
+    else trend = 'stable';
+
+    // Predict future prices (simple linear projection)
+    const trendFactor = change / 100;
+    const timeMultiplier = timeHorizon === '1h' ? 1 : timeHorizon === '6h' ? 6 : 24;
+
+    const predictions = {
+      low: Math.max(0, currentLow * (1 + trendFactor * timeMultiplier * 0.1)),
+      standard: Math.max(0, currentStandard * (1 + trendFactor * timeMultiplier * 0.1)),
+      fast: Math.max(0, currentFast * (1 + trendFactor * timeMultiplier * 0.1)),
+      instant: Math.max(0, currentInstant * (1 + trendFactor * timeMultiplier * 0.1)),
+    };
+
+    // Determine confidence
+    const variance = recent.reduce((sum, h) => {
+      const diff = h.standard - avgStandard;
+      return sum + diff * diff;
+    }, 0) / recent.length;
+    const stdDev = Math.sqrt(variance);
+    const coefficientOfVariation = avgStandard > 0 ? stdDev / avgStandard : 0;
+
+    let confidence: 'high' | 'medium' | 'low';
+    if (coefficientOfVariation < 0.1) confidence = 'high';
+    else if (coefficientOfVariation < 0.3) confidence = 'medium';
+    else confidence = 'low';
+
+    // Recommend price based on urgency
+    let recommendedPrice: number;
+    let recommendedWaitTime: string;
+
+    if (urgency === 'low') {
+      recommendedPrice = predictions.low;
+      recommendedWaitTime = 'Wait 5-15 minutes for lower prices';
+    } else if (urgency === 'high') {
+      recommendedPrice = predictions.fast;
+      recommendedWaitTime = 'Use fast gas for immediate confirmation';
+    } else {
+      recommendedPrice = predictions.standard;
+      recommendedWaitTime = 'Standard gas should confirm in 1-3 minutes';
+    }
+
+    // Generate factors
+    const factors: string[] = [];
     if (trend === 'increasing') {
-      predictedGasPrice *= 1.1; // 10% increase
-      confidence += 10;
+      factors.push('Gas prices are trending upward - consider waiting');
     } else if (trend === 'decreasing') {
-      predictedGasPrice *= 0.9; // 10% decrease
-      confidence += 10;
+      factors.push('Gas prices are trending downward - good time to transact');
     }
-
-    // Adjust based on network conditions
-    if (networkConditions) {
-      if (networkConditions.networkCongestion === 'very-high') {
-        predictedGasPrice *= 1.2;
-        confidence += 15;
-      } else if (networkConditions.networkCongestion === 'high') {
-        predictedGasPrice *= 1.1;
-        confidence += 10;
-      } else if (networkConditions.networkCongestion === 'low') {
-        predictedGasPrice *= 0.95;
-        confidence += 5;
-      }
+    if (currentStandard < avgStandard * 0.8) {
+      factors.push('Current prices are below 24h average');
+    } else if (currentStandard > avgStandard * 1.2) {
+      factors.push('Current prices are above 24h average - consider waiting');
     }
-
-    // Calculate historical average
-    const historicalAverage = chainHistory.length > 0
-      ? chainHistory.reduce((sum, h) => sum + h.standard, 0) / chainHistory.length
-      : undefined;
-
-    // Generate recommendation
-    const recommendation = this.generateRecommendation(
-      predictedGasPrice,
-      currentGasPrice,
-      trend,
-      networkConditions
-    );
 
     return {
       chainId,
-      predictedGasPrice: Math.round(predictedGasPrice * 100) / 100,
-      confidence: Math.min(100, confidence),
-      timeframe,
-      currentGasPrice,
-      trend,
-      recommendation,
-      historicalAverage: historicalAverage ? Math.round(historicalAverage * 100) / 100 : undefined,
-    };
-  }
-
-  /**
-   * Calculate gas price trend
-   */
-  private calculateTrend(
-    history: GasPriceHistory[],
-    currentPrice: number
-  ): GasPricePrediction['trend'] {
-    if (history.length < 2) return 'stable';
-
-    const recent = history.slice(-5);
-    if (recent.length === 0) return 'stable';
-
-    const avgRecent = recent.reduce((sum, h) => sum + h.standard, 0) / recent.length;
-    const diff = currentPrice - avgRecent;
-    const percentDiff = (diff / avgRecent) * 100;
-
-    if (percentDiff > 5) return 'increasing';
-    if (percentDiff < -5) return 'decreasing';
-    return 'stable';
-  }
-
-  /**
-   * Generate recommendation
-   */
-  private generateRecommendation(
-    predictedPrice: number,
-    currentPrice: number,
-    trend: GasPricePrediction['trend'],
-    networkConditions?: NetworkConditions
-  ): string {
-    if (networkConditions?.networkCongestion === 'very-high') {
-      return 'Network is very congested - consider waiting or using higher gas price';
-    }
-
-    if (trend === 'increasing') {
-      return 'Gas prices are increasing - submit transaction soon to avoid higher costs';
-    }
-
-    if (trend === 'decreasing') {
-      return 'Gas prices are decreasing - consider waiting for better rates';
-    }
-
-    if (predictedPrice < currentPrice * 0.9) {
-      return 'Predicted price is lower - consider waiting for better rates';
-    }
-
-    if (predictedPrice > currentPrice * 1.1) {
-      return 'Predicted price is higher - submit transaction now to avoid cost increase';
-    }
-
-    return 'Gas prices are stable - current price is optimal';
-  }
-
-  /**
-   * Get optimal gas price for time target
-   */
-  getOptimalGasPriceForTime(
-    chainId: number,
-    targetTimeSeconds: number,
-    currentGasPrice: number
-  ): {
-    recommendedGasPrice: number;
-    estimatedTime: number;
-    confidence: number;
-  } {
-    const chainHistory = this.history.get(chainId) || [];
-    
-    // Estimate based on historical data
-    let recommendedGasPrice = currentGasPrice;
-    let estimatedTime = 120; // default 2 minutes
-    let confidence = 50;
-
-    if (chainHistory.length > 0) {
-      // Find historical gas prices that achieved similar confirmation times
-      // This is simplified - in reality would need actual confirmation time data
-      const avgStandard = chainHistory.reduce((sum, h) => sum + h.standard, 0) / chainHistory.length;
-      
-      if (targetTimeSeconds <= 30) {
-        recommendedGasPrice = avgStandard * 1.5;
-        estimatedTime = 30;
-        confidence = 60;
-      } else if (targetTimeSeconds <= 60) {
-        recommendedGasPrice = avgStandard * 1.2;
-        estimatedTime = 60;
-        confidence = 65;
-      } else if (targetTimeSeconds <= 120) {
-        recommendedGasPrice = avgStandard;
-        estimatedTime = 120;
-        confidence = 70;
-      } else {
-        recommendedGasPrice = avgStandard * 0.8;
-        estimatedTime = 300;
-        confidence = 65;
-      }
-    }
-
-    return {
-      recommendedGasPrice: Math.round(recommendedGasPrice * 100) / 100,
-      estimatedTime,
-      confidence,
-    };
-  }
-
-  /**
-   * Analyze gas price patterns
-   */
-  analyzePatterns(chainId: number): {
-    averageGasPrice: number;
-    volatility: number;
-    peakHours: number[];
-    lowHours: number[];
-    weeklyPattern?: {
-      day: number;
-      averageGasPrice: number;
-    }[];
-  } {
-    const chainHistory = this.history.get(chainId) || [];
-    
-    if (chainHistory.length === 0) {
-      return {
-        averageGasPrice: 0,
-        volatility: 0,
-        peakHours: [],
-        lowHours: [],
-      };
-    }
-
-    const averageGasPrice = chainHistory.reduce(
-      (sum, h) => sum + h.standard,
-      0
-    ) / chainHistory.length;
-
-    // Calculate volatility (standard deviation)
-    const variance = chainHistory.reduce(
-      (sum, h) => sum + Math.pow(h.standard - averageGasPrice, 2),
-      0
-    ) / chainHistory.length;
-    const volatility = Math.sqrt(variance);
-
-    // Analyze hourly patterns
-    const hourlyPrices = new Map<number, number[]>();
-    chainHistory.forEach(h => {
-      const hour = new Date(h.timestamp).getHours();
-      if (!hourlyPrices.has(hour)) {
-        hourlyPrices.set(hour, []);
-      }
-      hourlyPrices.get(hour)!.push(h.standard);
-    });
-
-    const hourlyAverages = Array.from(hourlyPrices.entries()).map(([hour, prices]) => ({
-      hour,
-      average: prices.reduce((sum, p) => sum + p, 0) / prices.length,
-    }));
-
-    hourlyAverages.sort((a, b) => b.average - a.average);
-    const peakHours = hourlyAverages.slice(0, 3).map(h => h.hour);
-    const lowHours = hourlyAverages.slice(-3).map(h => h.hour);
-
-    return {
-      averageGasPrice: Math.round(averageGasPrice * 100) / 100,
-      volatility: Math.round(volatility * 100) / 100,
-      peakHours,
-      lowHours,
-    };
-  }
-
-  /**
-   * Get gas price statistics
-   */
-  getStatistics(chainId: number): {
-    totalEntries: number;
-    timeRange: {
-      start: number;
-      end: number;
-      days: number;
-    };
-    currentAverage: number;
-    minGasPrice: number;
-    maxGasPrice: number;
-  } {
-    const chainHistory = this.history.get(chainId) || [];
-
-    if (chainHistory.length === 0) {
-      return {
-        totalEntries: 0,
-        timeRange: { start: 0, end: 0, days: 0 },
-        currentAverage: 0,
-        minGasPrice: 0,
-        maxGasPrice: 0,
-      };
-    }
-
-    const sorted = [...chainHistory].sort((a, b) => a.timestamp - b.timestamp);
-    const start = sorted[0].timestamp;
-    const end = sorted[sorted.length - 1].timestamp;
-    const days = (end - start) / (24 * 60 * 60 * 1000);
-
-    const recent = sorted.slice(-10);
-    const currentAverage = recent.reduce((sum, h) => sum + h.standard, 0) / recent.length;
-
-    const allPrices = chainHistory.map(h => h.standard);
-    const minGasPrice = Math.min(...allPrices);
-    const maxGasPrice = Math.max(...allPrices);
-
-    return {
-      totalEntries: chainHistory.length,
-      timeRange: {
-        start,
-        end,
-        days: Math.round(days * 100) / 100,
+      currentPrice: currentStandard,
+      predictions: {
+        low: Math.round(predictions.low * 100) / 100,
+        standard: Math.round(predictions.standard * 100) / 100,
+        fast: Math.round(predictions.fast * 100) / 100,
+        instant: Math.round(predictions.instant * 100) / 100,
       },
-      currentAverage: Math.round(currentAverage * 100) / 100,
-      minGasPrice: Math.round(minGasPrice * 100) / 100,
-      maxGasPrice: Math.round(maxGasPrice * 100) / 100,
+      confidence,
+      recommendedPrice: Math.round(recommendedPrice * 100) / 100,
+      recommendedWaitTime,
+      historicalAverage: Math.round(avgStandard * 100) / 100,
+      trend,
+      factors,
     };
+  }
+
+  /**
+   * Get optimal gas price recommendation
+   */
+  getOptimalPrice(
+    chainId: number,
+    urgency: 'low' | 'medium' | 'high',
+    maxWaitMinutes: number = 15
+  ): {
+    recommendedPrice: number;
+    estimatedWait: string;
+    savings: number;
+    savingsPercentage: number;
+  } | null {
+    const prediction = this.predict(chainId, urgency, '1h');
+    if (!prediction) return null;
+
+    const current = prediction.currentPrice;
+    let recommendedPrice: number;
+    let estimatedWait: string;
+
+    if (urgency === 'low' && maxWaitMinutes >= 10) {
+      recommendedPrice = prediction.predictions.low;
+      estimatedWait = '10-15 minutes';
+    } else if (urgency === 'medium') {
+      recommendedPrice = prediction.predictions.standard;
+      estimatedWait = '1-3 minutes';
+    } else {
+      recommendedPrice = prediction.predictions.fast;
+      estimatedWait = '30-60 seconds';
+    }
+
+    const savings = current - recommendedPrice;
+    const savingsPercentage = current > 0 ? (savings / current) * 100 : 0;
+
+    return {
+      recommendedPrice: Math.round(recommendedPrice * 100) / 100,
+      estimatedWait,
+      savings: Math.round(savings * 100) / 100,
+      savingsPercentage: Math.round(savingsPercentage * 100) / 100,
+    };
+  }
+
+  /**
+   * Get gas price history
+   */
+  getHistory(chainId: number, limit?: number): GasPriceHistory[] {
+    const history = this.history.get(chainId) || [];
+    return limit ? history.slice(-limit) : history;
   }
 }
 
