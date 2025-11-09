@@ -1235,10 +1235,111 @@ const group = watchlistManager.createGroup({
   color: '#10b981',
 });
 
-// Get watchlist statistics
-const stats = watchlistManager.getStats();
-console.log(`Total Wallets: ${stats.totalWallets}`);
-console.log(`Average Score: ${stats.averageScore}`);
+// Create watchlist
+const watchlist = watchlistManager.createWatchlist({
+  name: 'My DeFi Wallets',
+  wallets: ['0x...', '0x...'],
+  tags: ['defi', 'active'],
+  alertsEnabled: true,
+});
+
+// Add alert
+watchlistManager.addAlert(watchlist.id, {
+  watchlistId: watchlist.id,
+  walletAddress: '0x...',
+  type: 'score_change',
+  severity: 'medium',
+  message: 'Wallet health score dropped',
+});
+
+// Get statistics
+const stats = watchlistManager.getWatchlistStats(watchlist.id);
+console.log(`Total wallets: ${stats?.totalWallets}`);
+```
+
+### MEV Protection Analysis
+
+```typescript
+import { mevProtectionAnalyzer } from '@/lib/mev-protection-analyzer';
+
+// Analyze transaction for MEV risks
+const analysis = mevProtectionAnalyzer.analyzeTransaction({
+  hash: '0x...',
+  timestamp: Date.now(),
+  from: '0x...',
+  to: '0x...',
+  type: 'swap',
+  chainId: 1,
+});
+
+console.log(`Protection Score: ${analysis.protectionScore}`);
+console.log(`Protection Level: ${analysis.protectionLevel}`);
+
+// Get protection strategies
+const strategies = mevProtectionAnalyzer.getProtectionStrategies(1);
+console.log(`Available strategies: ${strategies.length}`);
+
+// Get recommendation
+const recommendation = mevProtectionAnalyzer.recommendProtection(1, 'swap', 5000);
+console.log(`Recommended: ${recommendation?.name}`);
+```
+
+### Governance Tracking
+
+```typescript
+import { governanceTracker } from '@/lib/governance-tracker';
+
+// Add proposal
+governanceTracker.addProposal('0x...', {
+  id: 'prop-1',
+  dao: '0x...',
+  daoName: 'Uniswap DAO',
+  chainId: 1,
+  title: 'Proposal Title',
+  status: 'active',
+  startTime: Date.now(),
+  endTime: Date.now() + 7 * 24 * 60 * 60 * 1000,
+  votesFor: '0',
+  votesAgainst: '0',
+});
+
+// Record vote
+governanceTracker.recordVote('0x...', {
+  proposalId: 'prop-1',
+  voter: '0x...',
+  timestamp: Date.now(),
+  support: true,
+  votingPower: '1000000000000000000',
+  transactionHash: '0x...',
+});
+
+// Get summary
+const summary = governanceTracker.getSummary('0x...');
+console.log(`Participation Rate: ${summary.participationRate}%`);
+
+// Get active proposals
+const active = governanceTracker.getActiveProposals('0x...');
+console.log(`Active proposals: ${active.length}`);
+```
+
+### Activity Heatmap
+
+```typescript
+import { activityHeatmapGenerator } from '@/lib/activity-heatmap-generator';
+
+const activities = [
+  { timestamp: Date.now(), type: 'transfer', chainId: 1 },
+  // ... more activities
+];
+
+// Generate heatmap
+const heatmap = activityHeatmapGenerator.generateHeatmap(activities, 30);
+console.log(`Busiest day: ${heatmap.summary.busiestDay}`);
+console.log(`Busiest hour: ${heatmap.summary.busiestHour}`);
+
+// Generate statistics
+const stats = activityHeatmapGenerator.generateStats(activities);
+console.log(`Peak activity: ${stats.peakActivity.count}`);
 ```
 
 ### Token Metadata Cache
