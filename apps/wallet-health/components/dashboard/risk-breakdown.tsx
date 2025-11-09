@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@radix-ui/react-progress';
+import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, AlertCircle, Minus } from 'lucide-react';
 import type { RiskScore } from '@/lib/risk-scorer';
 
