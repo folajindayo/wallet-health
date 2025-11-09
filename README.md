@@ -257,12 +257,34 @@ pnpm build
 pnpm lint
 ```
 
+### Commit Messages
+
+This project uses conventional commit messages. A comprehensive list of 1400+ commit message templates is available in `wallet.txt` covering:
+
+- Reown SDK integration and features
+- WalletConnect v2 protocol updates
+- AppKit (Web3Modal) component development
+- Base L2 network enhancements
+- Cross-platform integrations
+- Performance optimizations
+- Security improvements
+- Testing and documentation
+
+Example commit messages:
+```bash
+feat: integrate Reown SDK for wallet connections
+fix: resolve WalletConnect connection timeout issues
+feat: implement Base L2 network support
+perf: optimize AppKit bundle size
+```
+
 ### Project Structure Guidelines
 
 - Files should be 200-400 lines (max 500, never exceed 800-1000)
 - Use NativeWind, not StyleSheet
 - Individual file commits with descriptive messages
 - README.md is the sole readme file (remove others)
+- Follow conventional commit format (see `wallet.txt` for examples)
 
 ## 🤝 Contributing
 
