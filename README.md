@@ -351,25 +351,25 @@ The project includes an advanced automated git commit script (`commit.sh`) that 
 
 ```bash
 # Basic usage (commits every 1 second)
-./farm.sh
+./commit.sh
 
 # Commit every 5 seconds
-./farm.sh -d 5
+./commit.sh -d 5
 
 # Dry-run mode (test without committing)
-./farm.sh --dry-run
+./commit.sh --dry-run
 
 # Verbose mode with custom delay
-./farm.sh -v -d 3
+./commit.sh -v -d 3
 
 # Skip empty commits and use specific branch
-./farm.sh -s -b main
+./commit.sh -s -b main
 
 # Custom message file and log file
-./farm.sh -f my-messages.txt -l my-log.log
+./commit.sh -f my-messages.txt -l my-log.log
 
 # Force push (use with caution)
-./farm.sh --force-push
+./commit.sh --force-push
 ```
 
 #### Command-Line Options
