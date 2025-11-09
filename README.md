@@ -74,6 +74,14 @@ wallet-health/
 │   │       ├── airdrop-eligibility-checker.ts      # Airdrop eligibility checking
 │   │       ├── portfolio-rebalancer.ts             # Portfolio rebalancing strategies
 │   │       ├── yield-opportunity-finder.ts         # Yield farming opportunity finder
+│   │       ├── whale-watcher.ts                     # Whale activity tracking
+│   │       ├── rug-pull-detector.ts                 # Rug pull risk detection
+│   │       ├── transaction-batch-executor.ts        # Batch transaction execution
+│   │       ├── activity-timeline-generator.ts        # Activity timeline generation
+│   │       ├── token-metadata-fetcher.ts            # Token metadata fetching
+│   │       ├── address-book-manager.ts              # Address book management
+│   │       ├── gas-price-predictor.ts               # Gas price prediction
+│   │       ├── smart-contract-deployer-helper.ts    # Contract deployment helper
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
