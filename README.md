@@ -185,8 +185,20 @@ The security score is calculated based on multiple risk factors:
 - **Ethereum Mainnet** (Chain ID: 1)
 - **BNB Smart Chain** (Chain ID: 56)
 - **Polygon** (Chain ID: 137)
-- **Base** (Chain ID: 8453)
+- **Base** (Chain ID: 8453) - Enhanced support with L2 optimizations
+- **Base Sepolia** (Chain ID: 84532) - Testnet support
 - **Arbitrum One** (Chain ID: 42161)
+- **Optimism** (Chain ID: 10) - Coming soon
+- **Avalanche** (Chain ID: 43114) - Coming soon
+
+### Chain-Specific Features
+
+- **Base Network**: 
+  - OP Stack integration
+  - Superchain compatibility
+  - Optimized gas estimation
+  - Native token support
+  - Bridge UI components
 
 ## 📡 API Routes
 
