@@ -285,18 +285,17 @@ The security score is calculated based on multiple risk factors:
 - ✅ **🔄 Approval Revoker** - Safely revoke risky token approvals with batch support
 - ✅ **📊 Transaction Batch Analyzer** - Analyze multiple transactions for patterns and risks
 
+### Security & Recommendations
+
+- ✅ **🛡️ Security Recommendations Engine** - Generate actionable security recommendations
+- ✅ **📜 Approval History Tracker** - Track token approval changes over time
+- ✅ **🔍 Token Metadata Cache** - Cache token metadata to reduce API calls
+- ✅ **📈 Risk Trend Analysis** - Analyze risk score trends and predict future risk levels
+
 ### Advanced DeFi Features
 
-- ✅ **🛡️ MEV Protection Analyzer** - Analyze MEV risks and suggest protection strategies
-- ✅ **🔓 Token Unlock Tracker** - Track token unlocks and vesting schedules
-- ✅ **🗳️ Governance Tracker** - Track DAO governance participation and voting history
 - ✅ **💧 Liquidity Pool Analyzer** - Analyze LP positions and calculate impermanent loss
 - ✅ **💰 Staking Tracker** - Track staking positions, rewards, and performance
-
-### Financial & Compliance Features
-
-- ✅ **📊 Tax Report Generator** - Generate comprehensive tax reports from transactions
-- ✅ **💾 Wallet Backup Manager** - Manage wallet backups and recovery methods
 
 ## 📡 API Routes
 
