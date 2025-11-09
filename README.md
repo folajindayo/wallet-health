@@ -278,6 +278,119 @@ feat: implement Base L2 network support
 perf: optimize AppKit bundle size
 ```
 
+### Automated Git Farming Script (`farm.sh`)
+
+The project includes an advanced automated git commit script (`farm.sh`) that reads commit messages from `wallet.txt` and automatically commits and pushes changes to your repository.
+
+#### Features
+
+- ✅ **Automatic commits** - Reads messages from `wallet.txt` line by line
+- ✅ **Configurable delay** - Set custom delay between commits
+- ✅ **Dry-run mode** - Test without making actual commits
+- ✅ **Progress tracking** - Shows progress percentage and statistics
+- ✅ **Logging** - Optional file logging for audit trail
+- ✅ **Statistics** - Tracks commits, pushes, errors, and timing
+- ✅ **Branch selection** - Commit to specific branches
+- ✅ **Skip empty commits** - Option to skip when no changes detected
+- ✅ **Force push option** - Optional force push capability
+- ✅ **Verbose mode** - Detailed output for debugging
+- ✅ **Resume capability** - Automatically resumes from where it left off
+
+#### Usage
+
+```bash
+# Basic usage (commits every 1 second)
+./farm.sh
+
+# Commit every 5 seconds
+./farm.sh -d 5
+
+# Dry-run mode (test without committing)
+./farm.sh --dry-run
+
+# Verbose mode with custom delay
+./farm.sh -v -d 3
+
+# Skip empty commits and use specific branch
+./farm.sh -s -b main
+
+# Custom message file and log file
+./farm.sh -f my-messages.txt -l my-log.log
+
+# Force push (use with caution)
+./farm.sh --force-push
+```
+
+#### Command-Line Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-d, --delay SECONDS` | Delay between commits | 1 |
+| `-f, --file FILE` | Path to commit messages file | wallet.txt |
+| `-b, --branch BRANCH` | Git branch to commit to | current branch |
+| `-l, --log FILE` | Log file path | farm.log |
+| `-n, --dry-run` | Show what would be done without committing | false |
+| `-v, --verbose` | Show detailed output | false |
+| `-s, --skip-empty` | Skip commits when no changes detected | false |
+| `--force-push` | Force push to remote | false |
+| `--no-log` | Disable logging to file | false |
+| `--no-stats` | Disable statistics tracking | false |
+| `-h, --help` | Show help message | - |
+
+#### Statistics
+
+The script tracks and displays:
+- Total commits made
+- Successful pushes
+- Messages skipped
+- Error count
+- Remaining messages
+- Time elapsed
+- Current branch
+
+Statistics are saved to `farm-stats.json` and displayed on exit (Ctrl+C).
+
+#### Logging
+
+When enabled, all operations are logged to `farm.log` with timestamps:
+```
+[2024-01-15 10:30:45] [INFO] Script started with options: delay=1, dry-run=false
+[2024-01-15 10:30:46] [SUCCESS] Commit successful
+[2024-01-15 10:30:47] [SUCCESS] Push successful
+```
+
+#### Safety Features
+
+- ✅ Validates git repository before starting
+- ✅ Checks for remote repository configuration
+- ✅ Handles errors gracefully without losing messages
+- ✅ Preserves commit messages on failure for retry
+- ✅ Shows statistics before exit
+- ✅ Safe to interrupt with Ctrl+C
+
+#### Examples
+
+```bash
+# Test run with verbose output
+./farm.sh --dry-run -v
+
+# Production run with 2-second delay and logging
+./farm.sh -d 2 -v
+
+# Commit to feature branch, skip empty commits
+./farm.sh -b feature/new-feature -s
+
+# Custom configuration
+./farm.sh -d 5 -f custom-messages.txt -l custom.log -v --skip-empty
+```
+
+#### Requirements
+
+- Bash shell (macOS/Linux)
+- Git repository initialized
+- `wallet.txt` file with commit messages (one per line)
+- Write permissions for log and stats files
+
 ### Project Structure Guidelines
 
 - Files should be 200-400 lines (max 500, never exceed 800-1000)
