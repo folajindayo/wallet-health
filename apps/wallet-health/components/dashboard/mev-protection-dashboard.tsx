@@ -198,7 +198,7 @@ export function MEVProtectionDashboard({ walletAddress }: MEVProtectionDashboard
           </div>
           <Button
             size="sm"
-            variant={protectionEnabled ? 'success' : 'destructive'}
+            variant={protectionEnabled ? 'secondary' : 'destructive'}
             onClick={() => setProtectionEnabled(!protectionEnabled)}
           >
             {protectionEnabled ? (
