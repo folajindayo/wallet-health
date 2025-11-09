@@ -106,6 +106,14 @@ wallet-health/
 │   │       ├── multi-chain-portfolio-aggregator.ts  # Multi-chain portfolio aggregation
 │   │       ├── token-distribution-analyzer.ts       # Token distribution analysis
 │   │       ├── wallet-clustering-tool.ts            # Wallet behavior clustering
+│   │       ├── transaction-simulator.ts             # Transaction simulation
+│   │       ├── gas-price-history-tracker.ts         # Gas price history tracking
+│   │       ├── wallet-health-score-calculator.ts    # Wallet health score calculation
+│   │       ├── token-approval-risk-analyzer.ts      # Token approval risk analysis
+│   │       ├── smart-contract-interaction-history.ts # Contract interaction tracking
+│   │       ├── portfolio-rebalancing-suggestions.ts # Rebalancing suggestions
+│   │       ├── yield-farming-opportunity-finder.ts # Yield farming opportunities
+│   │       ├── wallet-activity-patterns-analyzer.ts # Activity pattern analysis
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
@@ -123,12 +131,7 @@ wallet-health/
 │   │       ├── approval-history-tracker.ts # Approval history tracking
 │   │       ├── wallet-tagging.ts        # Wallet tagging & categorization
 │   │       ├── token-metadata-cache.ts  # Token metadata caching system
-│   │       ├── risk-trend-analyzer.ts   # Risk trend analysis over time
-│   │       ├── token-snapshot-manager.ts # Token balance snapshot management
-│   │       ├── wallet-comparison-tool.ts # Advanced wallet comparison
-│   │       ├── transaction-fee-optimizer.ts # Transaction fee optimization
-│   │       ├── wallet-activity-exporter.ts # Activity data export utility
-│   │       └── multi-chain-portfolio-aggregator.ts # Multi-chain portfolio aggregation
+│   │       └── risk-trend-analyzer.ts   # Risk trend analysis over time
 │   │       ├── token-metadata-cache.ts    # Token metadata caching system
 │   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
 │   │       ├── wallet-tagging.ts         # Wallet tagging & categorization
