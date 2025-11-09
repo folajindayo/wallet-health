@@ -1,253 +1,287 @@
 /**
- * Token Snapshot Manager Utility
- * Takes snapshots of token balances at specific times
+ * Token Snapshot Manager
+ * Manages token balance snapshots for historical tracking
  */
 
 export interface TokenSnapshot {
-  id: string;
+  timestamp: number;
   walletAddress: string;
   chainId: number;
-  timestamp: number;
   tokens: Array<{
-    token: string;
+    address: string;
     symbol: string;
     balance: string;
-    balanceUSD: number;
+    balanceUSD?: number;
+    price?: number;
   }>;
-  totalValueUSD: number;
-  note?: string;
-  tags?: string[];
+  totalValueUSD?: number;
+  metadata?: Record<string, any>;
 }
 
 export interface SnapshotComparison {
   snapshot1: TokenSnapshot;
   snapshot2: TokenSnapshot;
-  timeDiff: number; // milliseconds
-  valueChange: number; // USD
-  valueChangePercent: number; // Percentage
-  tokenChanges: Array<{
-    token: string;
-    symbol: string;
-    balanceChange: string;
-    balanceChangePercent: number;
-    valueChange: number;
-  }>;
-  newTokens: Array<{ token: string; symbol: string; balance: string }>;
-  removedTokens: Array<{ token: string; symbol: string; balance: string }>;
+  differences: {
+    newTokens: Array<{ address: string; symbol: string; balance: string }>;
+    removedTokens: Array<{ address: string; symbol: string; balance: string }>;
+    changedBalances: Array<{
+      address: string;
+      symbol: string;
+      oldBalance: string;
+      newBalance: string;
+      change: string;
+      changeUSD?: number;
+    }>;
+    totalValueChange: number;
+    totalValueChangeUSD?: number;
+  };
+}
+
+export interface SnapshotSeries {
+  walletAddress: string;
+  chainId: number;
+  snapshots: TokenSnapshot[];
+  summary: {
+    totalSnapshots: number;
+    dateRange: { start: number; end: number };
+    averageValue: number;
+    maxValue: number;
+    minValue: number;
+  };
 }
 
 export class TokenSnapshotManager {
-  private snapshots: Map<string, TokenSnapshot[]> = new Map();
+  private snapshots: Map<string, TokenSnapshot[]> = new Map(); // wallet-chain -> snapshots
 
   /**
    * Create snapshot
    */
-  createSnapshot(
-    walletAddress: string,
-    chainId: number,
-    tokens: Array<{ token: string; symbol: string; balance: string; balanceUSD: number }>,
-    note?: string,
-    tags?: string[]
-  ): TokenSnapshot {
-    const id = `snapshot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const totalValueUSD = tokens.reduce((sum, t) => sum + t.balanceUSD, 0);
-
-    const snapshot: TokenSnapshot = {
-      id,
-      walletAddress: walletAddress.toLowerCase(),
-      chainId,
-      timestamp: Date.now(),
-      tokens,
-      totalValueUSD: Math.round(totalValueUSD * 100) / 100,
-      note,
-      tags,
-    };
-
-    const key = `${walletAddress.toLowerCase()}-${chainId}`;
+  createSnapshot(snapshot: TokenSnapshot): void {
+    const key = `${snapshot.walletAddress.toLowerCase()}-${snapshot.chainId}`;
     if (!this.snapshots.has(key)) {
       this.snapshots.set(key, []);
     }
 
     this.snapshots.get(key)!.push(snapshot);
-    return snapshot;
-  }
 
-  /**
-   * Get snapshots for wallet
-   */
-  getSnapshots(walletAddress: string, chainId: number): TokenSnapshot[] {
-    const key = `${walletAddress.toLowerCase()}-${chainId}`;
-    return (this.snapshots.get(key) || []).sort((a, b) => a.timestamp - b.timestamp);
-  }
-
-  /**
-   * Get snapshot by ID
-   */
-  getSnapshot(id: string): TokenSnapshot | null {
-    for (const snapshots of this.snapshots.values()) {
-      const snapshot = snapshots.find(s => s.id === id);
-      if (snapshot) {
-        return snapshot;
-      }
+    // Keep last 1000 snapshots per wallet-chain
+    const snapshots = this.snapshots.get(key)!;
+    if (snapshots.length > 1000) {
+      snapshots.shift();
     }
-    return null;
+
+    // Sort by timestamp
+    snapshots.sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  /**
+   * Get snapshots
+   */
+  getSnapshots(
+    walletAddress: string,
+    chainId: number,
+    options: {
+      startDate?: number;
+      endDate?: number;
+      limit?: number;
+    } = {}
+  ): TokenSnapshot[] {
+    const key = `${walletAddress.toLowerCase()}-${chainId}`;
+    let snapshots = this.snapshots.get(key) || [];
+
+    if (options.startDate) {
+      snapshots = snapshots.filter(s => s.timestamp >= options.startDate!);
+    }
+
+    if (options.endDate) {
+      snapshots = snapshots.filter(s => s.timestamp <= options.endDate!);
+    }
+
+    snapshots.sort((a, b) => b.timestamp - a.timestamp);
+
+    if (options.limit) {
+      snapshots = snapshots.slice(0, options.limit);
+    }
+
+    return snapshots;
+  }
+
+  /**
+   * Get latest snapshot
+   */
+  getLatestSnapshot(walletAddress: string, chainId: number): TokenSnapshot | null {
+    const snapshots = this.getSnapshots(walletAddress, chainId, { limit: 1 });
+    return snapshots.length > 0 ? snapshots[0] : null;
   }
 
   /**
    * Compare two snapshots
    */
-  compareSnapshots(snapshot1Id: string, snapshot2Id: string): SnapshotComparison | null {
-    const snapshot1 = this.getSnapshot(snapshot1Id);
-    const snapshot2 = this.getSnapshot(snapshot2Id);
+  compareSnapshots(
+    snapshot1: TokenSnapshot,
+    snapshot2: TokenSnapshot
+  ): SnapshotComparison {
+    const tokenMap1 = new Map(
+      snapshot1.tokens.map(t => [t.address.toLowerCase(), t])
+    );
+    const tokenMap2 = new Map(
+      snapshot2.tokens.map(t => [t.address.toLowerCase(), t])
+    );
 
-    if (!snapshot1 || !snapshot2) {
-      return null;
-    }
+    const newTokens: SnapshotComparison['differences']['newTokens'] = [];
+    const removedTokens: SnapshotComparison['differences']['removedTokens'] = [];
+    const changedBalances: SnapshotComparison['differences']['changedBalances'] = [];
 
-    if (snapshot1.walletAddress !== snapshot2.walletAddress || snapshot1.chainId !== snapshot2.chainId) {
-      return null;
-    }
-
-    const timeDiff = snapshot2.timestamp - snapshot1.timestamp;
-    const valueChange = snapshot2.totalValueUSD - snapshot1.totalValueUSD;
-    const valueChangePercent = snapshot1.totalValueUSD > 0
-      ? (valueChange / snapshot1.totalValueUSD) * 100
-      : 0;
-
-    // Create token maps
-    const tokens1 = new Map(snapshot1.tokens.map(t => [t.token.toLowerCase(), t]));
-    const tokens2 = new Map(snapshot2.tokens.map(t => [t.token.toLowerCase(), t]));
-
-    // Find token changes
-    const tokenChanges: SnapshotComparison['tokenChanges'] = [];
-    const newTokens: SnapshotComparison['newTokens'] = [];
-    const removedTokens: SnapshotComparison['removedTokens'] = [];
-
-    tokens2.forEach((token2, address) => {
-      const token1 = tokens1.get(address);
-      if (token1) {
-        const balance1 = parseFloat(token1.balance);
-        const balance2 = parseFloat(token2.balance);
-        const balanceChange = balance2 - balance1;
-        const balanceChangePercent = balance1 > 0
-          ? (balanceChange / balance1) * 100
-          : 0;
-
-        tokenChanges.push({
-          token: address,
-          symbol: token2.symbol,
-          balanceChange: balanceChange.toString(),
-          balanceChangePercent: Math.round(balanceChangePercent * 100) / 100,
-          valueChange: token2.balanceUSD - token1.balanceUSD,
-        });
-      } else {
+    // Find new tokens
+    tokenMap2.forEach((token2, address) => {
+      if (!tokenMap1.has(address)) {
         newTokens.push({
-          token: address,
+          address: token2.address,
           symbol: token2.symbol,
           balance: token2.balance,
         });
       }
     });
 
-    tokens1.forEach((token1, address) => {
-      if (!tokens2.has(address)) {
+    // Find removed tokens
+    tokenMap1.forEach((token1, address) => {
+      if (!tokenMap2.has(address)) {
         removedTokens.push({
-          token: address,
+          address: token1.address,
           symbol: token1.symbol,
           balance: token1.balance,
         });
       }
     });
 
+    // Find changed balances
+    tokenMap2.forEach((token2, address) => {
+      const token1 = tokenMap1.get(address);
+      if (token1 && token1.balance !== token2.balance) {
+        const balance1 = BigInt(token1.balance);
+        const balance2 = BigInt(token2.balance);
+        const change = balance2 - balance1;
+
+        changedBalances.push({
+          address: token2.address,
+          symbol: token2.symbol,
+          oldBalance: token1.balance,
+          newBalance: token2.balance,
+          change: change.toString(),
+          changeUSD: token2.balanceUSD && token1.balanceUSD
+            ? token2.balanceUSD - token1.balanceUSD
+            : undefined,
+        });
+      }
+    });
+
+    const totalValueChange = (snapshot2.totalValueUSD || 0) - (snapshot1.totalValueUSD || 0);
+
     return {
       snapshot1,
       snapshot2,
-      timeDiff,
-      valueChange: Math.round(valueChange * 100) / 100,
-      valueChangePercent: Math.round(valueChangePercent * 100) / 100,
-      tokenChanges,
-      newTokens,
-      removedTokens,
+      differences: {
+        newTokens,
+        removedTokens,
+        changedBalances,
+        totalValueChange,
+        totalValueChangeUSD: totalValueChange,
+      },
     };
   }
 
   /**
-   * Get snapshot history
+   * Get snapshot series
    */
-  getSnapshotHistory(walletAddress: string, chainId: number, days = 30): TokenSnapshot[] {
+  getSnapshotSeries(
+    walletAddress: string,
+    chainId: number
+  ): SnapshotSeries {
     const snapshots = this.getSnapshots(walletAddress, chainId);
-    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-    return snapshots.filter(s => s.timestamp >= cutoff);
-  }
 
-  /**
-   * Delete snapshot
-   */
-  deleteSnapshot(id: string): boolean {
-    for (const [key, snapshots] of this.snapshots.entries()) {
-      const index = snapshots.findIndex(s => s.id === id);
-      if (index !== -1) {
-        snapshots.splice(index, 1);
-        if (snapshots.length === 0) {
-          this.snapshots.delete(key);
-        }
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Get snapshot statistics
-   */
-  getSnapshotStats(walletAddress: string, chainId: number): {
-    totalSnapshots: number;
-    firstSnapshot: TokenSnapshot | null;
-    latestSnapshot: TokenSnapshot | null;
-    totalValueChange: number;
-    averageValueChange: number;
-  } {
-    const snapshots = this.getSnapshots(walletAddress, chainId);
-    
     if (snapshots.length === 0) {
-      return {
-        totalSnapshots: 0,
-        firstSnapshot: null,
-        latestSnapshot: null,
-        totalValueChange: 0,
-        averageValueChange: 0,
-      };
+      throw new Error('No snapshots found');
     }
 
-    const firstSnapshot = snapshots[0];
-    const latestSnapshot = snapshots[snapshots.length - 1];
-    const totalValueChange = latestSnapshot.totalValueUSD - firstSnapshot.totalValueUSD;
-    const averageValueChange = snapshots.length > 1
-      ? totalValueChange / (snapshots.length - 1)
-      : 0;
+    const values = snapshots
+      .map(s => s.totalValueUSD || 0)
+      .filter(v => v > 0);
+
+    const timestamps = snapshots.map(s => s.timestamp);
 
     return {
-      totalSnapshots: snapshots.length,
-      firstSnapshot,
-      latestSnapshot,
-      totalValueChange: Math.round(totalValueChange * 100) / 100,
-      averageValueChange: Math.round(averageValueChange * 100) / 100,
+      walletAddress,
+      chainId,
+      snapshots,
+      summary: {
+        totalSnapshots: snapshots.length,
+        dateRange: {
+          start: Math.min(...timestamps),
+          end: Math.max(...timestamps),
+        },
+        averageValue: values.length > 0
+          ? values.reduce((sum, v) => sum + v, 0) / values.length
+          : 0,
+        maxValue: values.length > 0 ? Math.max(...values) : 0,
+        minValue: values.length > 0 ? Math.min(...values) : 0,
+      },
     };
   }
 
   /**
-   * Clear snapshots
+   * Calculate portfolio growth
    */
-  clear(walletAddress?: string, chainId?: number): void {
-    if (walletAddress && chainId) {
-      const key = `${walletAddress.toLowerCase()}-${chainId}`;
-      this.snapshots.delete(key);
-    } else {
-      this.snapshots.clear();
+  calculateGrowth(
+    walletAddress: string,
+    chainId: number,
+    period: '7d' | '30d' | '90d' | '1y'
+  ): {
+    startValue: number;
+    endValue: number;
+    growth: number;
+    growthPercentage: number;
+  } | null {
+    const now = Date.now();
+    let cutoff: number;
+
+    switch (period) {
+      case '7d':
+        cutoff = now - 7 * 24 * 60 * 60 * 1000;
+        break;
+      case '30d':
+        cutoff = now - 30 * 24 * 60 * 60 * 1000;
+        break;
+      case '90d':
+        cutoff = now - 90 * 24 * 60 * 60 * 1000;
+        break;
+      case '1y':
+        cutoff = now - 365 * 24 * 60 * 60 * 1000;
+        break;
     }
+
+    const snapshots = this.getSnapshots(walletAddress, chainId, {
+      startDate: cutoff,
+    });
+
+    if (snapshots.length < 2) return null;
+
+    const sorted = snapshots.sort((a, b) => a.timestamp - b.timestamp);
+    const start = sorted[0];
+    const end = sorted[sorted.length - 1];
+
+    const startValue = start.totalValueUSD || 0;
+    const endValue = end.totalValueUSD || 0;
+    const growth = endValue - startValue;
+    const growthPercentage = startValue > 0 ? (growth / startValue) * 100 : 0;
+
+    return {
+      startValue,
+      endValue,
+      growth,
+      growthPercentage: Math.round(growthPercentage * 100) / 100,
+    };
   }
 }
 
 // Singleton instance
 export const tokenSnapshotManager = new TokenSnapshotManager();
-
