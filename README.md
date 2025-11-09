@@ -1599,6 +1599,87 @@ recommendations.forEach(rec => {
 });
 ```
 
+### Token Distribution Analysis
+
+```typescript
+import { tokenDistributionAnalyzer } from '@/lib/token-distribution-analyzer';
+
+// Analyze distribution
+const distribution = tokenDistributionAnalyzer.analyzeDistribution(
+  '0x...',
+  'TOKEN',
+  '1000000000000000000000',
+  holders
+);
+
+console.log(`Gini Coefficient: ${distribution.statistics.giniCoefficient}`);
+console.log(`Top 10%: ${distribution.statistics.top10Percentage}%`);
+console.log(`Risk: ${distribution.riskAssessment.concentrationRisk}`);
+
+// Compare distributions
+const comparison = tokenDistributionAnalyzer.compareDistributions(dist1, dist2);
+console.log(`More decentralized: ${comparison.comparison.moreDecentralized}`);
+
+// Get health score
+const healthScore = tokenDistributionAnalyzer.getDistributionHealthScore(distribution);
+console.log(`Health Score: ${healthScore}/100`);
+```
+
+### Wallet Reputation System
+
+```typescript
+import { walletReputationSystem } from '@/lib/wallet-reputation-system';
+
+// Calculate reputation
+const score = walletReputationSystem.calculateScore('0x...', {
+  age: 365,
+  totalTransactions: 500,
+  verifiedContracts: 10,
+  unverifiedContracts: 2,
+  hasENS: true,
+  chains: [1, 8453, 137],
+});
+
+console.log(`Overall Score: ${score.overallScore}/1000`);
+console.log(`Badges: ${score.badges.join(', ')}`);
+
+// Get history
+const history = walletReputationSystem.getHistory('0x...');
+console.log(`Trend: ${history?.trend}`);
+
+// Compare wallets
+const comparison = walletReputationSystem.compareWallets('0x...', '0x...');
+console.log(`Better wallet: ${comparison?.comparison.betterWallet}`);
+
+// Get top wallets
+const top = walletReputationSystem.getTopWallets(10);
+console.log(`Top wallet: ${top[0].walletAddress}`);
+```
+
+### Gas Price Prediction
+
+```typescript
+import { gasPricePredictor } from '@/lib/gas-price-predictor';
+
+// Add data point
+gasPricePredictor.addDataPoint(1, {
+  low: 20,
+  standard: 30,
+  fast: 40,
+  instant: 50,
+});
+
+// Predict prices
+const prediction = gasPricePredictor.predict(1, 'medium', '1h');
+console.log(`Recommended: ${prediction?.recommendedPrice} gwei`);
+console.log(`Trend: ${prediction?.trend}`);
+
+// Get optimal price
+const optimal = gasPricePredictor.getOptimalPrice(1, 'low', 15);
+console.log(`Savings: ${optimal?.savingsPercentage}%`);
+console.log(`Wait time: ${optimal?.estimatedWait}`);
+```
+
 ### Wallet Tagging
 
 ```typescript
