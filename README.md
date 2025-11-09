@@ -2156,6 +2156,14 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Multi-chain portfolio aggregator
 - ✅ Token distribution analyzer
 - ✅ Wallet clustering tool
+- ✅ Transaction simulator
+- ✅ Gas price history tracker
+- ✅ Wallet health score calculator
+- ✅ Token approval risk analyzer
+- ✅ Smart contract interaction history
+- ✅ Portfolio rebalancing suggestions
+- ✅ Yield farming opportunity finder
+- ✅ Wallet activity patterns analyzer
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
