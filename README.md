@@ -123,7 +123,10 @@ wallet-health/
 │   │       ├── approval-history-tracker.ts # Approval history tracking
 │   │       ├── wallet-tagging.ts        # Wallet tagging & categorization
 │   │       ├── token-metadata-cache.ts  # Token metadata caching system
-│   │       └── risk-trend-analyzer.ts   # Risk trend analysis over time
+│   │       ├── risk-trend-analyzer.ts   # Risk trend analysis over time
+│   │       ├── wallet-health-score-calculator.ts # Comprehensive health scoring
+│   │       ├── transaction-simulator-enhanced.ts # Enhanced transaction simulation
+│   │       └── wallet-backup-validator.ts # Backup validation & verification
 │   │       ├── token-metadata-cache.ts    # Token metadata caching system
 │   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
 │   │       ├── wallet-tagging.ts         # Wallet tagging & categorization
