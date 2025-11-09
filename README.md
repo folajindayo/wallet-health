@@ -72,7 +72,12 @@ wallet-health/
 │   │       ├── alert-manager.ts           # Alert system & notifications
 │   │       ├── activity-timeline.ts       # Activity timeline generator
 │   │       ├── ens-resolver.ts            # ENS domain resolution
-│   │       └── multisig-analyzer.ts       # Multi-signature wallet analyzer
+│   │       ├── multisig-analyzer.ts       # Multi-signature wallet analyzer
+│   │       ├── approval-revoker.ts        # Token approval revocation helper
+│   │       ├── health-trends.ts           # Wallet health trends tracker
+│   │       ├── address-book.ts            # Address book manager
+│   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
+│   │       └── recovery-checker.ts       # Recovery phrase security checker
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
@@ -273,6 +278,19 @@ The security score is calculated based on multiple risk factors:
 - ✅ **⚡ Approval Optimizer** - Get recommendations for optimal token approval amounts
 - ✅ **🌉 Cross-chain Bridge Tracker** - Track assets bridged across different chains
 - ✅ **⏱️ Gas Optimization** - Smart gas estimation and batch transaction optimization
+
+### Advanced DeFi Features
+
+- ✅ **🛡️ MEV Protection Analyzer** - Analyze MEV risks and suggest protection strategies
+- ✅ **🔓 Token Unlock Tracker** - Track token unlocks and vesting schedules
+- ✅ **🗳️ Governance Tracker** - Track DAO governance participation and voting history
+- ✅ **💧 Liquidity Pool Analyzer** - Analyze LP positions and calculate impermanent loss
+- ✅ **💰 Staking Tracker** - Track staking positions, rewards, and performance
+
+### Financial & Compliance Features
+
+- ✅ **📊 Tax Report Generator** - Generate comprehensive tax reports from transactions
+- ✅ **💾 Wallet Backup Manager** - Manage wallet backups and recovery methods
 
 ## 📡 API Routes
 
