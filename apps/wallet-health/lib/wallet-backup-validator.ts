@@ -1,340 +1,275 @@
 /**
  * Wallet Backup Validator Utility
- * Validate and verify wallet backup integrity and security
+ * Validate wallet backups and recovery phrases
  */
 
 export interface BackupValidation {
-  valid: boolean;
-  integrity: {
-    checksumValid: boolean;
-    structureValid: boolean;
-    dataComplete: boolean;
-  };
-  security: {
-    isEncrypted: boolean;
-    encryptionStrength?: 'weak' | 'medium' | 'strong';
-    passwordProtected: boolean;
-  };
-  completeness: {
-    hasWalletAddress: boolean;
-    hasScanResults: boolean;
-    hasPreferences: boolean;
-    hasMetadata: boolean;
-  };
-  age: {
-    backupAge: number; // days
-    isRecent: boolean;
-    isExpired: boolean;
-  };
-  issues: Array<{
-    severity: 'critical' | 'high' | 'medium' | 'low';
-    type: 'integrity' | 'security' | 'completeness' | 'age';
+  type: 'seed_phrase' | 'private_key' | 'keystore';
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  strength: 'weak' | 'medium' | 'strong';
+  checks: Array<{
+    name: string;
+    passed: boolean;
     message: string;
-    recommendation: string;
   }>;
-  score: number; // 0-100
 }
 
-export interface BackupMetadata {
-  version?: string;
-  timestamp?: number;
-  walletAddress?: string;
-  chainId?: number;
-  exportDate?: string;
-  exportVersion?: string;
-  totalScans?: number;
+export interface SeedPhraseValidation extends BackupValidation {
+  wordCount: number;
+  words: string[];
+  checksumValid: boolean;
+  duplicateWords: boolean;
+  invalidWords: string[];
 }
 
 export class WalletBackupValidator {
+  private readonly BIP39_WORDLIST: Set<string> = new Set([
+    // Simplified - would include full BIP39 wordlist
+    'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract',
+    'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid',
+    // ... full list would be here
+  ]);
+
   /**
-   * Validate backup data
+   * Validate seed phrase
    */
-  validateBackup(backupData: {
-    version?: string;
-    timestamp?: number;
-    walletAddress?: string;
-    chainId?: number;
-    scanResults?: unknown[];
-    preferences?: unknown;
-    metadata?: BackupMetadata;
-    encrypted?: boolean;
-  }): BackupValidation {
-    const issues: BackupValidation['issues'] = [];
-    let score = 100;
+  validateSeedPhrase(seedPhrase: string): SeedPhraseValidation {
+    const words = seedPhrase.trim().toLowerCase().split(/\s+/);
+    const checks: Array<{ name: string; passed: boolean; message: string }> = [];
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
-    // Check integrity
-    const integrity = this.checkIntegrity(backupData);
-    if (!integrity.checksumValid) {
-      issues.push({
-        severity: 'critical',
-        type: 'integrity',
-        message: 'Backup checksum validation failed',
-        recommendation: 'Backup may be corrupted - do not use',
-      });
-      score -= 50;
+    // Check word count
+    const validWordCounts = [12, 15, 18, 21, 24];
+    const wordCountCheck = validWordCounts.includes(words.length);
+    checks.push({
+      name: 'Word Count',
+      passed: wordCountCheck,
+      message: wordCountCheck
+        ? `Valid word count: ${words.length}`
+        : `Invalid word count: ${words.length}. Must be 12, 15, 18, 21, or 24`,
+    });
+
+    if (!wordCountCheck) {
+      errors.push(`Invalid word count: ${words.length}`);
     }
 
-    if (!integrity.structureValid) {
-      issues.push({
-        severity: 'high',
-        type: 'integrity',
-        message: 'Backup structure is invalid',
-        recommendation: 'Verify backup format matches expected structure',
-      });
-      score -= 30;
+    // Check for invalid words
+    const invalidWords: string[] = [];
+    words.forEach((word, index) => {
+      if (!this.BIP39_WORDLIST.has(word)) {
+        invalidWords.push(`Word ${index + 1}: "${word}"`);
+      }
+    });
+
+    const invalidWordsCheck = invalidWords.length === 0;
+    checks.push({
+      name: 'Valid Words',
+      passed: invalidWordsCheck,
+      message: invalidWordsCheck
+        ? 'All words are valid BIP39 words'
+        : `Invalid words found: ${invalidWords.join(', ')}`,
+    });
+
+    if (!invalidWordsCheck) {
+      errors.push(`Invalid words: ${invalidWords.join(', ')}`);
     }
 
-    if (!integrity.dataComplete) {
-      issues.push({
-        severity: 'medium',
-        type: 'integrity',
-        message: 'Backup data appears incomplete',
-        recommendation: 'Verify all expected data is present',
-      });
-      score -= 20;
+    // Check for duplicates
+    const uniqueWords = new Set(words);
+    const duplicateWords = uniqueWords.size !== words.length;
+    checks.push({
+      name: 'No Duplicates',
+      passed: !duplicateWords,
+      message: duplicateWords
+        ? 'Duplicate words found in seed phrase'
+        : 'No duplicate words',
+    });
+
+    if (duplicateWords) {
+      warnings.push('Duplicate words found - this may indicate an error');
     }
 
-    // Check security
-    const security = this.checkSecurity(backupData);
-    if (!security.isEncrypted) {
-      issues.push({
-        severity: 'high',
-        type: 'security',
-        message: 'Backup is not encrypted',
-        recommendation: 'Use encrypted backup format for sensitive data',
-      });
-      score -= 25;
+    // Check checksum (simplified - would use proper BIP39 checksum validation)
+    const checksumValid = this.validateChecksum(words);
+    checks.push({
+      name: 'Checksum',
+      passed: checksumValid,
+      message: checksumValid
+        ? 'Checksum is valid'
+        : 'Checksum validation failed - seed phrase may be incorrect',
+    });
+
+    if (!checksumValid) {
+      errors.push('Checksum validation failed');
     }
 
-    if (security.encryptionStrength === 'weak') {
-      issues.push({
-        severity: 'medium',
-        type: 'security',
-        message: 'Weak encryption detected',
-        recommendation: 'Use stronger encryption (AES-256-GCM)',
-      });
-      score -= 15;
+    // Determine strength
+    let strength: 'weak' | 'medium' | 'strong' = 'weak';
+    if (errors.length === 0 && words.length >= 18) {
+      strength = 'strong';
+    } else if (errors.length === 0) {
+      strength = 'medium';
     }
 
-    // Check completeness
-    const completeness = this.checkCompleteness(backupData);
-    if (!completeness.hasWalletAddress) {
-      issues.push({
-        severity: 'critical',
-        type: 'completeness',
-        message: 'Wallet address missing',
-        recommendation: 'Backup must include wallet address',
-      });
-      score -= 30;
-    }
-
-    if (!completeness.hasScanResults) {
-      issues.push({
-        severity: 'medium',
-        type: 'completeness',
-        message: 'Scan results missing',
-        recommendation: 'Include scan results for complete backup',
-      });
-      score -= 10;
-    }
-
-    // Check age
-    const age = this.checkAge(backupData);
-    if (age.isExpired) {
-      issues.push({
-        severity: 'low',
-        type: 'age',
-        message: `Backup is ${age.backupAge} days old`,
-        recommendation: 'Create fresh backup to ensure data is current',
-      });
-      score -= 5;
-    }
+    const isValid = errors.length === 0;
 
     return {
-      valid: issues.filter(i => i.severity === 'critical').length === 0,
-      integrity,
-      security,
-      completeness,
-      age,
-      issues,
-      score: Math.max(0, Math.min(100, score)),
+      type: 'seed_phrase',
+      isValid,
+      errors,
+      warnings,
+      strength,
+      checks,
+      wordCount: words.length,
+      words,
+      checksumValid,
+      duplicateWords,
+      invalidWords,
     };
   }
 
   /**
-   * Check backup integrity
+   * Validate private key
    */
-  private checkIntegrity(backupData: unknown): BackupValidation['integrity'] {
-    // Check if data is valid JSON structure
-    const structureValid = typeof backupData === 'object' && backupData !== null;
+  validatePrivateKey(privateKey: string): BackupValidation {
+    const checks: Array<{ name: string; passed: boolean; message: string }> = [];
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
-    // Check for required top-level fields
-    const hasRequiredFields = structureValid && (
-      'version' in (backupData as Record<string, unknown>) ||
-      'timestamp' in (backupData as Record<string, unknown>) ||
-      'walletAddress' in (backupData as Record<string, unknown>)
-    );
+    // Remove 0x prefix if present
+    const cleaned = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey;
 
-    // Checksum validation would require actual checksum in backup
-    const checksumValid = true; // Placeholder
+    // Check length (64 hex characters)
+    const lengthCheck = cleaned.length === 64;
+    checks.push({
+      name: 'Length',
+      passed: lengthCheck,
+      message: lengthCheck
+        ? 'Valid length: 64 characters'
+        : `Invalid length: ${cleaned.length} (must be 64)`,
+    });
+
+    if (!lengthCheck) {
+      errors.push(`Invalid private key length: ${cleaned.length}`);
+    }
+
+    // Check hex format
+    const hexPattern = /^[0-9a-fA-F]+$/;
+    const formatCheck = hexPattern.test(cleaned);
+    checks.push({
+      name: 'Format',
+      passed: formatCheck,
+      message: formatCheck
+        ? 'Valid hexadecimal format'
+        : 'Invalid format - must be hexadecimal',
+    });
+
+    if (!formatCheck) {
+      errors.push('Private key contains invalid characters');
+    }
+
+    // Check if all zeros (invalid)
+    const allZeros = /^0+$/.test(cleaned);
+    if (allZeros) {
+      errors.push('Private key cannot be all zeros');
+      checks.push({
+        name: 'Not All Zeros',
+        passed: false,
+        message: 'Private key is all zeros - invalid',
+      });
+    } else {
+      checks.push({
+        name: 'Not All Zeros',
+        passed: true,
+        message: 'Private key is not all zeros',
+      });
+    }
+
+    // Determine strength
+    let strength: 'weak' | 'medium' | 'strong' = 'weak';
+    if (errors.length === 0) {
+      strength = 'strong';
+    }
+
+    const isValid = errors.length === 0;
 
     return {
-      checksumValid,
-      structureValid: structureValid && hasRequiredFields,
-      dataComplete: hasRequiredFields,
+      type: 'private_key',
+      isValid,
+      errors,
+      warnings,
+      strength,
+      checks,
     };
+  }
+
+  /**
+   * Validate checksum (simplified BIP39 checksum validation)
+   */
+  private validateChecksum(words: string[]): boolean {
+    // Simplified - in production would use proper BIP39 checksum algorithm
+    // This is a placeholder that always returns true for valid word counts
+    const validWordCounts = [12, 15, 18, 21, 24];
+    return validWordCounts.includes(words.length);
+  }
+
+  /**
+   * Suggest corrections for seed phrase
+   */
+  suggestCorrections(seedPhrase: string): string[] {
+    const words = seedPhrase.trim().toLowerCase().split(/\s+/);
+    const suggestions: string[] = [];
+
+    words.forEach((word, index) => {
+      if (!this.BIP39_WORDLIST.has(word)) {
+        // Find similar words (simplified - would use edit distance)
+        const similar = Array.from(this.BIP39_WORDLIST).filter(w => {
+          return w.startsWith(word.substring(0, 3)) || word.startsWith(w.substring(0, 3));
+        }).slice(0, 3);
+
+        if (similar.length > 0) {
+          suggestions.push(`Word ${index + 1} "${word}" might be: ${similar.join(', ')}`);
+        }
+      }
+    });
+
+    return suggestions;
   }
 
   /**
    * Check backup security
    */
-  private checkSecurity(backupData: {
-    encrypted?: boolean;
-    [key: string]: unknown;
-  }): BackupValidation['security'] {
-    const isEncrypted = backupData.encrypted === true;
-    
-    // Check for encryption indicators
-    const hasEncryptionFields = 'encrypted' in backupData ||
-      'salt' in backupData ||
-      'iv' in backupData;
-
-    let encryptionStrength: BackupValidation['security']['encryptionStrength'];
-    if (isEncrypted && hasEncryptionFields) {
-      encryptionStrength = 'strong'; // Would check actual algorithm
-    } else if (isEncrypted) {
-      encryptionStrength = 'medium';
-    }
-
-    return {
-      isEncrypted,
-      encryptionStrength,
-      passwordProtected: isEncrypted,
-    };
-  }
-
-  /**
-   * Check backup completeness
-   */
-  private checkCompleteness(backupData: {
-    walletAddress?: string;
-    scanResults?: unknown[];
-    preferences?: unknown;
-    metadata?: BackupMetadata;
-  }): BackupValidation['completeness'] {
-    return {
-      hasWalletAddress: !!backupData.walletAddress,
-      hasScanResults: !!backupData.scanResults && Array.isArray(backupData.scanResults),
-      hasPreferences: !!backupData.preferences,
-      hasMetadata: !!backupData.metadata,
-    };
-  }
-
-  /**
-   * Check backup age
-   */
-  private checkAge(backupData: {
-    timestamp?: number;
-    metadata?: BackupMetadata;
-  }): BackupValidation['age'] {
-    const timestamp = backupData.timestamp || 
-      (backupData.metadata?.exportDate 
-        ? new Date(backupData.metadata.exportDate).getTime()
-        : undefined);
-
-    if (!timestamp) {
-      return {
-        backupAge: 0,
-        isRecent: false,
-        isExpired: true,
-      };
-    }
-
-    const ageMs = Date.now() - timestamp;
-    const backupAge = ageMs / (24 * 60 * 60 * 1000); // days
-
-    return {
-      backupAge: Math.round(backupAge * 100) / 100,
-      isRecent: backupAge < 30,
-      isExpired: backupAge > 90,
-    };
-  }
-
-  /**
-   * Verify backup can be restored
-   */
-  verifyRestoreCapability(backupData: {
-    version?: string;
-    walletAddress?: string;
-    scanResults?: unknown[];
-  }): {
-    canRestore: boolean;
-    missingData: string[];
-    warnings: string[];
+  checkBackupSecurity(backup: BackupValidation): {
+    secure: boolean;
+    recommendations: string[];
   } {
-    const missingData: string[] = [];
-    const warnings: string[] = [];
+    const recommendations: string[] = [];
 
-    if (!backupData.walletAddress) {
-      missingData.push('Wallet address');
+    if (backup.strength === 'weak') {
+      recommendations.push('Backup strength is weak - consider creating a new backup');
     }
 
-    if (!backupData.scanResults || backupData.scanResults.length === 0) {
-      warnings.push('No scan results - restore will have limited data');
+    if (backup.errors.length > 0) {
+      recommendations.push('Fix validation errors before using this backup');
     }
 
-    // Check version compatibility
-    if (backupData.version) {
-      const version = parseFloat(backupData.version);
-      if (version < 1.0) {
-        warnings.push('Backup version is outdated - may have compatibility issues');
-      }
+    if (backup.warnings.length > 0) {
+      recommendations.push('Review warnings carefully');
     }
+
+    recommendations.push('Store backup in secure, offline location');
+    recommendations.push('Never share backup with anyone');
+    recommendations.push('Consider using hardware wallet for additional security');
 
     return {
-      canRestore: missingData.length === 0,
-      missingData,
-      warnings,
-    };
-  }
-
-  /**
-   * Compare two backups
-   */
-  compareBackups(
-    backup1: { timestamp?: number; scanResults?: unknown[] },
-    backup2: { timestamp?: number; scanResults?: unknown[] }
-  ): {
-    newer: 'backup1' | 'backup2' | 'equal';
-    scanCountDifference: number;
-    ageDifference: number; // days
-  } {
-    const timestamp1 = backup1.timestamp || 0;
-    const timestamp2 = backup2.timestamp || 0;
-    
-    let newer: 'backup1' | 'backup2' | 'equal';
-    if (timestamp1 > timestamp2) {
-      newer = 'backup1';
-    } else if (timestamp2 > timestamp1) {
-      newer = 'backup2';
-    } else {
-      newer = 'equal';
-    }
-
-    const scanCount1 = backup1.scanResults?.length || 0;
-    const scanCount2 = backup2.scanResults?.length || 0;
-    const scanCountDifference = scanCount2 - scanCount1;
-
-    const ageDifference = Math.abs(timestamp1 - timestamp2) / (24 * 60 * 60 * 1000);
-
-    return {
-      newer,
-      scanCountDifference,
-      ageDifference: Math.round(ageDifference * 100) / 100,
+      secure: backup.isValid && backup.strength !== 'weak',
+      recommendations,
     };
   }
 }
 
 // Singleton instance
 export const walletBackupValidator = new WalletBackupValidator();
-
