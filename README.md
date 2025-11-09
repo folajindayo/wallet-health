@@ -313,14 +313,62 @@ This project is licensed under the MIT License.
 - **Twitter**: [@wallet_health](https://twitter.com/wallet_health)
 - **Email**: support@wallet-health.app
 
+## ✨ Features
+
+### Current Features
+
+- ✅ **Multi-chain wallet scanning** - Support for 5+ major chains
+- ✅ **Risk scoring algorithm** - Comprehensive security assessment
+- ✅ **Token approval detection** - Identify risky and unlimited approvals
+- ✅ **Spam token detection** - Flag malicious airdrops
+- ✅ **Contract verification** - Check contract safety and verification status
+- ✅ **Reown AppKit integration** - Modern wallet connection UI
+- ✅ **WalletConnect v2 support** - Latest protocol implementation
+- ✅ **Base L2 optimization** - Enhanced Base network support
+- ✅ **Dark mode UI** - Beautiful, modern interface
+- ✅ **Scan history** - Track wallet health over time
+- ✅ **MongoDB integration** - Persistent data storage
+- ✅ **Responsive design** - Works on desktop and mobile
+
+### Advanced Features
+
+- 🔄 **Session persistence** - Remember wallet connections
+- 🔄 **Multi-account support** - Manage multiple wallet accounts
+- 🔄 **Transaction simulation** - Preview transactions before signing
+- 🔄 **Gas optimization** - Smart gas estimation and batching
+- 🔄 **Custom RPC endpoints** - Configure your own RPC providers
+- 🔄 **Network switching** - Seamless chain switching in UI
+- 🔄 **Wallet filtering** - Filter wallets by features and capabilities
+- 🔄 **Analytics dashboard** - Track connection metrics and usage
+
 ## 🗺️ Roadmap
 
+### Short-term (Q1 2024)
 - [ ] Browser extension for real-time monitoring
 - [ ] Notification system for risky approvals
 - [ ] Integration with revoke.cash for inline revoking
 - [ ] Activity timeline chart
 - [ ] Multi-wallet comparison
 - [ ] PDF export for compliance reports
+
+### Medium-term (Q2-Q3 2024)
+- [ ] Reown session encryption and security enhancements
+- [ ] AppKit custom wallet onboarding flow
+- [ ] Base bridge integration UI
+- [ ] Transaction batch processing
+- [ ] Wallet connection analytics dashboard
+- [ ] Custom chain configuration UI
+- [ ] Hardware wallet support (Ledger, Trezor)
+- [ ] Social login integration (Google, Apple)
+
+### Long-term (Q4 2024+)
+- [ ] Account abstraction support
+- [ ] Paymaster integration
+- [ ] Cross-chain transaction monitoring
+- [ ] AI-powered risk detection
+- [ ] Mobile app (React Native)
+- [ ] API for third-party integrations
+- [ ] White-label solution for enterprises
 
 ---
 
