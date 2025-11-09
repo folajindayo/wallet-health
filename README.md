@@ -114,6 +114,14 @@ wallet-health/
 │   │       ├── portfolio-rebalancing-suggestions.ts # Rebalancing suggestions
 │   │       ├── yield-farming-opportunity-finder.ts # Yield farming opportunities
 │   │       ├── wallet-activity-patterns-analyzer.ts # Activity pattern analysis
+│   │       ├── transaction-batch-optimizer.ts        # Batch transaction optimization
+│   │       ├── wallet-reputation-builder.ts          # Wallet reputation building
+│   │       ├── token-sniper-alert-system.ts         # Token sniper alerts
+│   │       ├── defi-protocol-risk-analyzer.ts        # DeFi protocol risk analysis
+│   │       ├── nft-collection-tracker.ts            # NFT collection tracking
+│   │       ├── cross-chain-asset-tracker.ts          # Cross-chain asset tracking
+│   │       ├── wallet-recovery-assistant.ts          # Wallet recovery assistance
+│   │       ├── gas-war-monitor.ts                    # Gas war monitoring
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
