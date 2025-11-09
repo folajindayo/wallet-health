@@ -110,7 +110,12 @@ wallet-health/
 │   │       ├── watchlist-manager.ts      # Watchlist manager for multiple wallets
 │   │       ├── mev-protection-analyzer.ts # MEV protection analysis
 │   │       ├── governance-tracker.ts    # DAO governance participation tracking
-│   │       └── activity-heatmap-generator.ts # Activity heatmap visualization
+│   │       ├── activity-heatmap-generator.ts # Activity heatmap visualization
+│   │       ├── security-recommendations.ts # Security recommendations engine
+│   │       ├── approval-history-tracker.ts # Approval history tracking
+│   │       ├── wallet-tagging.ts        # Wallet tagging & categorization
+│   │       ├── token-metadata-cache.ts  # Token metadata caching system
+│   │       └── risk-trend-analyzer.ts   # Risk trend analysis over time
 │   │       ├── token-metadata-cache.ts    # Token metadata caching system
 │   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
 │   │       ├── wallet-tagging.ts         # Wallet tagging & categorization
