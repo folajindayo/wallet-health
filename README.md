@@ -346,6 +346,14 @@ The security score is calculated based on multiple risk factors:
 - ✅ **🌐 ENS Domain Manager** - Manage ENS domains and subdomains
 - ✅ **🎁 Airdrop Eligibility Checker** - Check eligibility for airdrop campaigns
 - ✅ **⚖️ Portfolio Rebalancer** - Suggest portfolio rebalancing strategies
+- ✅ **🐋 Whale Watcher** - Track large wallet movements and whale activity
+- ✅ **🚨 Rug Pull Detector** - Detect potential rug pull risks in tokens
+- ✅ **📜 Activity Timeline Generator** - Visual timeline of wallet activities
+- ✅ **📇 Token Metadata Fetcher** - Fetch and cache token metadata
+- ✅ **📖 Address Book Manager** - Manage frequently used addresses
+- ✅ **⛽ Gas Price Predictor** - Predict future gas prices
+- ✅ **🚀 Smart Contract Deployer Helper** - Safe contract deployment assistance
+- ✅ **📦 Transaction Batch Executor** - Execute multiple transactions efficiently
 
 ### Security & Recommendations
 
