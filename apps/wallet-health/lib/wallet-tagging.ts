@@ -1,5 +1,5 @@
 /**
- * Wallet Tagging System Utility
+ * Wallet Tagging System
  * Tag and categorize wallets for better organization
  */
 
@@ -8,51 +8,171 @@ export interface WalletTag {
   name: string;
   color: string;
   description?: string;
+  category?: string;
   createdAt: number;
-  usageCount: number;
+}
+
+export interface WalletTagAssignment {
+  walletAddress: string;
+  tagId: string;
+  assignedAt: number;
+  assignedBy?: string;
+  notes?: string;
 }
 
 export interface TaggedWallet {
   address: string;
-  tags: string[]; // tag IDs
-  notes?: string;
-  category?: string;
-  lastTagged: number;
+  tags: WalletTag[];
+  primaryTag?: WalletTag;
+  metadata?: Record<string, any>;
 }
 
-export interface TagCategory {
-  id: string;
-  name: string;
-  color: string;
-  icon?: string;
+export interface TagStatistics {
+  tag: WalletTag;
+  walletCount: number;
+  wallets: string[];
 }
 
 export class WalletTagging {
-  private tags: Map<string, WalletTag> = new Map();
-  private taggedWallets: Map<string, TaggedWallet> = new Map();
-  private categories: Map<string, TagCategory> = new Map();
+  private tags: Map<string, WalletTag> = new Map(); // tagId -> tag
+  private assignments: Map<string, WalletTagAssignment[]> = new Map(); // wallet -> assignments
 
   /**
-   * Create a new tag
+   * Create a tag
    */
-  createTag(tag: Omit<WalletTag, 'id' | 'createdAt' | 'usageCount'>): WalletTag {
-    const newTag: WalletTag = {
+  createTag(tag: Omit<WalletTag, 'id' | 'createdAt'>): WalletTag {
+    const now = Date.now();
+    const fullTag: WalletTag = {
       ...tag,
-      id: `tag-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: Date.now(),
-      usageCount: 0,
+      id: `tag_${now}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
     };
 
-    this.tags.set(newTag.id, newTag);
-    this.saveToStorage();
-    return newTag;
+    this.tags.set(fullTag.id, fullTag);
+    return fullTag;
   }
 
   /**
-   * Get tag by ID
+   * Get tag
    */
   getTag(tagId: string): WalletTag | null {
     return this.tags.get(tagId) || null;
+  }
+
+  /**
+   * Update tag
+   */
+  updateTag(tagId: string, updates: Partial<Omit<WalletTag, 'id' | 'createdAt'>>): boolean {
+    const tag = this.tags.get(tagId);
+    if (!tag) return false;
+
+    Object.assign(tag, updates);
+    return true;
+  }
+
+  /**
+   * Delete tag
+   */
+  deleteTag(tagId: string): boolean {
+    // Remove all assignments
+    this.assignments.forEach((assignments, wallet) => {
+      this.assignments.set(
+        wallet,
+        assignments.filter(a => a.tagId !== tagId)
+      );
+    });
+
+    return this.tags.delete(tagId);
+  }
+
+  /**
+   * Assign tag to wallet
+   */
+  assignTag(
+    walletAddress: string,
+    tagId: string,
+    notes?: string
+  ): boolean {
+    if (!this.tags.has(tagId)) return false;
+
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.assignments.has(walletKey)) {
+      this.assignments.set(walletKey, []);
+    }
+
+    const assignments = this.assignments.get(walletKey)!;
+    
+    // Check if already assigned
+    if (assignments.some(a => a.tagId === tagId)) {
+      return false;
+    }
+
+    assignments.push({
+      walletAddress: walletKey,
+      tagId,
+      assignedAt: Date.now(),
+      notes,
+    });
+
+    return true;
+  }
+
+  /**
+   * Remove tag from wallet
+   */
+  removeTag(walletAddress: string, tagId: string): boolean {
+    const walletKey = walletAddress.toLowerCase();
+    const assignments = this.assignments.get(walletKey);
+    if (!assignments) return false;
+
+    const before = assignments.length;
+    this.assignments.set(
+      walletKey,
+      assignments.filter(a => a.tagId !== tagId)
+    );
+
+    return assignments.length < before;
+  }
+
+  /**
+   * Get tags for wallet
+   */
+  getWalletTags(walletAddress: string): WalletTag[] {
+    const walletKey = walletAddress.toLowerCase();
+    const assignments = this.assignments.get(walletKey) || [];
+    
+    return assignments
+      .map(a => this.tags.get(a.tagId))
+      .filter((tag): tag is WalletTag => tag !== undefined);
+  }
+
+  /**
+   * Get tagged wallet info
+   */
+  getTaggedWallet(walletAddress: string): TaggedWallet | null {
+    const tags = this.getWalletTags(walletAddress);
+    if (tags.length === 0) return null;
+
+    return {
+      address: walletAddress,
+      tags,
+      primaryTag: tags[0], // First tag as primary
+    };
+  }
+
+  /**
+   * Get wallets by tag
+   */
+  getWalletsByTag(tagId: string): string[] {
+    const wallets: string[] = [];
+
+    this.assignments.forEach((assignments, wallet) => {
+      if (assignments.some(a => a.tagId === tagId)) {
+        wallets.push(wallet);
+      }
+    });
+
+    return wallets;
   }
 
   /**
@@ -63,286 +183,103 @@ export class WalletTagging {
   }
 
   /**
-   * Update tag
-   */
-  updateTag(tagId: string, updates: Partial<WalletTag>): WalletTag | null {
-    const tag = this.tags.get(tagId);
-    if (!tag) return null;
-
-    const updated = { ...tag, ...updates };
-    this.tags.set(tagId, updated);
-    this.saveToStorage();
-    return updated;
-  }
-
-  /**
-   * Delete tag
-   */
-  deleteTag(tagId: string): boolean {
-    const tag = this.tags.get(tagId);
-    if (!tag) return false;
-
-    // Remove tag from all wallets
-    this.taggedWallets.forEach((wallet, address) => {
-      const index = wallet.tags.indexOf(tagId);
-      if (index > -1) {
-        wallet.tags.splice(index, 1);
-        if (wallet.tags.length === 0) {
-          this.taggedWallets.delete(address);
-        }
-      }
-    });
-
-    this.tags.delete(tagId);
-    this.saveToStorage();
-    return true;
-  }
-
-  /**
-   * Tag a wallet
-   */
-  tagWallet(address: string, tagIds: string[], notes?: string, category?: string): TaggedWallet {
-    const addressLower = address.toLowerCase();
-    const existing = this.taggedWallets.get(addressLower);
-
-    // Increment usage count for tags
-    tagIds.forEach(tagId => {
-      const tag = this.tags.get(tagId);
-      if (tag) {
-        tag.usageCount++;
-      }
-    });
-
-    const taggedWallet: TaggedWallet = {
-      address: addressLower,
-      tags: [...new Set(tagIds)], // Remove duplicates
-      notes,
-      category,
-      lastTagged: Date.now(),
-    };
-
-    this.taggedWallets.set(addressLower, taggedWallet);
-    this.saveToStorage();
-    return taggedWallet;
-  }
-
-  /**
-   * Remove tag from wallet
-   */
-  removeTagFromWallet(address: string, tagId: string): boolean {
-    const addressLower = address.toLowerCase();
-    const wallet = this.taggedWallets.get(addressLower);
-    if (!wallet) return false;
-
-    const index = wallet.tags.indexOf(tagId);
-    if (index > -1) {
-      wallet.tags.splice(index, 1);
-      
-      // Decrement usage count
-      const tag = this.tags.get(tagId);
-      if (tag) {
-        tag.usageCount = Math.max(0, tag.usageCount - 1);
-      }
-
-      // Remove wallet if no tags left
-      if (wallet.tags.length === 0) {
-        this.taggedWallets.delete(addressLower);
-      } else {
-        this.taggedWallets.set(addressLower, wallet);
-      }
-
-      this.saveToStorage();
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Get tagged wallet
-   */
-  getTaggedWallet(address: string): TaggedWallet | null {
-    return this.taggedWallets.get(address.toLowerCase()) || null;
-  }
-
-  /**
-   * Get wallets by tag
-   */
-  getWalletsByTag(tagId: string): TaggedWallet[] {
-    return Array.from(this.taggedWallets.values()).filter(
-      wallet => wallet.tags.includes(tagId)
-    );
-  }
-
-  /**
-   * Get wallets by category
-   */
-  getWalletsByCategory(category: string): TaggedWallet[] {
-    return Array.from(this.taggedWallets.values()).filter(
-      wallet => wallet.category === category
-    );
-  }
-
-  /**
    * Search tags
    */
-  searchTags(query: string): WalletTag[] {
-    const lowerQuery = query.toLowerCase();
-    return Array.from(this.tags.values()).filter(
-      tag =>
-        tag.name.toLowerCase().includes(lowerQuery) ||
-        tag.description?.toLowerCase().includes(lowerQuery)
-    );
-  }
+  searchTags(query: {
+    name?: string;
+    category?: string;
+  }): WalletTag[] {
+    let tags = Array.from(this.tags.values());
 
-  /**
-   * Create category
-   */
-  createCategory(category: Omit<TagCategory, 'id'>): TagCategory {
-    const newCategory: TagCategory = {
-      ...category,
-      id: `category-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    };
+    if (query.name) {
+      const nameLower = query.name.toLowerCase();
+      tags = tags.filter(t => t.name.toLowerCase().includes(nameLower));
+    }
 
-    this.categories.set(newCategory.id, newCategory);
-    this.saveToStorage();
-    return newCategory;
-  }
+    if (query.category) {
+      tags = tags.filter(t => t.category === query.category);
+    }
 
-  /**
-   * Get all categories
-   */
-  getAllCategories(): TagCategory[] {
-    return Array.from(this.categories.values());
+    return tags;
   }
 
   /**
    * Get tag statistics
    */
-  getTagStats(): {
-    totalTags: number;
-    totalTaggedWallets: number;
-    mostUsedTags: Array<{ tag: WalletTag; count: number }>;
-    tagsByCategory: Record<string, number>;
-  } {
-    const mostUsedTags = Array.from(this.tags.values())
-      .map(tag => ({ tag, count: tag.usageCount }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+  getTagStatistics(tagId: string): TagStatistics | null {
+    const tag = this.tags.get(tagId);
+    if (!tag) return null;
 
-    const tagsByCategory: Record<string, number> = {};
-    this.taggedWallets.forEach(wallet => {
-      if (wallet.category) {
-        tagsByCategory[wallet.category] = (tagsByCategory[wallet.category] || 0) + 1;
-      }
-    });
+    const wallets = this.getWalletsByTag(tagId);
 
     return {
-      totalTags: this.tags.size,
-      totalTaggedWallets: this.taggedWallets.size,
-      mostUsedTags,
-      tagsByCategory,
+      tag,
+      walletCount: wallets.length,
+      wallets,
     };
   }
 
   /**
-   * Export tags and tagged wallets
+   * Get all tag statistics
    */
-  exportData(): string {
-    return JSON.stringify({
-      tags: Array.from(this.tags.values()),
-      taggedWallets: Array.from(this.taggedWallets.values()),
-      categories: Array.from(this.categories.values()),
-      exportDate: new Date().toISOString(),
-    }, null, 2);
+  getAllTagStatistics(): TagStatistics[] {
+    return Array.from(this.tags.keys())
+      .map(tagId => this.getTagStatistics(tagId))
+      .filter((stats): stats is TagStatistics => stats !== null)
+      .sort((a, b) => b.walletCount - a.walletCount);
   }
 
   /**
-   * Import tags and tagged wallets
+   * Get wallets by multiple tags (AND/OR logic)
    */
-  importData(data: {
-    tags: WalletTag[];
-    taggedWallets?: TaggedWallet[];
-    categories?: TagCategory[];
-  }): void {
-    if (data.tags) {
-      data.tags.forEach(tag => {
-        this.tags.set(tag.id, tag);
+  getWalletsByTags(
+    tagIds: string[],
+    logic: 'AND' | 'OR' = 'OR'
+  ): string[] {
+    if (tagIds.length === 0) return [];
+
+    if (logic === 'OR') {
+      const walletSet = new Set<string>();
+      tagIds.forEach(tagId => {
+        this.getWalletsByTag(tagId).forEach(wallet => walletSet.add(wallet));
       });
-    }
+      return Array.from(walletSet);
+    } else {
+      // AND logic - wallet must have all tags
+      if (tagIds.length === 0) return [];
 
-    if (data.taggedWallets) {
-      data.taggedWallets.forEach(wallet => {
-        this.taggedWallets.set(wallet.address.toLowerCase(), wallet);
-      });
-    }
-
-    if (data.categories) {
-      data.categories.forEach(category => {
-        this.categories.set(category.id, category);
-      });
-    }
-
-    this.saveToStorage();
-  }
-
-  /**
-   * Save to localStorage
-   */
-  private saveToStorage(): void {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(
-          'wallet-health-tags',
-          JSON.stringify({
-            tags: Array.from(this.tags.values()),
-            taggedWallets: Array.from(this.taggedWallets.values()),
-            categories: Array.from(this.categories.values()),
-          })
-        );
-      } catch (error) {
-        console.error('Failed to save tags to storage:', error);
+      let wallets = this.getWalletsByTag(tagIds[0]);
+      
+      for (let i = 1; i < tagIds.length; i++) {
+        const tagWallets = new Set(this.getWalletsByTag(tagIds[i]));
+        wallets = wallets.filter(w => tagWallets.has(w));
       }
+
+      return wallets;
     }
   }
 
   /**
-   * Load from localStorage
+   * Bulk assign tag
    */
-  loadFromStorage(): void {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('wallet-health-tags');
-        if (stored) {
-          const data = JSON.parse(stored);
-          if (data.tags) {
-            data.tags.forEach((tag: WalletTag) => {
-              this.tags.set(tag.id, tag);
-            });
-          }
-          if (data.taggedWallets) {
-            data.taggedWallets.forEach((wallet: TaggedWallet) => {
-              this.taggedWallets.set(wallet.address.toLowerCase(), wallet);
-            });
-          }
-          if (data.categories) {
-            data.categories.forEach((category: TagCategory) => {
-              this.categories.set(category.id, category);
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load tags from storage:', error);
+  bulkAssignTag(walletAddresses: string[], tagId: string): {
+    successful: number;
+    failed: number;
+  } {
+    let successful = 0;
+    let failed = 0;
+
+    walletAddresses.forEach(address => {
+      if (this.assignTag(address, tagId)) {
+        successful++;
+      } else {
+        failed++;
       }
-    }
+    });
+
+    return { successful, failed };
   }
 }
 
 // Singleton instance
 export const walletTagging = new WalletTagging();
-
-// Initialize from storage if available
-if (typeof window !== 'undefined') {
-  walletTagging.loadFromStorage();
-}
-
