@@ -12,7 +12,8 @@ import {
   RefreshCw,
   Filter,
   Star,
-  AlertCircle
+  AlertCircle,
+  Plus
 } from 'lucide-react';
 import { useState } from 'react';
 
