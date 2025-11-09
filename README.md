@@ -388,6 +388,27 @@ The security score is calculated based on multiple risk factors:
 
 - `POST /api/wallet/compare` - Compare two wallets side-by-side
 
+### Token Price Tracking
+
+- `GET /api/prices/track` - Get current token price, history, or predictions
+- `POST /api/prices/track` - Calculate portfolio value, batch prices, manage alerts
+
+### Portfolio Performance
+
+- `POST /api/portfolio/performance` - Track portfolio performance metrics over time
+
+### Contract Interactions
+
+- `POST /api/contracts/interactions` - Track and analyze smart contract interactions
+
+### Gas Optimization
+
+- `POST /api/gas/optimize` - Get gas price optimization recommendations
+
+### Token Unlocks
+
+- `POST /api/tokens/unlocks` - Track token vesting schedules and unlock events
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
