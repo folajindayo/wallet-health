@@ -1,311 +1,254 @@
 /**
  * Transaction Fee Optimizer Utility
- * Optimize transaction fees across different chains and scenarios
+ * Optimize transaction fees across different networks
  */
 
-export interface FeeOptimization {
+export interface FeeEstimate {
   chainId: number;
   chainName: string;
-  currentFee: string; // in native token
-  optimizedFee: string;
-  savings: string;
-  savingsPercentage: number;
-  estimatedTime: number; // seconds
-  priority: 'slow' | 'standard' | 'fast' | 'instant';
-  recommendation: string;
+  gasPrice: {
+    slow: number; // wei
+    standard: number;
+    fast: number;
+  };
+  estimatedCost: {
+    slow: number; // USD
+    standard: number;
+    fast: number;
+  };
+  estimatedTime: {
+    slow: number; // seconds
+    standard: number;
+    fast: number;
+  };
+  recommendation: 'slow' | 'standard' | 'fast';
+  savings: {
+    vsFast: number; // USD
+    vsStandard: number; // USD
+  };
 }
 
-export interface BatchFeeOptimization {
-  transactions: Array<{
-    hash?: string;
-    chainId: number;
-    currentFee: string;
-    optimizedFee: string;
-    savings: string;
-  }>;
-  totalSavings: string;
-  totalSavingsUSD?: number;
-  recommendations: string[];
-}
-
-export interface FeeComparison {
-  chains: Array<{
+export interface FeeOptimization {
+  transactionType: string;
+  gasLimit: number;
+  estimates: FeeEstimate[];
+  bestOption: FeeEstimate | null;
+  totalSavings: number; // USD
+  alternativeChains: Array<{
     chainId: number;
     chainName: string;
-    fee: string;
-    feeUSD?: number;
-    estimatedTime: number;
-    rank: number;
+    estimatedCost: number; // USD
+    savings: number; // USD vs main chain
   }>;
-  cheapest: number; // chainId
-  fastest: number; // chainId
-  bestValue: number; // chainId
 }
 
 export class TransactionFeeOptimizer {
+  private readonly ETH_PRICE_USD = 2000; // Would fetch from API
+  private readonly CHAIN_NAMES: Record<number, string> = {
+    1: 'Ethereum',
+    137: 'Polygon',
+    42161: 'Arbitrum',
+    10: 'Optimism',
+    56: 'BSC',
+    8453: 'Base',
+  };
+
   /**
-   * Optimize fee for a specific transaction
+   * Estimate fees for transaction
    */
-  optimizeFee(
+  estimateFees(
     chainId: number,
     gasLimit: number,
-    currentGasPrice: number, // gwei
-    gasPriceData: {
-      slow: number;
-      standard: number;
-      fast: number;
-      instant?: number;
-    },
-    urgency: 'low' | 'medium' | 'high' = 'medium'
-  ): FeeOptimization {
-    const chainNames: Record<number, string> = {
-      1: 'Ethereum',
-      56: 'BNB Chain',
-      137: 'Polygon',
-      8453: 'Base',
-      42161: 'Arbitrum',
-      10: 'Optimism',
+    gasPrice?: { slow: number; standard: number; fast: number }
+  ): FeeEstimate {
+    const chainName = this.CHAIN_NAMES[chainId] || `Chain ${chainId}`;
+    
+    // Default gas prices if not provided (in gwei)
+    const defaultGasPrices = {
+      slow: 20e9,
+      standard: 30e9,
+      fast: 50e9,
     };
 
-    let optimizedGasPrice: number;
-    let priority: FeeOptimization['priority'];
-    let estimatedTime: number;
-    let recommendation: string;
+    const prices = gasPrice || defaultGasPrices;
 
-    if (urgency === 'low') {
-      optimizedGasPrice = gasPriceData.slow;
-      priority = 'slow';
-      estimatedTime = 300; // 5 minutes
-      recommendation = 'Use slow priority for maximum savings';
-    } else if (urgency === 'high') {
-      optimizedGasPrice = gasPriceData.fast;
-      priority = 'fast';
-      estimatedTime = 60; // 1 minute
-      recommendation = 'Use fast priority for quick confirmation';
-    } else {
-      optimizedGasPrice = gasPriceData.standard;
-      priority = 'standard';
-      estimatedTime = 120; // 2 minutes
-      recommendation = 'Use standard priority for balanced cost and speed';
+    // Calculate costs in ETH
+    const costSlow = (gasLimit * prices.slow) / 1e18;
+    const costStandard = (gasLimit * prices.standard) / 1e18;
+    const costFast = (gasLimit * prices.fast) / 1e18;
+
+    // Convert to USD
+    const costSlowUSD = costSlow * this.ETH_PRICE_USD;
+    const costStandardUSD = costStandard * this.ETH_PRICE_USD;
+    const costFastUSD = costFast * this.ETH_PRICE_USD;
+
+    // Estimate times (seconds)
+    const blockTime = this.getBlockTime(chainId);
+    const timeSlow = blockTime * 5; // ~5 blocks
+    const timeStandard = blockTime * 2; // ~2 blocks
+    const timeFast = blockTime; // ~1 block
+
+    // Determine recommendation
+    let recommendation: 'slow' | 'standard' | 'fast' = 'standard';
+    if (costSlowUSD < costStandardUSD * 0.7 && timeSlow < 300) {
+      recommendation = 'slow';
+    } else if (costFastUSD < costStandardUSD * 1.2) {
+      recommendation = 'fast';
     }
 
-    const currentFee = (gasLimit * currentGasPrice * 1e9) / 1e18;
-    const optimizedFee = (gasLimit * optimizedGasPrice * 1e9) / 1e18;
-    const savings = currentFee - optimizedFee;
-    const savingsPercentage = currentFee > 0
-      ? (savings / currentFee) * 100
-      : 0;
+    const savings = {
+      vsFast: costFastUSD - costSlowUSD,
+      vsStandard: costStandardUSD - costSlowUSD,
+    };
 
     return {
       chainId,
-      chainName: chainNames[chainId] || `Chain ${chainId}`,
-      currentFee: currentFee.toFixed(8),
-      optimizedFee: optimizedFee.toFixed(8),
-      savings: savings.toFixed(8),
-      savingsPercentage: Math.round(savingsPercentage * 100) / 100,
-      estimatedTime,
-      priority,
+      chainName,
+      gasPrice: prices,
+      estimatedCost: {
+        slow: Math.round(costSlowUSD * 100) / 100,
+        standard: Math.round(costStandardUSD * 100) / 100,
+        fast: Math.round(costFastUSD * 100) / 100,
+      },
+      estimatedTime: {
+        slow: Math.round(timeSlow),
+        standard: Math.round(timeStandard),
+        fast: Math.round(timeFast),
+      },
       recommendation,
+      savings: {
+        vsFast: Math.round(savings.vsFast * 100) / 100,
+        vsStandard: Math.round(savings.vsStandard * 100) / 100,
+      },
     };
   }
 
   /**
-   * Optimize batch of transactions
+   * Optimize transaction across multiple chains
    */
-  optimizeBatch(
-    transactions: Array<{
-      hash?: string;
-      chainId: number;
-      gasLimit: number;
-      currentGasPrice: number;
-    }>,
-    gasPriceDataMap: Map<number, {
-      slow: number;
-      standard: number;
-      fast: number;
-    }>,
-    urgency: 'low' | 'medium' | 'high' = 'medium'
-  ): BatchFeeOptimization {
-    const optimized: BatchFeeOptimization['transactions'] = [];
-    let totalSavings = 0;
-
-    transactions.forEach(tx => {
-      const gasPriceData = gasPriceDataMap.get(tx.chainId);
-      if (!gasPriceData) return;
-
-      const optimization = this.optimizeFee(
-        tx.chainId,
-        tx.gasLimit,
-        tx.currentGasPrice,
-        gasPriceData,
-        urgency
-      );
-
-      optimized.push({
-        hash: tx.hash,
-        chainId: tx.chainId,
-        currentFee: optimization.currentFee,
-        optimizedFee: optimization.optimizedFee,
-        savings: optimization.savings,
-      });
-
-      totalSavings += parseFloat(optimization.savings);
+  optimizeTransaction(
+    transactionType: string,
+    gasLimit: number,
+    chainIds: number[],
+    gasPrices?: Map<number, { slow: number; standard: number; fast: number }>
+  ): FeeOptimization {
+    const estimates = chainIds.map(chainId => {
+      const gasPrice = gasPrices?.get(chainId);
+      return this.estimateFees(chainId, gasLimit, gasPrice);
     });
 
-    const recommendations: string[] = [];
-    if (optimized.length > 5) {
-      recommendations.push('Consider batching transactions to save gas');
-    }
+    // Find best option
+    const bestOption = estimates.reduce((best, current) => {
+      const bestCost = best.estimatedCost[best.recommendation];
+      const currentCost = current.estimatedCost[current.recommendation];
+      return currentCost < bestCost ? current : best;
+    });
+
+    // Calculate total savings
+    const mainChainCost = estimates[0]?.estimatedCost.standard || 0;
+    const bestCost = bestOption.estimatedCost[bestOption.recommendation];
+    const totalSavings = mainChainCost - bestCost;
+
+    // Find alternative chains
+    const alternativeChains = estimates
+      .filter(e => e.chainId !== estimates[0]?.chainId)
+      .map(e => ({
+        chainId: e.chainId,
+        chainName: e.chainName,
+        estimatedCost: e.estimatedCost[e.recommendation],
+        savings: mainChainCost - e.estimatedCost[e.recommendation],
+      }))
+      .filter(a => a.savings > 0)
+      .sort((a, b) => b.savings - a.savings);
+
+    return {
+      transactionType,
+      gasLimit,
+      estimates,
+      bestOption,
+      totalSavings: Math.round(totalSavings * 100) / 100,
+      alternativeChains,
+    };
+  }
+
+  /**
+   * Get block time for chain
+   */
+  private getBlockTime(chainId: number): number {
+    const blockTimes: Record<number, number> = {
+      1: 12, // Ethereum
+      137: 2, // Polygon
+      42161: 0.25, // Arbitrum
+      10: 2, // Optimism
+      56: 3, // BSC
+      8453: 2, // Base
+    };
+    return blockTimes[chainId] || 12;
+  }
+
+  /**
+   * Calculate optimal gas price
+   */
+  calculateOptimalGasPrice(
+    currentGasPrice: number,
+    urgency: 'low' | 'medium' | 'high'
+  ): {
+    recommended: number;
+    savings: number; // Percentage
+    estimatedWait: number; // seconds
+  } {
+    let recommended = currentGasPrice;
+    let savings = 0;
+    let estimatedWait = 0;
+
     if (urgency === 'low') {
-      recommendations.push('Using slow priority can save significant fees');
-    }
-
-    return {
-      transactions: optimized,
-      totalSavings: totalSavings.toFixed(8),
-      recommendations,
-    };
-  }
-
-  /**
-   * Compare fees across chains
-   */
-  compareFeesAcrossChains(
-    gasLimit: number,
-    gasPriceDataMap: Map<number, {
-      slow: number;
-      standard: number;
-      fast: number;
-      chainName: string;
-    }>
-  ): FeeComparison {
-    const chains: FeeComparison['chains'] = [];
-
-    gasPriceDataMap.forEach((gasPriceData, chainId) => {
-      const fee = (gasLimit * gasPriceData.standard * 1e9) / 1e18;
-      chains.push({
-        chainId,
-        chainName: gasPriceData.chainName,
-        fee: fee.toFixed(8),
-        estimatedTime: 120, // standard priority
-        rank: 0, // Will be set after sorting
-      });
-    });
-
-    // Sort by fee (cheapest first)
-    chains.sort((a, b) => parseFloat(a.fee) - parseFloat(b.fee));
-
-    // Assign ranks
-    chains.forEach((chain, index) => {
-      chain.rank = index + 1;
-    });
-
-    const cheapest = chains[0]?.chainId || 0;
-    const fastest = chains[0]?.chainId || 0; // Would need actual confirmation times
-    const bestValue = chains[0]?.chainId || 0; // Would consider both fee and speed
-
-    return {
-      chains,
-      cheapest,
-      fastest,
-      bestValue,
-    };
-  }
-
-  /**
-   * Calculate optimal fee for time target
-   */
-  calculateOptimalFeeForTime(
-    chainId: number,
-    gasLimit: number,
-    gasPriceData: {
-      slow: number;
-      standard: number;
-      fast: number;
-      instant?: number;
-    },
-    targetTimeSeconds: number
-  ): {
-    recommendedGasPrice: number;
-    estimatedFee: string;
-    estimatedTime: number;
-    confidence: number;
-  } {
-    let recommendedGasPrice: number;
-    let estimatedTime: number;
-
-    if (targetTimeSeconds <= 30) {
-      recommendedGasPrice = gasPriceData.instant || gasPriceData.fast * 1.5;
-      estimatedTime = 30;
-    } else if (targetTimeSeconds <= 60) {
-      recommendedGasPrice = gasPriceData.fast;
-      estimatedTime = 60;
-    } else if (targetTimeSeconds <= 120) {
-      recommendedGasPrice = gasPriceData.standard;
-      estimatedTime = 120;
+      recommended = currentGasPrice * 0.7;
+      savings = 30;
+      estimatedWait = 300; // 5 minutes
+    } else if (urgency === 'medium') {
+      recommended = currentGasPrice * 0.9;
+      savings = 10;
+      estimatedWait = 60; // 1 minute
     } else {
-      recommendedGasPrice = gasPriceData.slow;
-      estimatedTime = 300;
+      recommended = currentGasPrice * 1.1;
+      savings = -10; // More expensive but faster
+      estimatedWait = 10; // 10 seconds
     }
 
-    const estimatedFee = (gasLimit * recommendedGasPrice * 1e9) / 1e18;
-    const timeDiff = Math.abs(estimatedTime - targetTimeSeconds);
-    const confidence = Math.max(0, 100 - (timeDiff / targetTimeSeconds) * 100);
-
     return {
-      recommendedGasPrice,
-      estimatedFee: estimatedFee.toFixed(8),
-      estimatedTime,
-      confidence: Math.round(confidence),
+      recommended: Math.round(recommended),
+      savings,
+      estimatedWait,
     };
   }
 
   /**
-   * Estimate total fees for multiple transactions
+   * Compare fee strategies
    */
-  estimateTotalFees(
-    transactions: Array<{
-      chainId: number;
-      gasLimit: number;
-      gasPrice: number;
-    }>,
-    ethPriceUSD?: number
-  ): {
-    totalFeeETH: string;
-    totalFeeUSD?: number;
-    feesByChain: Array<{
-      chainId: number;
-      fee: string;
-      feeUSD?: number;
-    }>;
-  } {
-    const feesByChain = new Map<number, number>();
-
-    transactions.forEach(tx => {
-      const fee = (tx.gasLimit * tx.gasPrice * 1e9) / 1e18;
-      const current = feesByChain.get(tx.chainId) || 0;
-      feesByChain.set(tx.chainId, current + fee);
-    });
-
-    const feesByChainArray = Array.from(feesByChain.entries()).map(([chainId, fee]) => ({
-      chainId,
-      fee: fee.toFixed(8),
-      feeUSD: ethPriceUSD ? Math.round(fee * ethPriceUSD * 100) / 100 : undefined,
+  compareStrategies(
+    gasLimit: number,
+    strategies: Array<{ name: string; gasPrice: number }>
+  ): Array<{
+    name: string;
+    costUSD: number;
+    estimatedTime: number;
+    savings: number; // vs highest cost
+  }> {
+    const costs = strategies.map(s => ({
+      name: s.name,
+      costUSD: (gasLimit * s.gasPrice * this.ETH_PRICE_USD) / 1e18,
+      estimatedTime: this.getBlockTime(1) * Math.ceil(s.gasPrice / 30e9),
     }));
 
-    const totalFeeETH = Array.from(feesByChain.values())
-      .reduce((sum, fee) => sum + fee, 0);
+    const maxCost = Math.max(...costs.map(c => c.costUSD));
 
-    return {
-      totalFeeETH: totalFeeETH.toFixed(8),
-      totalFeeUSD: ethPriceUSD
-        ? Math.round(totalFeeETH * ethPriceUSD * 100) / 100
-        : undefined,
-      feesByChain: feesByChainArray,
-    };
+    return costs.map(c => ({
+      ...c,
+      costUSD: Math.round(c.costUSD * 100) / 100,
+      savings: Math.round((maxCost - c.costUSD) * 100) / 100,
+    }));
   }
 }
 
 // Singleton instance
 export const transactionFeeOptimizer = new TransactionFeeOptimizer();
-
