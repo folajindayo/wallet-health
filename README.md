@@ -9,16 +9,18 @@ A non-custodial Web3 wallet scanner that helps users assess the security of thei
 
 ## 🎯 Overview
 
-Wallet Health Monitor is a lightweight, read-only dApp that provides instant security audits for crypto wallets. It scans for:
+Wallet Health Monitor is a comprehensive, non-custodial Web3 security platform that provides instant security audits, real-time monitoring, and advanced analytics for crypto wallets. It scans for:
 
 - **Risky token approvals** - Detect unlimited allowances and suspicious spenders
 - **Spam & phishing tokens** - Identify malicious airdrops
 - **Contract risk signals** - Flag new/unverified contracts
 - **Multi-chain support** - Ethereum, BNB Chain, Polygon, Base, and Arbitrum
-- **Advanced wallet integration** - Seamless connection via Reown AppKit and WalletConnect
-- **Base L2 optimization** - Native support for Base network with enhanced features
-- **Real-time monitoring** - Track wallet health changes over time
-- **Transaction analysis** - Deep dive into transaction history and patterns
+- **Real-time monitoring** - Continuous wallet activity tracking with alerts
+- **DeFi exposure analysis** - Comprehensive DeFi protocol risk assessment
+- **NFT security scanning** - Detect suspicious NFTs and phishing attempts
+- **Gas optimization** - Track and optimize gas prices across chains
+- **Transaction simulation** - Preview transaction outcomes before execution
+- **Portfolio analytics** - Comprehensive portfolio performance and risk analysis
 
 **No smart contracts required** — the app reads on-chain and public data through the GoldRush API.
 
