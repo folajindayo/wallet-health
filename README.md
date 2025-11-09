@@ -2234,6 +2234,105 @@ const restoreCheck = walletBackupValidator.verifyRestoreCapability(backupData);
 console.log(`Can Restore: ${restoreCheck.canRestore}`);
 ```
 
+### Token Approval Simulator
+
+```typescript
+import { tokenApprovalSimulator } from '@/lib/token-approval-simulator';
+
+// Simulate single approval change
+const simulation = tokenApprovalSimulator.simulateApproval(
+  '0x...', // token address
+  'USDC',
+  '0x...', // spender address
+  '1000000000', // current allowance
+  '0', // proposed (revoke)
+  30, // gas price (gwei)
+  2000 // ETH price USD
+);
+
+console.log(`Action: ${simulation.action}`);
+console.log(`Gas Cost: ${simulation.gasCost} ETH`);
+console.log(`Security Impact: ${simulation.impact.securityImpact}`);
+console.log(`Risk Change: ${simulation.impact.riskChange}`);
+
+// Simulate batch approvals
+const batchSimulation = tokenApprovalSimulator.simulateBatch(
+  approvals,
+  30,
+  2000
+);
+
+console.log(`Total Gas: ${batchSimulation.totalGasEstimate}`);
+console.log(`Overall Impact: ${batchSimulation.overallImpact.securityImpact}`);
+```
+
+### Wallet Risk Calculator
+
+```typescript
+import { walletRiskCalculator } from '@/lib/wallet-risk-calculator';
+
+// Calculate comprehensive risk score
+const riskScore = walletRiskCalculator.calculateRiskScore({
+  approvals,
+  tokens,
+  contracts,
+  transactions,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+});
+
+console.log(`Risk Score: ${riskScore.overallScore}/100`);
+console.log(`Risk Level: ${riskScore.riskLevel}`);
+
+// View category scores
+Object.entries(riskScore.categoryScores).forEach(([category, score]) => {
+  console.log(`${category}: ${score}/100`);
+});
+
+// View critical risks
+riskScore.criticalRisks.forEach(risk => {
+  console.log(`${risk.severity}: ${risk.issue}`);
+});
+
+// Compare risk scores
+const comparison = walletRiskCalculator.compareRiskScores(riskScore1, riskScore2);
+console.log(`Risk Change: ${comparison.difference}`);
+console.log(`Overall: ${comparison.overallChange}`);
+```
+
+### Security Checklist Generator
+
+```typescript
+import { securityChecklistGenerator } from '@/lib/security-checklist-generator';
+
+// Generate security checklist
+const checklist = securityChecklistGenerator.generateChecklist('0x...', {
+  approvals,
+  tokens,
+  contracts,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+});
+
+console.log(`Overall Score: ${checklist.overallScore}/100`);
+console.log(`Priority: ${checklist.priority}`);
+
+// View categories
+checklist.categories.forEach(category => {
+  console.log(`${category.name}: ${category.completed}/${category.total} (${category.score}%)`);
+  category.items.forEach(item => {
+    console.log(`  ${item.checked ? '✓' : '✗'} ${item.title}`);
+  });
+});
+
+// Export as markdown
+const markdown = securityChecklistGenerator.exportAsMarkdown(checklist);
+```
+
 ### DCA Automation
 
 ```typescript
