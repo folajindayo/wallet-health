@@ -1362,6 +1362,128 @@ const markdown = walletHealthReportGenerator.exportAsMarkdown(report);
 const json = walletHealthReportGenerator.exportAsJSON(report);
 ```
 
+### Wallet Recovery Checker
+
+```typescript
+import { walletRecoveryChecker } from '@/lib/wallet-recovery-checker';
+
+// Check recovery phrase strength (without storing actual phrase)
+const check = walletRecoveryChecker.checkRecoveryPhrase(recoveryWords);
+
+console.log(`Strength: ${check.strength}`);
+console.log(`Score: ${check.score}/100`);
+check.issues.forEach(issue => {
+  console.log(`${issue.severity}: ${issue.description}`);
+});
+
+// Check best practices
+const practices = walletRecoveryChecker.checkBestPractices({
+  hasBackup: true,
+  isOffline: true,
+  multipleBackups: true,
+});
+
+console.log(`Best Practices Score: ${practices.score}/100`);
+```
+
+### Token Allowance Monitor
+
+```typescript
+import { tokenAllowanceMonitor } from '@/lib/token-allowance-monitor';
+
+// Create snapshot
+const snapshots = tokenAllowanceMonitor.createSnapshot(allowances);
+
+// Get change history
+const changes = tokenAllowanceMonitor.getChangeHistory('0x...', undefined, 10);
+changes.forEach(change => {
+  console.log(`${change.changeType}: ${change.tokenSymbol}`);
+});
+
+// Start monitoring
+const monitorId = tokenAllowanceMonitor.startMonitoring({
+  walletAddress: '0x...',
+  chainId: 1,
+  checkInterval: 60000, // 1 minute
+  alertOnChange: true,
+}, (change) => {
+  console.log('Allowance changed:', change);
+});
+```
+
+### Wallet Activity Analyzer
+
+```typescript
+import { walletActivityAnalyzer } from '@/lib/wallet-activity-analyzer';
+
+// Analyze activity
+const analysis = walletActivityAnalyzer.analyzeActivity(
+  '0x...',
+  transactions,
+  30 // last 30 days
+);
+
+console.log(`Total Transactions: ${analysis.summary.totalTransactions}`);
+console.log(`Most Active Hour: ${analysis.summary.mostActiveHour}`);
+console.log(`Is DeFi User: ${analysis.behaviors.isDeFiUser}`);
+
+// Compare two wallets
+const comparison = walletActivityAnalyzer.compareActivity(analysis1, analysis2);
+console.log(`Similarity: ${comparison.similarity}%`);
+```
+
+### Risk Prediction Engine
+
+```typescript
+import { riskPredictionEngine } from '@/lib/risk-prediction-engine';
+
+// Predict risks
+const predictions = riskPredictionEngine.predictRisks({
+  currentRiskScore: 65,
+  riskHistory: [...],
+  approvalCount: 15,
+  riskyApprovals: 3,
+  recentTransactions: 50,
+  failedTransactions: 5,
+  newContracts: 2,
+  spamTokens: 1,
+});
+
+predictions.forEach(prediction => {
+  console.log(`${prediction.severity}: ${prediction.description}`);
+  console.log(`Probability: ${prediction.probability}%`);
+});
+
+// Get summary
+const summary = riskPredictionEngine.getPredictionSummary(predictions);
+console.log(`Critical Predictions: ${summary.critical}`);
+```
+
+### Wallet Clustering
+
+```typescript
+import { walletClustering } from '@/lib/wallet-clustering';
+
+// Analyze wallets and create clusters
+const analysis = walletClustering.analyzeWallets(wallets);
+
+console.log(`Total Clusters: ${analysis.statistics.totalClusters}`);
+analysis.clusters.forEach(cluster => {
+  console.log(`${cluster.name}: ${cluster.wallets.length} wallets`);
+});
+
+// Create manual cluster
+const cluster = walletClustering.createManualCluster(
+  'My Wallets',
+  ['0x...', '0x...', '0x...']
+);
+
+// Get relationships
+analysis.relationships.forEach(rel => {
+  console.log(`${rel.wallet1} <-> ${rel.wallet2}: ${rel.relationshipType}`);
+});
+```
+
 ## 📊 Performance Metrics
 
 - **Scan Speed**: < 5 seconds for multi-chain wallet scan
