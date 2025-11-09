@@ -122,6 +122,14 @@ wallet-health/
 │   │       ├── cross-chain-asset-tracker.ts          # Cross-chain asset tracking
 │   │       ├── wallet-recovery-assistant.ts          # Wallet recovery assistance
 │   │       ├── gas-war-monitor.ts                    # Gas war monitoring
+│   │       ├── token-price-alert-manager.ts         # Advanced price alert management
+│   │       ├── wallet-activity-heatmap-generator.ts # Activity heatmap generation
+│   │       ├── smart-contract-security-scanner.ts    # Contract security scanning
+│   │       ├── token-unlock-tracker.ts               # Token unlock/vesting tracking
+│   │       ├── governance-proposal-tracker.ts       # DAO proposal tracking
+│   │       ├── liquidity-pool-position-analyzer.ts  # LP position analysis
+│   │       ├── staking-rewards-calculator.ts         # Staking rewards calculation
+│   │       ├── wallet-backup-validator.ts           # Backup validation
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
