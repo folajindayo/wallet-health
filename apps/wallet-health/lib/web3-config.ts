@@ -46,7 +46,7 @@ export const chainMetadata = {
 // Wagmi config
 export const wagmiAdapter = new WagmiAdapter({
   projectId,
-  networks: chains,
+  networks: chains as any,
 });
 
 export const config = wagmiAdapter.wagmiConfig;
@@ -55,7 +55,7 @@ export const config = wagmiAdapter.wagmiConfig;
 export const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
-  networks: chains,
+  networks: chains as any,
   defaultNetwork: mainnet,
   metadata: {
     name: 'Wallet Health Monitor',
