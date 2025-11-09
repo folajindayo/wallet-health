@@ -749,6 +749,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🔗 Contract Interactions** - Comprehensive smart contract interaction tracking
 - ✅ **⛽ Gas Optimizer** - Optimal transaction timing based on gas price patterns
 - ✅ **🔓 Token Unlock Tracker** - Track vesting schedules and upcoming unlocks
+- ✅ **🌉 Cross-Chain Bridges** - Track and analyze cross-chain bridge transactions
+- ✅ **💰 Staking Tracker** - Monitor staking positions, rewards, and performance
 
 ## 💻 Usage Examples
 
