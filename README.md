@@ -1473,6 +1473,116 @@ console.log(`Most Active Hour: ${analysis.patterns.timePatterns.mostActiveHour}`
 console.log(`Frequent Recipients: ${analysis.patterns.frequentRecipients.length}`);
 ```
 
+### Token Snapshots
+
+```typescript
+import { tokenSnapshotManager } from '@/lib/token-snapshot-manager';
+
+// Create snapshot
+tokenSnapshotManager.createSnapshot({
+  timestamp: Date.now(),
+  walletAddress: '0x...',
+  chainId: 1,
+  tokens: [/* ... */],
+  totalValueUSD: 10000,
+});
+
+// Get latest snapshot
+const latest = tokenSnapshotManager.getLatestSnapshot('0x...', 1);
+
+// Compare snapshots
+const comparison = tokenSnapshotManager.compareSnapshots(snapshot1, snapshot2);
+console.log(`New tokens: ${comparison.differences.newTokens.length}`);
+
+// Calculate growth
+const growth = tokenSnapshotManager.calculateGrowth('0x...', 1, '30d');
+console.log(`Growth: ${growth?.growthPercentage}%`);
+```
+
+### Advanced Wallet Comparison
+
+```typescript
+import { walletComparisonTool } from '@/lib/wallet-comparison-tool';
+
+// Compare two wallets
+const comparison = walletComparisonTool.compareWallets(wallet1, wallet2);
+console.log(`Similarity: ${comparison.comparison.overallSimilarity}%`);
+console.log(`Common approvals: ${comparison.comparison.commonApprovals.length}`);
+
+// Compare multiple wallets
+const multiComparison = walletComparisonTool.compareMultipleWallets([wallet1, wallet2, wallet3]);
+console.log(`Average score: ${multiComparison.statistics.averageScore}`);
+console.log(`Best wallet: ${multiComparison.rankings[0].address}`);
+```
+
+### Transaction Fee Optimization
+
+```typescript
+import { transactionFeeOptimizer } from '@/lib/transaction-fee-optimizer';
+
+// Optimize fee
+const optimization = transactionFeeOptimizer.optimizeFee(1, 21000, 'low');
+console.log(`Savings: ${optimization.savings.savingsPercentage}%`);
+
+// Compare across chains
+const comparison = transactionFeeOptimizer.compareCrossChainFees('swap', 150000);
+console.log(`Best chain: ${comparison.bestOption.chainName}`);
+
+// Estimate batch savings
+const batchSavings = transactionFeeOptimizer.estimateBatchSavings(1, 5, 46000);
+console.log(`Batch savings: ${batchSavings.savingsPercentage}%`);
+
+// Get recommendation
+const recommendation = transactionFeeOptimizer.recommendOptimalChain('transfer', 'medium', 5000);
+console.log(`Recommended: ${recommendation.chainName}`);
+```
+
+### Activity Export
+
+```typescript
+import { walletActivityExporter } from '@/lib/wallet-activity-exporter';
+
+// Export as JSON
+const jsonExport = await walletActivityExporter.exportWalletData('0x...', data, {
+  format: 'json',
+  includeApprovals: true,
+  includeTokens: true,
+  includeTransactions: true,
+});
+
+// Export as CSV
+const csvExport = await walletActivityExporter.exportWalletData('0x...', data, {
+  format: 'csv',
+  includeApprovals: true,
+  dateRange: { start: Date.now() - 30 * 24 * 60 * 60 * 1000, end: Date.now() },
+});
+
+// Generate summary
+const summary = walletActivityExporter.generateSummary(data, options);
+console.log(`Total items: ${summary.totalItems}`);
+```
+
+### Multi-Chain Portfolio Aggregation
+
+```typescript
+import { multiChainPortfolioAggregator } from '@/lib/multi-chain-portfolio-aggregator';
+
+// Aggregate portfolio
+const aggregated = multiChainPortfolioAggregator.aggregatePortfolio('0x...', chainPortfolios);
+console.log(`Total value: $${aggregated.totalValueUSD}`);
+console.log(`Top chain: ${aggregated.summary.topChains[0].chainName}`);
+
+// Calculate cross-chain token totals
+const tokenTotals = multiChainPortfolioAggregator.calculateCrossChainTokenTotals(chainPortfolios);
+console.log(`USDC total: ${tokenTotals.get('0x...')?.totalBalance}`);
+
+// Get recommendations
+const recommendations = multiChainPortfolioAggregator.getChainAllocationRecommendations(aggregated);
+recommendations.forEach(rec => {
+  console.log(`${rec.chainName}: ${rec.reason}`);
+});
+```
+
 ### Wallet Tagging
 
 ```typescript
