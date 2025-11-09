@@ -94,7 +94,7 @@ export function ENSDomainManager({ walletAddress, domains = [] }: ENSDomainManag
       case 'active':
         return <Badge variant="success">Active</Badge>;
       case 'expiring-soon':
-        return <Badge variant="warning">Expiring Soon</Badge>;
+        return <Badge variant="outline">Expiring Soon</Badge>;
       case 'expired':
         return <Badge variant="destructive">Expired</Badge>;
       default:
@@ -238,7 +238,7 @@ export function ENSDomainManager({ walletAddress, domains = [] }: ENSDomainManag
                   You have {expiringSoon} domain{expiringSoon !== 1 ? 's' : ''} expiring soon.
                   Renew now to avoid losing ownership.
                 </p>
-                <Button size="sm" variant="warning">
+                <Button size="sm" variant="outline">
                   Renew All Domains
                 </Button>
               </div>
@@ -302,7 +302,7 @@ export function ENSDomainManager({ walletAddress, domains = [] }: ENSDomainManag
               </div>
               <div className="flex gap-2">
                 {domain.status === 'expiring-soon' && (
-                  <Button size="sm" variant="warning">
+                  <Button size="sm" variant="outline">
                     Renew Now
                   </Button>
                 )}
