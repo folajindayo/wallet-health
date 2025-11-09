@@ -89,6 +89,7 @@ export function GovernanceVotingAggregator({ walletAddress }: GovernanceVotingAg
       balance: 250,
       votingPower: 250,
       delegatedTo: '0x742d35Cc...',
+      delegatedFrom: 0,
     },
     {
       protocol: 'MakerDAO',
