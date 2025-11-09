@@ -690,6 +690,100 @@ console.log(`Total DeFi Exposure: $${exposure.totalValueUSD}`);
 console.log(`Concentration Risk: ${exposure.concentrationRisk}%`);
 ```
 
+### Alert Management
+
+```typescript
+import { alertManager } from '@/lib/alert-manager';
+
+// Subscribe to alerts
+const unsubscribe = alertManager.onAlert('0x...', (alert) => {
+  console.log('New alert:', alert);
+});
+
+// Create alert
+await alertManager.createAlert({
+  type: 'risk',
+  severity: 'high',
+  title: 'Unverified Contract Detected',
+  message: 'Approval to unverified contract detected',
+  walletAddress: '0x...',
+  chainId: 1,
+});
+
+// Get alerts
+const alerts = alertManager.getAlerts('0x...', {
+  unacknowledgedOnly: true,
+  severity: ['critical', 'high'],
+});
+```
+
+### Activity Timeline
+
+```typescript
+import { activityTimeline } from '@/lib/activity-timeline';
+
+const timeline = await activityTimeline.generateTimeline(
+  transactions,
+  approvals,
+  {
+    groupBy: 'day',
+    includeRiskAnalysis: true,
+    filterByRisk: ['critical', 'moderate'],
+  }
+);
+
+console.log(`Total events: ${timeline.summary.totalEvents}`);
+console.log(`Critical events: ${timeline.summary.riskDistribution.critical}`);
+```
+
+### ENS Resolution
+
+```typescript
+import { ensResolver } from '@/lib/ens-resolver';
+
+// Resolve ENS to address
+const resolution = await ensResolver.resolveENS('vitalik.eth');
+console.log(`Address: ${resolution.address}`);
+
+// Reverse lookup
+const ensInfo = await ensResolver.resolveAddress('0x...');
+console.log(`ENS Name: ${ensInfo.name}`);
+console.log(`Verified: ${ensInfo.verified}`);
+```
+
+### Multi-Signature Analysis
+
+```typescript
+import { multisigAnalyzer } from '@/lib/multisig-analyzer';
+
+const analysis = await multisigAnalyzer.analyzeMultisig({
+  address: '0x...',
+  chainId: 1,
+  type: 'gnosis_safe',
+  threshold: 3,
+  owners: ['0x...', '0x...', '0x...'],
+  totalOwners: 3,
+});
+
+console.log(`Security Score: ${analysis.securityScore}`);
+console.log(`Risk Level: ${analysis.riskLevel}`);
+console.log('Recommendations:', analysis.recommendations);
+```
+
+### Wallet Comparison
+
+```typescript
+import { compareWallets } from '@/lib/wallet-monitor';
+
+const comparison = compareWallets(
+  { address: '0x...', approvals: [...], tokens: [...] },
+  { address: '0x...', approvals: [...], tokens: [...] }
+);
+
+console.log(`Common approvals: ${comparison.commonApprovals.length}`);
+console.log(`Unique to wallet 1: ${comparison.uniqueApprovals1.length}`);
+```
+
 ### Transaction Simulation
 
 ```typescript
