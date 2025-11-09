@@ -128,9 +128,9 @@ export function IdentityResolver({ walletAddress }: IdentityResolverProps) {
   };
 
   const getReputationBadge = (score: number) => {
-    if (score >= 90) return <Badge variant="success">Excellent</Badge>;
-    if (score >= 75) return <Badge variant="info">Good</Badge>;
-    if (score >= 50) return <Badge variant="warning">Fair</Badge>;
+    if (score >= 90) return <Badge variant="secondary">Excellent</Badge>;
+    if (score >= 75) return <Badge variant="default">Good</Badge>;
+    if (score >= 50) return <Badge variant="outline">Fair</Badge>;
     return <Badge variant="destructive">Low</Badge>;
   };
 
@@ -175,7 +175,7 @@ export function IdentityResolver({ walletAddress }: IdentityResolverProps) {
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-semibold">Your Identity</h4>
             {identity.verified && (
-              <Badge variant="success" className="gap-1">
+              <Badge variant="secondary" className="gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 Verified
               </Badge>
@@ -239,7 +239,7 @@ export function IdentityResolver({ walletAddress }: IdentityResolverProps) {
                 <p className="text-xs font-semibold mb-2">Reputation & Badges</p>
                 <div className="flex gap-1 flex-wrap">
                   {identity.reputation.badges.map((badge, index) => (
-                    <Badge key={index} variant="success" className="text-xs">
+                    <Badge key={index} variant="secondary" className="text-xs">
                       {badge}
                     </Badge>
                   ))}
@@ -268,7 +268,7 @@ export function IdentityResolver({ walletAddress }: IdentityResolverProps) {
                     <h5 className="font-semibold text-sm">{resolve.input}</h5>
                     <Badge variant="outline">{resolve.service}</Badge>
                     {resolve.verified && (
-                      <Badge variant="success" className="gap-1 text-xs">
+                      <Badge variant="secondary" className="gap-1 text-xs">
                         <CheckCircle2 className="h-3 w-3" />
                         Verified
                       </Badge>

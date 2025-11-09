@@ -66,7 +66,7 @@ export function SearchFilter({
           >
             <Filter className="h-4 w-4 mr-1" />
             {activeFiltersCount > 0 && (
-              <Badge variant="success" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+              <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
                 {activeFiltersCount}
               </Badge>
             )}

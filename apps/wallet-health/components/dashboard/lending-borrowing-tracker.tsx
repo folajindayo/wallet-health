@@ -156,10 +156,10 @@ export function LendingBorrowingTracker({
 
   const getHealthFactorBadge = (healthFactor: number) => {
     if (healthFactor >= 2.0) {
-      return <Badge variant="success">Safe ({healthFactor.toFixed(2)})</Badge>;
+      return <Badge variant="secondary">Safe ({healthFactor.toFixed(2)})</Badge>;
     }
     if (healthFactor >= 1.5) {
-      return <Badge variant="warning">Moderate ({healthFactor.toFixed(2)})</Badge>;
+      return <Badge variant="outline">Moderate ({healthFactor.toFixed(2)})</Badge>;
     }
     return <Badge variant="destructive">At Risk ({healthFactor.toFixed(2)})</Badge>;
   };

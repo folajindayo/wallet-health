@@ -106,7 +106,7 @@ export function PhishingDetector({ alerts = [], onCheckUrl }: PhishingDetectorPr
       case 'high':
         return <Badge variant="destructive">High</Badge>;
       case 'medium':
-        return <Badge variant="warning">Medium</Badge>;
+        return <Badge variant="outline">Medium</Badge>;
       case 'low':
         return <Badge variant="outline">Low</Badge>;
       default:

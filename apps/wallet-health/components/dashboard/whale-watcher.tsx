@@ -178,7 +178,7 @@ export function WhaleWatcher({ walletAddress }: WhaleWatcherProps) {
       case 'critical':
         return <Badge variant="destructive">Critical</Badge>;
       case 'high':
-        return <Badge variant="warning">High</Badge>;
+        return <Badge variant="outline">High</Badge>;
       case 'medium':
         return <Badge variant="default">Medium</Badge>;
       case 'low':

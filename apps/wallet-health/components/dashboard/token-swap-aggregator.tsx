@@ -149,8 +149,8 @@ export function TokenSwapAggregator({ walletAddress }: TokenSwapAggregatorProps)
   };
 
   const getPriceImpactBadge = (impact: number) => {
-    if (impact < 0.1) return <Badge variant="success">Low</Badge>;
-    if (impact < 0.5) return <Badge variant="warning">Medium</Badge>;
+    if (impact < 0.1) return <Badge variant="secondary">Low</Badge>;
+    if (impact < 0.5) return <Badge variant="outline">Medium</Badge>;
     return <Badge variant="destructive">High</Badge>;
   };
 
@@ -265,7 +265,7 @@ export function TokenSwapAggregator({ walletAddress }: TokenSwapAggregatorProps)
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <h4 className="font-semibold text-green-600">Best Rate: {bestRoute.dex}</h4>
-                  <Badge variant="success" className="gap-1">
+                  <Badge variant="secondary" className="gap-1">
                     <Zap className="h-3 w-3" />
                     Recommended
                   </Badge>
@@ -339,7 +339,7 @@ export function TokenSwapAggregator({ walletAddress }: TokenSwapAggregatorProps)
                     <div className="flex items-center gap-2 mb-1">
                       <h5 className="font-semibold text-sm">{route.dex}</h5>
                       {index === 0 && (
-                        <Badge variant="success" className="text-xs">Best</Badge>
+                        <Badge variant="secondary" className="text-xs">Best</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">

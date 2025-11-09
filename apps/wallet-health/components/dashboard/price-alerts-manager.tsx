@@ -268,7 +268,7 @@ export function PriceAlertsManager({ walletAddress, alerts = [] }: PriceAlertsMa
                         {alert.token} ({alert.symbol})
                       </h4>
                       {alert.triggered ? (
-                        <Badge variant="success" className="gap-1">
+                        <Badge variant="secondary" className="gap-1">
                           <CheckCircle2 className="h-3 w-3" />
                           Triggered
                         </Badge>
@@ -278,7 +278,7 @@ export function PriceAlertsManager({ walletAddress, alerts = [] }: PriceAlertsMa
                         <Badge variant="outline">Paused</Badge>
                       )}
                       {isClose && alert.isActive && !alert.triggered && (
-                        <Badge variant="warning" className="gap-1">
+                        <Badge variant="outline" className="gap-1">
                           <AlertCircle className="h-3 w-3" />
                           Close to Target
                         </Badge>

@@ -206,7 +206,7 @@ export function MultiSigWalletManager({ walletAddress }: MultiSigWalletManagerPr
                 <p className="text-xs text-muted-foreground mb-2">
                   {needsYourSignature} transaction{needsYourSignature !== 1 ? 's' : ''} waiting for your signature
                 </p>
-                <Button size="sm" variant="warning">
+                <Button size="sm" variant="outline">
                   Review Transactions
                 </Button>
               </div>
@@ -229,7 +229,7 @@ export function MultiSigWalletManager({ walletAddress }: MultiSigWalletManagerPr
                     <h4 className="font-semibold">{wallet.name}</h4>
                     <Badge variant="outline">{wallet.network}</Badge>
                     {wallet.pendingTxCount > 0 && (
-                      <Badge variant="warning">{wallet.pendingTxCount} pending</Badge>
+                      <Badge variant="outline">{wallet.pendingTxCount} pending</Badge>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground font-mono mb-2">
@@ -275,7 +275,7 @@ export function MultiSigWalletManager({ walletAddress }: MultiSigWalletManagerPr
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h4 className="font-semibold text-sm">{tx.description}</h4>
                     {tx.executed ? (
-                      <Badge variant="success" className="gap-1">
+                      <Badge variant="secondary" className="gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Executed
                       </Badge>
@@ -285,7 +285,7 @@ export function MultiSigWalletManager({ walletAddress }: MultiSigWalletManagerPr
                         Rejected
                       </Badge>
                     ) : (
-                      <Badge variant="warning" className="gap-1">
+                      <Badge variant="outline" className="gap-1">
                         <Clock className="h-3 w-3" />
                         Pending
                       </Badge>
@@ -344,7 +344,7 @@ export function MultiSigWalletManager({ walletAddress }: MultiSigWalletManagerPr
                 <div className="flex gap-2">
                   {!tx.yourSigned ? (
                     <>
-                      <Button size="sm" variant="success">
+                      <Button size="sm" variant="secondary">
                         <CheckCircle2 className="h-4 w-4 mr-2" />
                         Sign & Approve
                       </Button>

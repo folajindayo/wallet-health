@@ -440,7 +440,7 @@ export function OnChainReputationSystem({ walletAddress }: OnChainReputationSyst
                         <h5 className="font-semibold">{achievement.name}</h5>
                         {getRarityBadge(achievement.rarity)}
                         {achievement.unlocked && (
-                          <Badge variant="success" className="gap-1">
+                          <Badge variant="secondary" className="gap-1">
                             <CheckCircle2 className="h-3 w-3" />
                             Unlocked
                           </Badge>

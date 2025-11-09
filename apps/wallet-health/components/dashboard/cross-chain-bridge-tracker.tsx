@@ -109,14 +109,14 @@ export function CrossChainBridgeTracker({
     switch (status) {
       case 'completed':
         return (
-          <Badge variant="success" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <CheckCircle2 className="h-3 w-3" />
             Completed
           </Badge>
         );
       case 'processing':
         return (
-          <Badge variant="warning" className="gap-1">
+          <Badge variant="outline" className="gap-1">
             <Clock className="h-3 w-3" />
             Processing
           </Badge>

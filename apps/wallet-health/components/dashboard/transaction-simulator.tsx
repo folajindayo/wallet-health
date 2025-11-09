@@ -96,9 +96,9 @@ export function TransactionSimulator({ walletAddress }: TransactionSimulatorProp
   const getRiskBadge = (risk: string) => {
     switch (risk) {
       case 'safe':
-        return <Badge variant="success">Safe</Badge>;
+        return <Badge variant="secondary">Safe</Badge>;
       case 'warning':
-        return <Badge variant="warning">Warning</Badge>;
+        return <Badge variant="outline">Warning</Badge>;
       case 'critical':
         return <Badge variant="destructive">Critical</Badge>;
       default:

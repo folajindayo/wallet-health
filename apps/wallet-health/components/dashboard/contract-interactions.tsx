@@ -87,14 +87,14 @@ export function ContractInteractions({ contracts = [] }: ContractInteractionsPro
     switch (risk) {
       case 'safe':
         return (
-          <Badge variant="success" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <CheckCircle2 className="h-3 w-3" />
             Safe
           </Badge>
         );
       case 'medium':
         return (
-          <Badge variant="warning" className="gap-1">
+          <Badge variant="outline" className="gap-1">
             <AlertTriangle className="h-3 w-3" />
             Medium Risk
           </Badge>

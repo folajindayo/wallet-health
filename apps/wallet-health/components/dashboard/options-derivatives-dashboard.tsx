@@ -257,11 +257,11 @@ export function OptionsDashboard({ walletAddress }: OptionsDashboardProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'itm':
-        return <Badge variant="success">In-The-Money</Badge>;
+        return <Badge variant="secondary">In-The-Money</Badge>;
       case 'otm':
         return <Badge variant="destructive">Out-of-Money</Badge>;
       case 'atm':
-        return <Badge variant="warning">At-The-Money</Badge>;
+        return <Badge variant="outline">At-The-Money</Badge>;
       default:
         return null;
     }
@@ -269,7 +269,7 @@ export function OptionsDashboard({ walletAddress }: OptionsDashboardProps) {
 
   const getTypeBadge = (type: string) => {
     return type === 'call' ? (
-      <Badge variant="success" className="gap-1">
+      <Badge variant="secondary" className="gap-1">
         <ArrowUpRight className="h-3 w-3" />
         Call
       </Badge>
@@ -283,7 +283,7 @@ export function OptionsDashboard({ walletAddress }: OptionsDashboardProps) {
 
   const getSideBadge = (side: string) => {
     return side === 'long' ? (
-      <Badge variant="success">Long</Badge>
+      <Badge variant="secondary">Long</Badge>
     ) : (
       <Badge variant="destructive">Short</Badge>
     );
@@ -492,7 +492,7 @@ export function OptionsDashboard({ walletAddress }: OptionsDashboardProps) {
                         <h5 className="font-bold text-lg">{position.market}</h5>
                         {getSideBadge(position.side)}
                         <Badge variant="outline">{position.leverage}x Leverage</Badge>
-                        <Badge variant="info">{position.protocol}</Badge>
+                        <Badge variant="default">{position.protocol}</Badge>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                         <div>

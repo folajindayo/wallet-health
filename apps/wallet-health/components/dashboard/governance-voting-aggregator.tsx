@@ -265,12 +265,12 @@ export function GovernanceVotingAggregator({ walletAddress }: GovernanceVotingAg
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <Activity className="h-3 w-3" />
           Active
         </Badge>;
       case 'passed':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Passed
         </Badge>;
@@ -280,7 +280,7 @@ export function GovernanceVotingAggregator({ walletAddress }: GovernanceVotingAg
           Rejected
         </Badge>;
       case 'pending':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3" />
           Pending
         </Badge>;
@@ -449,7 +449,7 @@ export function GovernanceVotingAggregator({ walletAddress }: GovernanceVotingAg
                         {getStatusBadge(proposal.status)}
                         {getCategoryBadge(proposal.category)}
                         {proposal.yourVote && (
-                          <Badge variant="info" className="gap-1">
+                          <Badge variant="default" className="gap-1">
                             <CheckCircle2 className="h-3 w-3" />
                             Voted {proposal.yourVote}
                           </Badge>

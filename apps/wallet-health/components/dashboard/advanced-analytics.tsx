@@ -147,7 +147,7 @@ export function AdvancedAnalytics({ walletAddress }: AdvancedAnalyticsProps) {
           </div>
           <div className="p-3 rounded-lg border border-border bg-card">
             <p className="text-xs text-muted-foreground mb-1">Volatility</p>
-            <Badge variant="success">{riskMetrics.scoreVolatility}</Badge>
+            <Badge variant="secondary">{riskMetrics.scoreVolatility}</Badge>
           </div>
           <div className="p-3 rounded-lg border border-border bg-card">
             <p className="text-xs text-muted-foreground mb-1">Critical</p>

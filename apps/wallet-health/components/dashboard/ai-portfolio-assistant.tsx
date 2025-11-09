@@ -311,7 +311,7 @@ export function AIPortfolioAssistant({ walletAddress }: AIPortfolioAssistantProp
               Powered by advanced AI models analyzing blockchain data 24/7
             </CardDescription>
           </div>
-          <Badge variant="success" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <Sparkles className="h-3 w-3" />
             AI Active
           </Badge>

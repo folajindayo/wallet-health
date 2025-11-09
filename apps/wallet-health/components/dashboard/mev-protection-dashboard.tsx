@@ -240,7 +240,7 @@ export function MEVProtectionDashboard({ walletAddress }: MEVProtectionDashboard
                   : 'Warning: Your transactions are vulnerable to MEV attacks'}
               </p>
               {!protectionEnabled && (
-                <Button size="sm" variant="success" onClick={() => setProtectionEnabled(true)}>
+                <Button size="sm" variant="secondary" onClick={() => setProtectionEnabled(true)}>
                   Enable Protection
                 </Button>
               )}
@@ -287,13 +287,13 @@ export function MEVProtectionDashboard({ walletAddress }: MEVProtectionDashboard
                     <div className="flex items-center gap-2 mb-1">
                       <h5 className="font-semibold text-sm">{provider.name}</h5>
                       {provider.mevProtection && (
-                        <Badge variant="success" className="text-xs gap-1">
+                        <Badge variant="secondary" className="text-xs gap-1">
                           <Shield className="h-3 w-3" />
                           MEV Protected
                         </Badge>
                       )}
                       {provider.enabled && (
-                        <Badge variant="info" className="text-xs">Active</Badge>
+                        <Badge variant="default" className="text-xs">Active</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -330,7 +330,7 @@ export function MEVProtectionDashboard({ walletAddress }: MEVProtectionDashboard
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     {getAttackTypeBadge(attack.type)}
                     {attack.prevented ? (
-                      <Badge variant="success" className="gap-1">
+                      <Badge variant="secondary" className="gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Prevented
                       </Badge>
@@ -341,7 +341,7 @@ export function MEVProtectionDashboard({ walletAddress }: MEVProtectionDashboard
                       </Badge>
                     )}
                     {attack.victim === walletAddress && (
-                      <Badge variant="warning">Your Tx</Badge>
+                      <Badge variant="outline">Your Tx</Badge>
                     )}
                   </div>
 

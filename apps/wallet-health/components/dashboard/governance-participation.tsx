@@ -174,7 +174,7 @@ export function GovernanceParticipation({
       case 'failed':
         return <Badge variant="destructive">Failed</Badge>;
       case 'queued':
-        return <Badge variant="warning">Queued</Badge>;
+        return <Badge variant="outline">Queued</Badge>;
       case 'executed':
         return <Badge variant="outline">Executed</Badge>;
       default:

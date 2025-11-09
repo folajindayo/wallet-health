@@ -191,9 +191,9 @@ export function SmartContractDeployer({ walletAddress }: SmartContractDeployerPr
   const getComplexityBadge = (complexity: string) => {
     switch (complexity) {
       case 'beginner':
-        return <Badge variant="success">Beginner</Badge>;
+        return <Badge variant="secondary">Beginner</Badge>;
       case 'intermediate':
-        return <Badge variant="warning">Intermediate</Badge>;
+        return <Badge variant="outline">Intermediate</Badge>;
       case 'advanced':
         return <Badge variant="destructive">Advanced</Badge>;
       default:
@@ -204,17 +204,17 @@ export function SmartContractDeployer({ walletAddress }: SmartContractDeployerPr
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'deploying':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3 animate-spin" />
           Deploying
         </Badge>;
       case 'deployed':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Deployed
         </Badge>;
       case 'verified':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <Shield className="h-3 w-3" />
           Verified
         </Badge>;
@@ -312,7 +312,7 @@ export function SmartContractDeployer({ walletAddress }: SmartContractDeployerPr
                       <h5 className="font-semibold">{template.name}</h5>
                       {getComplexityBadge(template.complexity)}
                       {template.audited && (
-                        <Badge variant="success" className="gap-1">
+                        <Badge variant="secondary" className="gap-1">
                           <Shield className="h-3 w-3" />
                           Audited
                         </Badge>

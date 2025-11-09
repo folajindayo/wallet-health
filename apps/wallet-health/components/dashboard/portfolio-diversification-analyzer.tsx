@@ -175,17 +175,17 @@ export function PortfolioDiversificationAnalyzer({ walletAddress }: PortfolioDiv
   const getRatingBadge = (rating: string) => {
     switch (rating) {
       case 'excellent':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <Award className="h-3 w-3" />
           Excellent
         </Badge>;
       case 'good':
-        return <Badge variant="info" className="gap-1">
+        return <Badge variant="default" className="gap-1">
           <Target className="h-3 w-3" />
           Good
         </Badge>;
       case 'fair':
-        return <Badge variant="warning">Fair</Badge>;
+        return <Badge variant="outline">Fair</Badge>;
       case 'poor':
         return <Badge variant="destructive">Poor</Badge>;
       default:
@@ -196,9 +196,9 @@ export function PortfolioDiversificationAnalyzer({ walletAddress }: PortfolioDiv
   const getRiskBadge = (risk: string) => {
     switch (risk) {
       case 'low':
-        return <Badge variant="success">Low Risk</Badge>;
+        return <Badge variant="secondary">Low Risk</Badge>;
       case 'medium':
-        return <Badge variant="warning">Medium Risk</Badge>;
+        return <Badge variant="outline">Medium Risk</Badge>;
       case 'high':
         return <Badge variant="destructive">High Risk</Badge>;
       default:
@@ -211,7 +211,7 @@ export function PortfolioDiversificationAnalyzer({ walletAddress }: PortfolioDiv
       case 'high':
         return <Badge variant="destructive">High Priority</Badge>;
       case 'medium':
-        return <Badge variant="warning">Medium</Badge>;
+        return <Badge variant="outline">Medium</Badge>;
       case 'low':
         return <Badge variant="outline">Low</Badge>;
       default:

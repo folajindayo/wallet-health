@@ -194,7 +194,7 @@ export function WalletInsuranceHub({ walletAddress }: WalletInsuranceHubProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Active
         </Badge>;
@@ -204,12 +204,12 @@ export function WalletInsuranceHub({ walletAddress }: WalletInsuranceHubProps) {
           Expired
         </Badge>;
       case 'claim_pending':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3" />
           Claim Pending
         </Badge>;
       case 'claimed':
-        return <Badge variant="info">Claimed</Badge>;
+        return <Badge variant="default">Claimed</Badge>;
       default:
         return null;
     }
@@ -218,13 +218,13 @@ export function WalletInsuranceHub({ walletAddress }: WalletInsuranceHubProps) {
   const getClaimStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="warning">Pending Review</Badge>;
+        return <Badge variant="outline">Pending Review</Badge>;
       case 'approved':
-        return <Badge variant="success">Approved</Badge>;
+        return <Badge variant="secondary">Approved</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       case 'paid':
-        return <Badge variant="success">Paid</Badge>;
+        return <Badge variant="secondary">Paid</Badge>;
       default:
         return null;
     }

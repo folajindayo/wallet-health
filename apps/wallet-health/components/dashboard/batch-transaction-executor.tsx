@@ -156,17 +156,17 @@ export function BatchTransactionExecutor({ walletAddress }: BatchTransactionExec
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3" />
           Pending
         </Badge>;
       case 'executing':
-        return <Badge variant="info" className="gap-1">
+        return <Badge variant="default" className="gap-1">
           <Zap className="h-3 w-3 animate-pulse" />
           Executing
         </Badge>;
       case 'success':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Success
         </Badge>;
@@ -176,7 +176,7 @@ export function BatchTransactionExecutor({ walletAddress }: BatchTransactionExec
           Failed
         </Badge>;
       case 'completed':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Completed
         </Badge>;

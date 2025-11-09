@@ -142,8 +142,8 @@ export function WalletWatchlist({
   };
 
   const getScoreBadge = (score: number) => {
-    if (score >= 80) return <Badge variant="success">{score}</Badge>;
-    if (score >= 60) return <Badge variant="warning">{score}</Badge>;
+    if (score >= 80) return <Badge variant="secondary">{score}</Badge>;
+    if (score >= 60) return <Badge variant="outline">{score}</Badge>;
     return <Badge variant="destructive">{score}</Badge>;
   };
 

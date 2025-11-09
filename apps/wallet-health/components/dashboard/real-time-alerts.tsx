@@ -199,9 +199,9 @@ export function RealTimeAlerts({ walletAddress }: RealTimeAlertsProps) {
       case 'critical':
         return <Badge variant="destructive">Critical</Badge>;
       case 'high':
-        return <Badge variant="warning">High</Badge>;
+        return <Badge variant="outline">High</Badge>;
       case 'medium':
-        return <Badge variant="info">Medium</Badge>;
+        return <Badge variant="default">Medium</Badge>;
       case 'low':
         return <Badge variant="outline">Low</Badge>;
       default:
@@ -362,10 +362,10 @@ export function RealTimeAlerts({ walletAddress }: RealTimeAlertsProps) {
                         <h5 className="font-semibold text-sm">{alert.title}</h5>
                         {getSeverityBadge(alert.severity)}
                         {!alert.read && (
-                          <Badge variant="info" className="text-xs">New</Badge>
+                          <Badge variant="default" className="text-xs">New</Badge>
                         )}
                         {alert.actionRequired && (
-                          <Badge variant="warning" className="text-xs">Action Required</Badge>
+                          <Badge variant="outline" className="text-xs">Action Required</Badge>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground mb-2">{alert.message}</p>
@@ -408,7 +408,7 @@ export function RealTimeAlerts({ walletAddress }: RealTimeAlertsProps) {
                       <div className="flex items-center gap-2 mb-1">
                         <h5 className="font-semibold text-sm">{rule.name}</h5>
                         {rule.enabled ? (
-                          <Badge variant="success">Enabled</Badge>
+                          <Badge variant="secondary">Enabled</Badge>
                         ) : (
                           <Badge variant="outline">Disabled</Badge>
                         )}

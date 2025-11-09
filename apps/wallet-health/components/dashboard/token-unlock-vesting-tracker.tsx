@@ -339,7 +339,7 @@ export function TokenUnlockVestingTracker({ walletAddress }: TokenUnlockVestingT
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success">Active</Badge>;
+        return <Badge variant="secondary">Active</Badge>;
       case 'completed':
         return <Badge variant="outline">Completed</Badge>;
       case 'cancelled':
@@ -461,7 +461,7 @@ export function TokenUnlockVestingTracker({ walletAddress }: TokenUnlockVestingT
                           {getCategoryBadge(schedule.category)}
                           {getStatusBadge(schedule.status)}
                           {schedule.claimableAmount > 0 && (
-                            <Badge variant="success" className="gap-1 animate-pulse">
+                            <Badge variant="secondary" className="gap-1 animate-pulse">
                               <Zap className="h-3 w-3" />
                               Claimable
                             </Badge>
@@ -654,7 +654,7 @@ export function TokenUnlockVestingTracker({ walletAddress }: TokenUnlockVestingT
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <h5 className="font-semibold">{event.token}</h5>
-                          <Badge variant="success" className="gap-1">
+                          <Badge variant="secondary" className="gap-1">
                             <CheckCircle2 className="h-3 w-3" />
                             Claimed
                           </Badge>

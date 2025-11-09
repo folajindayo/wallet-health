@@ -332,9 +332,9 @@ export function RealEstateTokenizationHub({ walletAddress }: RealEstateTokenizat
 
   const getStatusBadge = (status: string) => {
     return status === 'paid' ? (
-      <Badge variant="success">Paid</Badge>
+      <Badge variant="secondary">Paid</Badge>
     ) : (
-      <Badge variant="warning">Pending</Badge>
+      <Badge variant="outline">Pending</Badge>
     );
   };
 
@@ -428,13 +428,13 @@ export function RealEstateTokenizationHub({ walletAddress }: RealEstateTokenizat
                         <h5 className="font-bold text-lg">{token.name}</h5>
                         {getTypeBadge(token.type)}
                         {token.verified && (
-                          <Badge variant="success" className="gap-1">
+                          <Badge variant="secondary" className="gap-1">
                             <CheckCircle2 className="h-3 w-3" />
                             Verified
                           </Badge>
                         )}
                         {token.audited && (
-                          <Badge variant="info" className="gap-1">
+                          <Badge variant="default" className="gap-1">
                             <Shield className="h-3 w-3" />
                             Audited
                           </Badge>
@@ -542,7 +542,7 @@ export function RealEstateTokenizationHub({ walletAddress }: RealEstateTokenizat
                           {getTypeBadge(opp.type)}
                           {getRiskBadge(opp.riskLevel)}
                           {opp.verified && (
-                            <Badge variant="success" className="gap-1">
+                            <Badge variant="secondary" className="gap-1">
                               <CheckCircle2 className="h-3 w-3" />
                               Verified
                             </Badge>

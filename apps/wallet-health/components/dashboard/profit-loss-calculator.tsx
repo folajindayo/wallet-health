@@ -303,7 +303,7 @@ export function ProfitLossCalculator({ walletAddress }: ProfitLossCalculatorProp
                   <div className="flex items-center gap-2 mb-2">
                     <h4 className="font-semibold">{asset.asset} ({asset.symbol})</h4>
                     {asset.totalPnL >= 0 ? (
-                      <Badge variant="success">Profit</Badge>
+                      <Badge variant="secondary">Profit</Badge>
                     ) : (
                       <Badge variant="destructive">Loss</Badge>
                     )}

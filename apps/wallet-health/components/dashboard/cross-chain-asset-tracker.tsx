@@ -270,9 +270,9 @@ export function CrossChainAssetTracker({ walletAddress }: CrossChainAssetTracker
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="success">Completed</Badge>;
+        return <Badge variant="secondary">Completed</Badge>;
       case 'pending':
-        return <Badge variant="warning">Pending</Badge>;
+        return <Badge variant="outline">Pending</Badge>;
       case 'failed':
         return <Badge variant="destructive">Failed</Badge>;
       default:
@@ -379,7 +379,7 @@ export function CrossChainAssetTracker({ walletAddress }: CrossChainAssetTracker
                         <div className="flex items-center gap-2 mb-2">
                           <h5 className="font-bold text-lg">{chain.chain}</h5>
                           <Badge variant="outline">{percentage.toFixed(1)}% of portfolio</Badge>
-                          <Badge variant="success">Score: {chain.securityScore}</Badge>
+                          <Badge variant="secondary">Score: {chain.securityScore}</Badge>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                           <div>
@@ -472,7 +472,7 @@ export function CrossChainAssetTracker({ walletAddress }: CrossChainAssetTracker
                     <div className="flex items-center gap-2 mb-2">
                       <h5 className="font-bold text-lg">{token.symbol}</h5>
                       <Badge variant="outline">{token.name}</Badge>
-                      <Badge variant="info">{token.chains.length} chains</Badge>
+                      <Badge variant="default">{token.chains.length} chains</Badge>
                     </div>
                     <p className="text-2xl font-bold mb-3">{formatCurrency(token.totalValue)}</p>
                   </div>

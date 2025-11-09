@@ -214,9 +214,9 @@ export function FlashloanMonitor({ walletAddress }: FlashloanMonitorProps) {
   const getRiskBadge = (risk: string) => {
     switch (risk) {
       case 'low':
-        return <Badge variant="success">Low Risk</Badge>;
+        return <Badge variant="secondary">Low Risk</Badge>;
       case 'medium':
-        return <Badge variant="warning">Medium Risk</Badge>;
+        return <Badge variant="outline">Medium Risk</Badge>;
       case 'high':
         return <Badge variant="destructive">High Risk</Badge>;
       default:
@@ -280,7 +280,7 @@ export function FlashloanMonitor({ walletAddress }: FlashloanMonitorProps) {
           <div className="mb-6 space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold">Active Opportunities</h4>
-              <Badge variant="warning" className="gap-1">
+              <Badge variant="outline" className="gap-1">
                 <Clock className="h-3 w-3 animate-pulse" />
                 Live
               </Badge>
@@ -448,7 +448,7 @@ export function FlashloanMonitor({ walletAddress }: FlashloanMonitorProps) {
                     {getStrategyBadge(tx.strategy)}
                     {getRiskBadge(tx.riskLevel)}
                     {tx.success ? (
-                      <Badge variant="success" className="gap-1">
+                      <Badge variant="secondary" className="gap-1">
                         <Shield className="h-3 w-3" />
                         Success
                       </Badge>

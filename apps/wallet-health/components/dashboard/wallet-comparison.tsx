@@ -141,7 +141,7 @@ export function WalletComparison({ currentWallet }: WalletComparisonProps) {
                     {formatAddress(wallet.address)}
                   </span>
                   {wallet.address === currentWallet.address && (
-                    <Badge variant="success" className="text-xs">Current</Badge>
+                    <Badge variant="secondary" className="text-xs">Current</Badge>
                   )}
                   {wallet.score === bestScore && (
                     <Badge variant="outline" className="text-xs">🏆 Best</Badge>

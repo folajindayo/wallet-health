@@ -187,12 +187,12 @@ export function StakingDashboard({ walletAddress, positions = [] }: StakingDashb
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="font-semibold">{position.protocol}</h4>
                       {position.isLocked ? (
-                        <Badge variant="warning" className="gap-1">
+                        <Badge variant="outline" className="gap-1">
                           <Lock className="h-3 w-3" />
                           Locked
                         </Badge>
                       ) : (
-                        <Badge variant="success" className="gap-1">
+                        <Badge variant="secondary" className="gap-1">
                           <Unlock className="h-3 w-3" />
                           Flexible
                         </Badge>
@@ -252,7 +252,7 @@ export function StakingDashboard({ walletAddress, positions = [] }: StakingDashb
 
               {/* Actions */}
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="success">
+                <Button size="sm" variant="secondary">
                   <Plus className="h-4 w-4 mr-2" />
                   Stake More
                 </Button>

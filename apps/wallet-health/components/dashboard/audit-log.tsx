@@ -147,9 +147,9 @@ export function AuditLog({ entries = [], walletAddress }: AuditLogProps) {
       case 'error':
         return <Badge variant="destructive">Error</Badge>;
       case 'warning':
-        return <Badge variant="warning">Warning</Badge>;
+        return <Badge variant="outline">Warning</Badge>;
       case 'success':
-        return <Badge variant="success">Success</Badge>;
+        return <Badge variant="secondary">Success</Badge>;
       default:
         return <Badge variant="outline">Info</Badge>;
     }

@@ -37,7 +37,7 @@ export function ChainSelector() {
                 <span className="text-2xl">{metadata.icon}</span>
                 <span className="text-sm font-medium">{metadata.name}</span>
                 {isActive && (
-                  <Badge variant="success" className="text-xs">
+                  <Badge variant="secondary" className="text-xs">
                     Active
                   </Badge>
                 )}

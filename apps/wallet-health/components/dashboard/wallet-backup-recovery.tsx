@@ -212,9 +212,9 @@ export function WalletBackupRecovery({ walletAddress }: WalletBackupRecoveryProp
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success">Active</Badge>;
+        return <Badge variant="secondary">Active</Badge>;
       case 'pending':
-        return <Badge variant="warning">Pending</Badge>;
+        return <Badge variant="outline">Pending</Badge>;
       case 'expired':
         return <Badge variant="destructive">Expired</Badge>;
       default:
@@ -477,7 +477,7 @@ export function WalletBackupRecovery({ walletAddress }: WalletBackupRecoveryProp
                     <h5 className="font-semibold">{option.method}</h5>
                     {getDifficultyBadge(option.difficulty)}
                     {option.recommended && (
-                      <Badge variant="success" className="gap-1">
+                      <Badge variant="secondary" className="gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Recommended
                       </Badge>

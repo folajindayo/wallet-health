@@ -272,12 +272,12 @@ export function TokenLaunchpadPlatform({ walletAddress }: TokenLaunchpadPlatform
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'live':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <Activity className="h-3 w-3" />
           Live Now
         </Badge>;
       case 'upcoming':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3" />
           Upcoming
         </Badge>;
@@ -290,9 +290,9 @@ export function TokenLaunchpadPlatform({ walletAddress }: TokenLaunchpadPlatform
 
   const getRiskBadge = (score: number) => {
     if (score <= 30) {
-      return <Badge variant="success">Low Risk</Badge>;
+      return <Badge variant="secondary">Low Risk</Badge>;
     } else if (score <= 60) {
-      return <Badge variant="warning">Medium Risk</Badge>;
+      return <Badge variant="outline">Medium Risk</Badge>;
     } else {
       return <Badge variant="destructive">High Risk</Badge>;
     }
@@ -401,13 +401,13 @@ export function TokenLaunchpadPlatform({ walletAddress }: TokenLaunchpadPlatform
                         <Badge variant="outline">{launch.symbol}</Badge>
                         {getStatusBadge(launch.status)}
                         {launch.isVerified && (
-                          <Badge variant="info" className="gap-1">
+                          <Badge variant="default" className="gap-1">
                             <CheckCircle2 className="h-3 w-3" />
                             Verified
                           </Badge>
                         )}
                         {launch.isAudited && (
-                          <Badge variant="success" className="gap-1">
+                          <Badge variant="secondary" className="gap-1">
                             <Shield className="h-3 w-3" />
                             Audited
                           </Badge>

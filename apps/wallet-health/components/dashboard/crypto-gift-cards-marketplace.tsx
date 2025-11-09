@@ -336,7 +336,7 @@ export function CryptoGiftCardsMarketplace({ walletAddress }: CryptoGiftCardsMar
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success">Active</Badge>;
+        return <Badge variant="secondary">Active</Badge>;
       case 'used':
         return <Badge variant="outline">Used</Badge>;
       case 'expired':
@@ -462,13 +462,13 @@ export function CryptoGiftCardsMarketplace({ walletAddress }: CryptoGiftCardsMar
                         <h5 className="font-bold text-lg">{card.brand}</h5>
                         {getCategoryBadge(card.category)}
                         {card.popular && (
-                          <Badge variant="warning" className="gap-1">
+                          <Badge variant="outline" className="gap-1">
                             <Star className="h-3 w-3" />
                             Popular
                           </Badge>
                         )}
                         {card.instantDelivery && (
-                          <Badge variant="success" className="gap-1">
+                          <Badge variant="secondary" className="gap-1">
                             <Zap className="h-3 w-3" />
                             Instant
                           </Badge>
@@ -488,11 +488,11 @@ export function CryptoGiftCardsMarketplace({ walletAddress }: CryptoGiftCardsMar
                         </span>
                       </div>
                       <div className="flex items-center gap-3 mb-3">
-                        <Badge variant="success" className="gap-1">
+                        <Badge variant="secondary" className="gap-1">
                           <Percent className="h-3 w-3" />
                           {card.discount}% OFF
                         </Badge>
-                        <Badge variant="info" className="gap-1">
+                        <Badge variant="default" className="gap-1">
                           <DollarSign className="h-3 w-3" />
                           {card.cashbackRate}% Cashback
                         </Badge>
@@ -646,13 +646,13 @@ export function CryptoGiftCardsMarketplace({ walletAddress }: CryptoGiftCardsMar
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <h5 className="font-semibold">{program.name}</h5>
                           {program.active && (
-                            <Badge variant="success" className="gap-1">
+                            <Badge variant="secondary" className="gap-1">
                               <CheckCircle2 className="h-3 w-3" />
                               Active
                             </Badge>
                           )}
                           {canActivate && !program.active && (
-                            <Badge variant="warning">Available</Badge>
+                            <Badge variant="outline">Available</Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
@@ -663,7 +663,7 @@ export function CryptoGiftCardsMarketplace({ walletAddress }: CryptoGiftCardsMar
                             <Target className="h-3 w-3" />
                             {program.pointsRequired.toLocaleString()} points required
                           </Badge>
-                          <Badge variant="success" className="gap-1">
+                          <Badge variant="secondary" className="gap-1">
                             <Percent className="h-3 w-3" />
                             +{program.discount}% discount
                           </Badge>

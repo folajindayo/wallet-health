@@ -149,7 +149,7 @@ export function PortfolioRebalancer({ walletAddress }: PortfolioRebalancerProps)
   const getActionBadge = (action: string) => {
     switch (action) {
       case 'buy':
-        return <Badge variant="success">Buy</Badge>;
+        return <Badge variant="secondary">Buy</Badge>;
       case 'sell':
         return <Badge variant="destructive">Sell</Badge>;
       case 'hold':
@@ -162,9 +162,9 @@ export function PortfolioRebalancer({ walletAddress }: PortfolioRebalancerProps)
   const getRiskBadge = (risk: string) => {
     switch (risk) {
       case 'conservative':
-        return <Badge variant="success">Low Risk</Badge>;
+        return <Badge variant="secondary">Low Risk</Badge>;
       case 'moderate':
-        return <Badge variant="warning">Moderate Risk</Badge>;
+        return <Badge variant="outline">Moderate Risk</Badge>;
       case 'aggressive':
         return <Badge variant="destructive">High Risk</Badge>;
       default:

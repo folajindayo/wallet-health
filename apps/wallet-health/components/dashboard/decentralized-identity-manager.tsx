@@ -328,12 +328,12 @@ export function DecentralizedIdentityManager({ walletAddress }: DecentralizedIde
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Active
         </Badge>;
       case 'pending':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3" />
           Pending
         </Badge>;
@@ -377,9 +377,9 @@ export function DecentralizedIdentityManager({ walletAddress }: DecentralizedIde
   const getRequestStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="warning">Pending</Badge>;
+        return <Badge variant="outline">Pending</Badge>;
       case 'approved':
-        return <Badge variant="success">Approved</Badge>;
+        return <Badge variant="secondary">Approved</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       default:
@@ -480,7 +480,7 @@ export function DecentralizedIdentityManager({ walletAddress }: DecentralizedIde
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="text-2xl font-bold">{profile.displayName}</h3>
                     {profile.verified && (
-                      <Badge variant="success" className="gap-1">
+                      <Badge variant="secondary" className="gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Verified
                       </Badge>
@@ -598,7 +598,7 @@ export function DecentralizedIdentityManager({ walletAddress }: DecentralizedIde
                           {getStatusBadge(credential.status)}
                           {getVisibilityBadge(credential.visibility)}
                           {credential.verified && (
-                            <Badge variant="success" className="gap-1">
+                            <Badge variant="secondary" className="gap-1">
                               <CheckCircle2 className="h-3 w-3" />
                               Verified
                             </Badge>

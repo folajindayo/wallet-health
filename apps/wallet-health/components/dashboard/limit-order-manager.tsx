@@ -180,12 +180,12 @@ export function LimitOrderManager({ walletAddress }: LimitOrderManagerProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="info" className="gap-1">
+        return <Badge variant="default" className="gap-1">
           <Clock className="h-3 w-3" />
           Active
         </Badge>;
       case 'filled':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Filled
         </Badge>;

@@ -116,7 +116,7 @@ export function RewardsAirdropsTracker({
     switch (status) {
       case 'claimable':
         return (
-          <Badge variant="success" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <Gift className="h-3 w-3" />
             Claimable
           </Badge>
@@ -130,7 +130,7 @@ export function RewardsAirdropsTracker({
         );
       case 'upcoming':
         return (
-          <Badge variant="warning" className="gap-1">
+          <Badge variant="outline" className="gap-1">
             <Clock className="h-3 w-3" />
             Upcoming
           </Badge>
@@ -235,7 +235,7 @@ export function RewardsAirdropsTracker({
                 <p className="text-xs text-muted-foreground mb-3">
                   Total value: ${stats.totalClaimableValue.toFixed(2)} USD
                 </p>
-                <Button size="sm" variant="success">
+                <Button size="sm" variant="secondary">
                   <Coins className="h-4 w-4 mr-2" />
                   Claim All Rewards
                 </Button>
@@ -340,7 +340,7 @@ export function RewardsAirdropsTracker({
 
               {/* Claim Button */}
               {reward.status === 'claimable' && (
-                <Button size="sm" variant="success" className="w-full">
+                <Button size="sm" variant="secondary" className="w-full">
                   <Gift className="h-4 w-4 mr-2" />
                   Claim {reward.amount.toFixed(2)} {reward.token}
                 </Button>

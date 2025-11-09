@@ -22,7 +22,7 @@ export function NetworkStatus() {
 
   return (
     <div className="inline-flex items-center gap-2">
-      <Badge variant="success" className="inline-flex items-center gap-1.5">
+      <Badge variant="secondary" className="inline-flex items-center gap-1.5">
         <Activity className="h-3 w-3 animate-pulse" />
         Connected
       </Badge>

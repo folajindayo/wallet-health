@@ -401,7 +401,7 @@ export function GasOptimizationSuite({ currentChain }: GasOptimizationSuiteProps
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-semibold">Optimization Suggestions</h4>
-            <Badge variant="success" className="gap-1">
+            <Badge variant="secondary" className="gap-1">
               <TrendingDown className="h-3 w-3" />
               Save up to {totalPotentialSavings}%
             </Badge>
@@ -428,7 +428,7 @@ export function GasOptimizationSuite({ currentChain }: GasOptimizationSuiteProps
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <h5 className="font-semibold">{opt.title}</h5>
                           {opt.implemented ? (
-                            <Badge variant="success" className="gap-1">
+                            <Badge variant="secondary" className="gap-1">
                               <CheckCircle2 className="h-3 w-3" />
                               Implemented
                             </Badge>
@@ -513,17 +513,17 @@ export function GasOptimizationSuite({ currentChain }: GasOptimizationSuiteProps
             <div className="p-2 rounded bg-card border border-border text-center">
               <p className="text-xs text-muted-foreground mb-1">Tonight</p>
               <p className="text-sm font-bold">2-6 AM UTC</p>
-              <Badge variant="success" className="text-xs mt-1">~12 GWEI</Badge>
+              <Badge variant="secondary" className="text-xs mt-1">~12 GWEI</Badge>
             </div>
             <div className="p-2 rounded bg-card border border-border text-center">
               <p className="text-xs text-muted-foreground mb-1">Tomorrow</p>
               <p className="text-sm font-bold">3-7 AM UTC</p>
-              <Badge variant="success" className="text-xs mt-1">~11 GWEI</Badge>
+              <Badge variant="secondary" className="text-xs mt-1">~11 GWEI</Badge>
             </div>
             <div className="p-2 rounded bg-card border border-border text-center">
               <p className="text-xs text-muted-foreground mb-1">Weekend</p>
               <p className="text-sm font-bold">Sat Morning</p>
-              <Badge variant="success" className="text-xs mt-1">~10 GWEI</Badge>
+              <Badge variant="secondary" className="text-xs mt-1">~10 GWEI</Badge>
             </div>
           </div>
         </div>

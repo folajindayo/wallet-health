@@ -405,7 +405,7 @@ export function AdvancedPortfolioComparison({ currentWallet }: AdvancedPortfolio
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{wallet.name}</span>
                             {isBest && (
-                              <Badge variant="success" className="gap-1">
+                              <Badge variant="secondary" className="gap-1">
                                 <Award className="h-3 w-3" />
                                 Best
                               </Badge>
@@ -471,7 +471,7 @@ export function AdvancedPortfolioComparison({ currentWallet }: AdvancedPortfolio
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{wallet.name}</span>
                             {isBest && (
-                              <Badge variant="success" className="gap-1">
+                              <Badge variant="secondary" className="gap-1">
                                 <Award className="h-3 w-3" />
                                 Best
                               </Badge>
@@ -528,7 +528,7 @@ export function AdvancedPortfolioComparison({ currentWallet }: AdvancedPortfolio
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{wallet.name}</span>
                             {isBest && (
-                              <Badge variant="success" className="gap-1">
+                              <Badge variant="secondary" className="gap-1">
                                 <Award className="h-3 w-3" />
                                 Best
                               </Badge>

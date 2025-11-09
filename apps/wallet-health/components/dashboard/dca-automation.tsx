@@ -201,7 +201,7 @@ export function DCAAutomation({ walletAddress }: DCAAutomationProps) {
           Active
         </Badge>;
       case 'paused':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Pause className="h-3 w-3" />
           Paused
         </Badge>;
@@ -274,7 +274,7 @@ export function DCAAutomation({ walletAddress }: DCAAutomationProps) {
         <div className="space-y-3 mb-6">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">Your DCA Strategies</h4>
-            <Badge variant="info">{activeStrategies} Active</Badge>
+            <Badge variant="default">{activeStrategies} Active</Badge>
           </div>
           {strategies.map((strategy) => {
             const profitPercent = (strategy.profit / strategy.totalInvested) * 100;

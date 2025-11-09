@@ -109,7 +109,7 @@ export function SettingsPanel({ walletAddress, onSave }: SettingsPanelProps) {
             </CardDescription>
           </div>
           {saved && (
-            <Badge variant="success" className="animate-in fade-in">
+            <Badge variant="secondary" className="animate-in fade-in">
               ✓ Saved
             </Badge>
           )}

@@ -151,9 +151,9 @@ export function SocialRecoveryWallet({ walletAddress }: SocialRecoveryWalletProp
   };
 
   const getTrustScoreBadge = (score: number) => {
-    if (score >= 95) return <Badge variant="success">Excellent</Badge>;
-    if (score >= 85) return <Badge variant="info">Good</Badge>;
-    if (score >= 70) return <Badge variant="warning">Fair</Badge>;
+    if (score >= 95) return <Badge variant="secondary">Excellent</Badge>;
+    if (score >= 85) return <Badge variant="default">Good</Badge>;
+    if (score >= 70) return <Badge variant="outline">Fair</Badge>;
     return <Badge variant="destructive">Low</Badge>;
   };
 
@@ -249,7 +249,7 @@ export function SocialRecoveryWallet({ walletAddress }: SocialRecoveryWalletProp
                       <h5 className="font-semibold text-sm">
                         {request.type === 'recovery' ? 'Wallet Recovery' : 'Ownership Transfer'}
                       </h5>
-                      <Badge variant="warning">Pending</Badge>
+                      <Badge variant="outline">Pending</Badge>
                     </div>
 
                     <div className="mb-3 space-y-1">
@@ -337,12 +337,12 @@ export function SocialRecoveryWallet({ walletAddress }: SocialRecoveryWalletProp
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h5 className="font-semibold">{guardian.name}</h5>
                     {guardian.status === 'active' ? (
-                      <Badge variant="success" className="gap-1">
+                      <Badge variant="secondary" className="gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Active
                       </Badge>
                     ) : guardian.status === 'pending' ? (
-                      <Badge variant="warning" className="gap-1">
+                      <Badge variant="outline" className="gap-1">
                         <Clock className="h-3 w-3" />
                         Pending
                       </Badge>

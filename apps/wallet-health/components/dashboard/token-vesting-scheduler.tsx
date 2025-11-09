@@ -185,12 +185,12 @@ export function TokenVestingScheduler({ walletAddress }: TokenVestingSchedulerPr
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="info" className="gap-1">
+        return <Badge variant="default" className="gap-1">
           <Clock className="h-3 w-3" />
           Active
         </Badge>;
       case 'completed':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Completed
         </Badge>;
@@ -381,7 +381,7 @@ export function TokenVestingScheduler({ walletAddress }: TokenVestingSchedulerPr
                 {schedule.status === 'active' && (
                   <div className="flex gap-2">
                     {schedule.claimable > 0 && (
-                      <Button size="sm" variant="success">
+                      <Button size="sm" variant="secondary">
                         <Unlock className="h-4 w-4 mr-2" />
                         Claim Tokens
                       </Button>
@@ -425,7 +425,7 @@ export function TokenVestingScheduler({ walletAddress }: TokenVestingSchedulerPr
                     <div className="flex items-center gap-2 mb-1">
                       <h5 className="font-semibold text-sm">{milestone.description}</h5>
                       {milestone.released && (
-                        <Badge variant="success" className="text-xs">Released</Badge>
+                        <Badge variant="secondary" className="text-xs">Released</Badge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">

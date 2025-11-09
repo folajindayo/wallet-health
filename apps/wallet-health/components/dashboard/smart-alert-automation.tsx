@@ -494,7 +494,7 @@ export function SmartAlertAutomation({ walletAddress }: SmartAlertAutomationProp
                           {getTypeBadge(rule.type)}
                           {getPriorityBadge(rule.priority)}
                           {rule.enabled ? (
-                            <Badge variant="success" className="gap-1">
+                            <Badge variant="secondary" className="gap-1">
                               <CheckCircle2 className="h-3 w-3" />
                               Enabled
                             </Badge>
@@ -589,7 +589,7 @@ export function SmartAlertAutomation({ walletAddress }: SmartAlertAutomationProp
                           Read
                         </Badge>
                       ) : (
-                        <Badge variant="warning" className="gap-1">
+                        <Badge variant="outline" className="gap-1">
                           <Bell className="h-3 w-3" />
                           Unread
                         </Badge>

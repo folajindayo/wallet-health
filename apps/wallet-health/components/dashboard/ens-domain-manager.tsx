@@ -92,7 +92,7 @@ export function ENSDomainManager({ walletAddress, domains = [] }: ENSDomainManag
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success">Active</Badge>;
+        return <Badge variant="secondary">Active</Badge>;
       case 'expiring-soon':
         return <Badge variant="outline">Expiring Soon</Badge>;
       case 'expired':

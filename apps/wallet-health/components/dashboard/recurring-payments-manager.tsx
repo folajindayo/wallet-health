@@ -233,12 +233,12 @@ export function RecurringPaymentsManager({ walletAddress }: RecurringPaymentsMan
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Active
         </Badge>;
       case 'paused':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Pause className="h-3 w-3" />
           Paused
         </Badge>;
@@ -451,7 +451,7 @@ export function RecurringPaymentsManager({ walletAddress }: RecurringPaymentsMan
                     Pause
                   </Button>
                 ) : payment.status === 'paused' ? (
-                  <Button size="sm" variant="success">
+                  <Button size="sm" variant="secondary">
                     <Play className="h-4 w-4 mr-2" />
                     Resume
                   </Button>
@@ -484,7 +484,7 @@ export function RecurringPaymentsManager({ walletAddress }: RecurringPaymentsMan
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-semibold text-sm">{formatDate(tx.date)}</p>
                     {tx.status === 'success' && (
-                      <Badge variant="success" className="gap-1 text-xs">
+                      <Badge variant="secondary" className="gap-1 text-xs">
                         <CheckCircle2 className="h-3 w-3" />
                         Success
                       </Badge>

@@ -399,7 +399,7 @@ export function DAOTreasuryManager({ walletAddress }: DAOTreasuryManagerProps) {
         <div className="mb-6 space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">Active Proposals</h4>
-            <Badge variant="info">{activeProposals} Active</Badge>
+            <Badge variant="default">{activeProposals} Active</Badge>
           </div>
           {proposals.filter(p => p.status === 'active').map((proposal) => {
             const voteProgress = (proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100;
@@ -489,7 +489,7 @@ export function DAOTreasuryManager({ walletAddress }: DAOTreasuryManagerProps) {
                       <p className="font-semibold text-sm capitalize">{tx.type}</p>
                       <Badge variant="outline" className="text-xs">{tx.token}</Badge>
                       {tx.proposalId && (
-                        <Badge variant="info" className="text-xs">{tx.proposalId}</Badge>
+                        <Badge variant="default" className="text-xs">{tx.proposalId}</Badge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">

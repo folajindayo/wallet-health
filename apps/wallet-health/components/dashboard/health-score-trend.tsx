@@ -47,7 +47,7 @@ export function HealthScoreTrend({
   const getTrendBadge = () => {
     if (scoreDiff > 0) {
       return (
-        <Badge variant="success" className="gap-1">
+        <Badge variant="secondary" className="gap-1">
           <TrendingUp className="h-3 w-3" />
           +{Math.abs(scoreDiff)} pts ({percentChange}%)
         </Badge>

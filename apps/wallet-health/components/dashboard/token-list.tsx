@@ -117,16 +117,16 @@ export function TokenList({ tokens, chainId, onHideToken }: TokenListProps) {
                           ({token.symbol})
                         </span>
                         {token.nativeToken && (
-                          <Badge variant="success">Native</Badge>
+                          <Badge variant="secondary">Native</Badge>
                         )}
                         {token.isSpam && (
-                          <Badge variant="warning" className="inline-flex items-center gap-1">
+                          <Badge variant="outline" className="inline-flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />
                             Spam
                           </Badge>
                         )}
                         {token.isVerified && (
-                          <Badge variant="info">✓ Verified</Badge>
+                          <Badge variant="default">✓ Verified</Badge>
                         )}
                       </div>
 

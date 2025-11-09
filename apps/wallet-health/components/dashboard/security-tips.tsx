@@ -85,9 +85,9 @@ export function SecurityTips() {
       case 'critical':
         return <Badge variant="destructive">Critical</Badge>;
       case 'important':
-        return <Badge variant="warning">Important</Badge>;
+        return <Badge variant="outline">Important</Badge>;
       case 'recommended':
-        return <Badge variant="info">Recommended</Badge>;
+        return <Badge variant="default">Recommended</Badge>;
     }
   };
 
@@ -107,7 +107,7 @@ export function SecurityTips() {
             </CardDescription>
           </div>
           {unreadCount > 0 && (
-            <Badge variant="success">
+            <Badge variant="secondary">
               {unreadCount} New
             </Badge>
           )}

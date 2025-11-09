@@ -221,7 +221,7 @@ export function LiquidityPoolManager({
                   {outOfRange} position{outOfRange !== 1 ? 's are' : ' is'} currently out of range and not earning fees.
                   Consider rebalancing to maximize returns.
                 </p>
-                <Button size="sm" variant="warning">
+                <Button size="sm" variant="outline">
                   Review Positions
                 </Button>
               </div>
@@ -275,7 +275,7 @@ export function LiquidityPoolManager({
                         <h4 className="font-semibold">{position.pair}</h4>
                         {getVersionBadge(position.version)}
                         {!inRange && (
-                          <Badge variant="warning" className="gap-1">
+                          <Badge variant="outline" className="gap-1">
                             <AlertCircle className="h-3 w-3" />
                             Out of Range
                           </Badge>
@@ -387,7 +387,7 @@ export function LiquidityPoolManager({
                     Collect Fees
                   </Button>
                   {!inRange && position.version === 'v3' && (
-                    <Button size="sm" variant="warning">
+                    <Button size="sm" variant="outline">
                       <Percent className="h-4 w-4 mr-2" />
                       Rebalance
                     </Button>

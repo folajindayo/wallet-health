@@ -197,12 +197,12 @@ export function CryptoPaymentGateway({ walletAddress }: CryptoPaymentGatewayProp
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Paid
         </Badge>;
       case 'pending':
-        return <Badge variant="warning" className="gap-1">
+        return <Badge variant="outline" className="gap-1">
           <Clock className="h-3 w-3" />
           Pending
         </Badge>;

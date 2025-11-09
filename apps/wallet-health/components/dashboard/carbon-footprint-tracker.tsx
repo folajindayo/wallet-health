@@ -170,17 +170,17 @@ export function CarbonFootprintTracker({ walletAddress }: CarbonFootprintTracker
   const getRankingBadge = (ranking: string) => {
     switch (ranking) {
       case 'excellent':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <Leaf className="h-3 w-3" />
           Excellent
         </Badge>;
       case 'good':
-        return <Badge variant="info" className="gap-1">
+        return <Badge variant="default" className="gap-1">
           <Leaf className="h-3 w-3" />
           Good
         </Badge>;
       case 'average':
-        return <Badge variant="warning">Average</Badge>;
+        return <Badge variant="outline">Average</Badge>;
       case 'high':
         return <Badge variant="destructive">High</Badge>;
       default:
@@ -218,7 +218,7 @@ export function CarbonFootprintTracker({ walletAddress }: CarbonFootprintTracker
               <div className="flex items-center gap-2">
                 {getRankingBadge(metrics.ranking)}
                 {metrics.monthlyTrend < 0 && (
-                  <Badge variant="success" className="gap-1">
+                  <Badge variant="secondary" className="gap-1">
                     <TrendingDown className="h-3 w-3" />
                     {Math.abs(metrics.monthlyTrend)}% improvement
                   </Badge>
@@ -327,7 +327,7 @@ export function CarbonFootprintTracker({ walletAddress }: CarbonFootprintTracker
         <div className="mb-6 space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">Offset Your Emissions</h4>
-            <Badge variant="info">{formatNumber(metrics.netEmissions)} kg to offset</Badge>
+            <Badge variant="default">{formatNumber(metrics.netEmissions)} kg to offset</Badge>
           </div>
           <div className="grid md:grid-cols-2 gap-3">
             {offsetProjects.map((project) => (
@@ -341,7 +341,7 @@ export function CarbonFootprintTracker({ walletAddress }: CarbonFootprintTracker
                     <div className="flex items-center gap-2 mb-1">
                       <h5 className="font-semibold text-sm">{project.name}</h5>
                       {project.verified && (
-                        <Badge variant="success" className="text-xs">Verified</Badge>
+                        <Badge variant="secondary" className="text-xs">Verified</Badge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mb-2">{project.description}</p>

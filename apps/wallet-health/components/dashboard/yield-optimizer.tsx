@@ -196,9 +196,9 @@ export function YieldOptimizer({ walletAddress }: YieldOptimizerProps) {
   const getRiskBadge = (risk: string) => {
     switch (risk) {
       case 'low':
-        return <Badge variant="success">Low Risk</Badge>;
+        return <Badge variant="secondary">Low Risk</Badge>;
       case 'medium':
-        return <Badge variant="warning">Medium Risk</Badge>;
+        return <Badge variant="outline">Medium Risk</Badge>;
       case 'high':
         return <Badge variant="destructive">High Risk</Badge>;
       default:
