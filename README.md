@@ -2518,6 +2518,9 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Wallet health score calculator
 - ✅ Enhanced transaction simulator
 - ✅ Wallet backup validator
+- ✅ Token approval simulator
+- ✅ Wallet risk calculator
+- ✅ Security checklist generator
 - ✅ Wallet recovery phrase checker
 - ✅ Token allowance real-time monitor
 - ✅ Wallet activity pattern analyzer
