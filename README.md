@@ -259,10 +259,15 @@ The security score is calculated based on multiple risk factors:
 
 ### Utility Features
 
-- **🔀 Wallet Comparison** - Compare multiple wallets side-by-side
-- **💾 Export Reports** - Export scan results as JSON, CSV, or PDF
-- **🔐 Multi-sig Support** - Analyze multi-signature wallet configurations
-- **🌐 ENS Integration** - Resolve ENS domains and verify ownership
+- **🔀 Wallet Comparison** - Compare multiple wallets side-by-side with similarity scoring
+- **💾 Export Reports** - Export scan results as JSON, CSV, PDF, or encrypted backups
+- **🔐 Multi-sig Support** - Analyze multi-signature wallet configurations and security
+- **🌐 ENS Integration** - Resolve ENS domains, reverse lookup, and verify ownership
+- **📋 Address Book** - Manage saved addresses with labels, tags, and verification status
+- **🏷️ Wallet Tagging** - Tag and categorize wallets for better organization
+- **📝 Watchlist Manager** - Monitor multiple wallets with groups and alerts
+- **💾 Wallet Backup** - Secure wallet data export with encryption support
+- **📊 Health Report Generator** - Generate comprehensive wallet health reports
 
 ### Portfolio & Performance Features
 
