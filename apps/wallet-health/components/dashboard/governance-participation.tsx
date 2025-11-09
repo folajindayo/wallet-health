@@ -168,7 +168,7 @@ export function GovernanceParticipation({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success">Active</Badge>;
+        return <Badge variant="secondary">Active</Badge>;
       case 'passed':
         return <Badge variant="default">Passed</Badge>;
       case 'failed':
@@ -186,7 +186,7 @@ export function GovernanceParticipation({
     if (!vote) return null;
     switch (vote) {
       case 'for':
-        return <Badge variant="success">Voted For</Badge>;
+        return <Badge variant="secondary">Voted For</Badge>;
       case 'against':
         return <Badge variant="destructive">Voted Against</Badge>;
       case 'abstain':
@@ -358,7 +358,7 @@ export function GovernanceParticipation({
                     {/* Voting Actions */}
                     {proposal.status === 'active' && !proposal.yourVote && (
                       <div className="flex gap-2">
-                        <Button size="sm" variant="success">
+                        <Button size="sm" variant="secondary">
                           <CheckCircle2 className="h-4 w-4 mr-2" />
                           Vote For
                         </Button>
