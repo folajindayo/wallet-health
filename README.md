@@ -76,7 +76,12 @@ wallet-health/
 │   │       ├── approval-history-tracker.ts # Approval history tracking
 │   │       ├── address-book.ts           # Address book manager
 │   │       ├── gas-optimization-calculator.ts # Gas optimization calculator
-│   │       └── wallet-health-report.ts   # Wallet health report generator
+│   │       ├── wallet-health-report.ts   # Wallet health report generator
+│   │       ├── token-price-tracker.ts    # Token price tracking & portfolio value
+│   │       ├── portfolio-performance.ts  # Portfolio performance metrics
+│   │       ├── contract-interaction-tracker.ts # Smart contract interaction tracking
+│   │       ├── gas-optimizer.ts          # Gas price optimization recommendations
+│   │       └── token-unlock-tracker.ts  # Token vesting & unlock tracking
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
