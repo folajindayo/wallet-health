@@ -606,11 +606,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Utility Features
 
-- ✅ **🔀 Wallet Comparison** - Compare multiple wallets side-by-side
+- ✅ **🔀 Wallet Comparison** - Compare multiple wallets side-by-side with similarity scoring
 - ✅ **💾 Export Reports** - Export scan results as JSON, CSV, or PDF
-- ✅ **🔐 Multi-sig Support** - Analyze multi-signature wallet configurations
-- ✅ **🌐 ENS Integration** - Resolve ENS domains and verify ownership
+- ✅ **🔐 Multi-sig Support** - Analyze multi-signature wallet configurations and security
+- ✅ **🌐 ENS Integration** - Resolve ENS domains, reverse lookup, and verify ownership
 - ✅ **📱 Responsive Design** - Works seamlessly on desktop and mobile devices
+- ✅ **🔔 Alert System** - Configurable alerts with browser, email, push, and webhook notifications
+- ✅ **📜 Activity Timeline** - Chronological timeline with risk annotations and grouping
+- ✅ **📊 Advanced Analytics** - Portfolio optimization, risk modeling, and yield optimization
 
 ## 💻 Usage Examples
 
