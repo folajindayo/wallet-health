@@ -100,6 +100,9 @@ wallet-health/
 │   │       ├── approval-revoker.ts        # Token approval revocation helper
 │   │       ├── wallet-backup.ts          # Wallet backup & export utility
 │   │       ├── watchlist-manager.ts      # Watchlist manager for multiple wallets
+│   │       ├── mev-protection-analyzer.ts # MEV protection analysis
+│   │       ├── governance-tracker.ts    # DAO governance participation tracking
+│   │       └── activity-heatmap-generator.ts # Activity heatmap visualization
 │   │       ├── token-metadata-cache.ts    # Token metadata caching system
 │   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
 │   │       ├── wallet-tagging.ts         # Wallet tagging & categorization
