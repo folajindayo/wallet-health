@@ -403,7 +403,7 @@ Statistics are saved to `commit-stats.json` and displayed on exit (Ctrl+C).
 
 #### Logging
 
-When enabled, all operations are logged to `farm.log` with timestamps:
+When enabled, all operations are logged to `commit.log` with timestamps:
 ```
 [2024-01-15 10:30:45] [INFO] Script started with options: delay=1, dry-run=false
 [2024-01-15 10:30:46] [SUCCESS] Commit successful
