@@ -92,6 +92,12 @@ wallet-health/
 │   │       ├── address-book.ts           # Address book manager
 │   │       ├── gas-optimization-calculator.ts # Gas optimization calculator
 │   │       ├── wallet-health-report.ts   # Wallet health report generator
+│   │       ├── wallet-recovery-checker.ts # Recovery phrase security checker
+│   │       ├── token-allowance-monitor.ts # Real-time allowance monitoring
+│   │       ├── wallet-activity-analyzer.ts # Deep activity pattern analysis
+│   │       ├── risk-prediction-engine.ts # Risk prediction based on patterns
+│   │       └── wallet-clustering.ts      # Wallet clustering & relationships
+│   │       ├── wallet-health-report.ts   # Wallet health report generator
 │   │       ├── token-price-tracker.ts    # Token price tracking & portfolio value
 │   │       ├── portfolio-performance.ts  # Portfolio performance metrics
 │   │       ├── contract-interaction-tracker.ts # Smart contract interaction tracking
