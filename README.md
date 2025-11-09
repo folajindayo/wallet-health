@@ -888,6 +888,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🗳️ Governance Tracker** - Track DAO participation and voting history
 - ✅ **📊 Activity Heatmap** - Visualize wallet activity patterns over time
 - ✅ **👀 Watchlist Manager** - Monitor multiple wallets with groups and alerts
+- ✅ **💡 Security Recommendations** - Personalized security recommendations engine
+- ✅ **📜 Approval History** - Track approval changes and detect patterns
+- ✅ **🏷️ Wallet Tagging** - Tag and categorize wallets for organization
+- ✅ **💾 Token Metadata Cache** - Efficient token metadata caching system
+- ✅ **📈 Risk Trend Analyzer** - Analyze risk trends and predict future risks
 
 ## 💻 Usage Examples
 
