@@ -98,6 +98,14 @@ wallet-health/
 │   │       ├── smart-alert-automation.ts            # Automated alert rules
 │   │       ├── dao-treasury-manager.ts              # DAO treasury management
 │   │       ├── token-vesting-scheduler.ts           # Token vesting scheduling
+│   │       ├── token-snapshot-manager.ts            # Token balance snapshots
+│   │       ├── wallet-comparison-tool.ts             # Wallet comparison utility
+│   │       ├── transaction-fee-optimizer.ts         # Transaction fee optimization
+│   │       ├── token-price-tracker.ts               # Token price tracking
+│   │       ├── wallet-activity-exporter.ts          # Activity data export
+│   │       ├── multi-chain-portfolio-aggregator.ts  # Multi-chain portfolio aggregation
+│   │       ├── token-distribution-analyzer.ts       # Token distribution analysis
+│   │       ├── wallet-clustering-tool.ts            # Wallet behavior clustering
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
@@ -888,11 +896,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🗳️ Governance Tracker** - Track DAO participation and voting history
 - ✅ **📊 Activity Heatmap** - Visualize wallet activity patterns over time
 - ✅ **👀 Watchlist Manager** - Monitor multiple wallets with groups and alerts
-- ✅ **💡 Security Recommendations** - Personalized security recommendations engine
-- ✅ **📜 Approval History** - Track approval changes and detect patterns
-- ✅ **🏷️ Wallet Tagging** - Tag and categorize wallets for organization
-- ✅ **💾 Token Metadata Cache** - Efficient token metadata caching system
-- ✅ **📈 Risk Trend Analyzer** - Analyze risk trends and predict future risks
 
 ## 💻 Usage Examples
 
