@@ -370,6 +370,9 @@ The security score is calculated based on multiple risk factors:
 - ✅ **🔐 Wallet Recovery Checker** - Check recovery phrase security and best practices
 - ✅ **👁️ Token Allowance Monitor** - Real-time monitoring of token allowances
 - ✅ **🔮 Risk Prediction Engine** - Predict future risks based on historical patterns
+- ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across chains
+- ✅ **🔍 Security Audit** - Comprehensive security audit and compliance checking
+- ✅ **🌐 Cross-chain Portfolio Aggregator** - Aggregate portfolio across multiple chains
 
 ### Advanced DeFi Features
 
