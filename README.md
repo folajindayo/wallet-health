@@ -509,6 +509,28 @@ The security score is calculated based on multiple risk factors:
 - `GET /api/watchlist` - Get, search, and manage watchlists
 - `POST /api/watchlist` - Create, update watchlists and manage alerts
 
+### Security Recommendations
+
+- `POST /api/security/recommendations` - Generate personalized security recommendations
+
+### Approval History
+
+- `POST /api/approvals/history` - Track approval history and detect patterns
+
+### Wallet Tagging
+
+- `GET /api/wallet/tags` - Get, search, and manage wallet tags
+- `POST /api/wallet/tags` - Create tags and assign to wallets
+
+### Token Metadata
+
+- `GET /api/tokens/metadata` - Get cached token metadata
+- `POST /api/tokens/metadata` - Set, batch get, or manage token metadata cache
+
+### Risk Trends
+
+- `POST /api/risk/trend` - Analyze risk trends and predict future risks
+
 ### Governance
 
 - `POST /api/governance/track` - Track DAO governance participation and voting
