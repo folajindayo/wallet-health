@@ -364,6 +364,20 @@ The security score is calculated based on multiple risk factors:
 - ✅ **🚀 Smart Contract Deployer Helper** - Safe contract deployment assistance
 - ✅ **📦 Transaction Batch Executor** - Execute multiple transactions efficiently
 
+### Trading & Automation Features
+
+- ✅ **📈 DCA Automation** - Automate dollar-cost averaging strategies
+- ✅ **📊 Limit Order Manager** - Manage limit orders for token swaps
+- ✅ **🔄 Recurring Payments Manager** - Manage recurring crypto payments
+- ✅ **🔄 Token Swap Aggregator** - Find best swap routes across DEXs
+
+### Sustainability & Social Features
+
+- ✅ **🌱 Carbon Footprint Tracker** - Track carbon footprint of transactions
+- ✅ **👥 Social Recovery Manager** - Manage social recovery wallets and guardians
+- ✅ **⭐ On-chain Reputation System** - Build reputation based on on-chain activity
+- ✅ **📊 Options & Derivatives Dashboard** - Track options and derivatives positions
+
 ### Security & Recommendations
 
 - ✅ **🛡️ Security Recommendations Engine** - Generate actionable security recommendations
