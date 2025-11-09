@@ -329,9 +329,9 @@ feat: implement Base L2 network support
 perf: optimize AppKit bundle size
 ```
 
-### Automated Git Farming Script (`farm.sh`)
+### Automated Git Commit Script (`commit.sh`)
 
-The project includes an advanced automated git commit script (`farm.sh`) that reads commit messages from `wallet.txt` and automatically commits and pushes changes to your repository.
+The project includes an advanced automated git commit script (`commit.sh`) that reads commit messages from `wallet.txt` and automatically commits and pushes changes to your repository.
 
 #### Features
 
