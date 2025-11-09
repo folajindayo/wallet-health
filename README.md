@@ -90,6 +90,14 @@ wallet-health/
 │   │       ├── social-recovery-manager.ts           # Social recovery wallet management
 │   │       ├── on-chain-reputation-system.ts        # On-chain reputation scoring
 │   │       ├── options-derivatives-dashboard.ts     # Options & derivatives tracking
+│   │       ├── token-launchpad-platform.ts           # Token launch tracking
+│   │       ├── profit-loss-calculator.ts             # P&L calculation
+│   │       ├── network-status-monitor.ts            # Network status monitoring
+│   │       ├── quick-actions-manager.ts              # Quick actions management
+│   │       ├── security-badge-generator.ts          # Security badge generation
+│   │       ├── smart-alert-automation.ts            # Automated alert rules
+│   │       ├── dao-treasury-manager.ts              # DAO treasury management
+│   │       ├── token-vesting-scheduler.ts           # Token vesting scheduling
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
@@ -118,10 +126,7 @@ wallet-health/
 │   │       ├── wallet-clustering.ts      # Wallet clustering & relationships
 │   │       ├── transaction-fee-optimizer.ts # Transaction fee optimization
 │   │       ├── wallet-security-audit.ts  # Comprehensive security audit
-│   │       ├── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
-│   │       ├── smart-contract-verifier.ts # Smart contract verification & analysis
-│   │       ├── token-approval-batch-manager.ts # Batch approval management
-│   │       └── gas-price-predictor.ts    # Gas price prediction & forecasting
+│   │       └── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
 │   │       ├── token-unlock-tracker.ts  # Token vesting & unlock tracking
 │   │       ├── cross-chain-bridge-tracker.ts # Cross-chain bridge tracking
 │   │       ├── staking-tracker.ts       # Staking positions & rewards tracking
@@ -383,6 +388,14 @@ The security score is calculated based on multiple risk factors:
 - ✅ **👥 Social Recovery Manager** - Manage social recovery wallets and guardians
 - ✅ **⭐ On-chain Reputation System** - Build reputation based on on-chain activity
 - ✅ **📊 Options & Derivatives Dashboard** - Track options and derivatives positions
+- ✅ **🚀 Token Launchpad Platform** - Track token launches and ICOs
+- ✅ **💰 Profit/Loss Calculator** - Calculate P&L for positions and transactions
+- ✅ **🌐 Network Status Monitor** - Monitor blockchain network status and health
+- ✅ **⚡ Quick Actions Manager** - Quick action shortcuts for common operations
+- ✅ **🏆 Security Badge Generator** - Generate security badges for wallets
+- ✅ **🔔 Smart Alert Automation** - Automated alert rules and notifications
+- ✅ **🏛️ DAO Treasury Manager** - Manage DAO treasury analysis and tracking
+- ✅ **📅 Token Vesting Scheduler** - Schedule and track token vesting
 
 ### Security & Recommendations
 
@@ -396,9 +409,6 @@ The security score is calculated based on multiple risk factors:
 - ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across chains
 - ✅ **🔍 Security Audit** - Comprehensive security audit and compliance checking
 - ✅ **🌐 Cross-chain Portfolio Aggregator** - Aggregate portfolio across multiple chains
-- ✅ **✅ Smart Contract Verifier** - Verify and analyze smart contract source code
-- ✅ **📦 Token Approval Batch Manager** - Efficiently manage multiple approvals in batches
-- ✅ **🔮 Gas Price Predictor** - Predict optimal gas prices based on historical data
 
 ### Advanced DeFi Features
 
@@ -1739,91 +1749,6 @@ const health = crossChainPortfolioAggregator.calculatePortfolioHealth(portfolio)
 console.log(`Portfolio Health Score: ${health.score}/100`);
 ```
 
-### Smart Contract Verifier
-
-```typescript
-import { smartContractVerifier } from '@/lib/smart-contract-verifier';
-
-// Verify contract
-const verification = await smartContractVerifier.verifyContract('0x...', 1);
-
-console.log(`Verified: ${verification.isVerified}`);
-console.log(`Status: ${verification.verificationStatus}`);
-
-// Analyze security
-const security = smartContractVerifier.analyzeSecurity(verification, sourceCode);
-
-console.log(`Risk Score: ${security.riskScore}/100`);
-security.vulnerabilities.forEach(vuln => {
-  console.log(`${vuln.severity}: ${vuln.title}`);
-});
-
-// Verify interface
-const interfaceCheck = smartContractVerifier.verifyInterface(contractABI, expectedInterface);
-console.log(`Matches: ${interfaceCheck.matches}`);
-```
-
-### Token Approval Batch Manager
-
-```typescript
-import { tokenApprovalBatchManager } from '@/lib/token-approval-batch-manager';
-
-// Create batch plan
-const plan = tokenApprovalBatchManager.createBatchPlan(operations, 30, 10);
-
-console.log(`Estimated Gas: ${plan.estimatedGas}`);
-console.log(`Estimated Cost: ${plan.estimatedCost} ETH`);
-console.log(`Batches: ${plan.batches.length}`);
-
-// Create batch operation
-const operation = tokenApprovalBatchManager.createBatchOperation(operations);
-
-// Optimize batch
-const optimized = tokenApprovalBatchManager.optimizeBatch(operations);
-console.log(`Savings: ${optimized.savings.gas} gas`);
-
-// Validate operations
-const validation = tokenApprovalBatchManager.validateBatchOperations(operations);
-if (!validation.valid) {
-  console.error('Validation errors:', validation.errors);
-}
-```
-
-### Gas Price Predictor
-
-```typescript
-import { gasPricePredictor } from '@/lib/gas-price-predictor';
-
-// Add history entry
-gasPricePredictor.addHistoryEntry(1, {
-  timestamp: Date.now(),
-  slow: 20,
-  standard: 30,
-  fast: 40,
-});
-
-// Predict gas price
-const prediction = gasPricePredictor.predictGasPrice(
-  1,
-  35, // current gas price
-  '15min',
-  networkConditions
-);
-
-console.log(`Predicted: ${prediction.predictedGasPrice} gwei`);
-console.log(`Confidence: ${prediction.confidence}%`);
-console.log(`Trend: ${prediction.trend}`);
-
-// Get optimal gas price for time target
-const optimal = gasPricePredictor.getOptimalGasPriceForTime(1, 60, 35);
-console.log(`Recommended: ${optimal.recommendedGasPrice} gwei`);
-
-// Analyze patterns
-const patterns = gasPricePredictor.analyzePatterns(1);
-console.log(`Peak Hours: ${patterns.peakHours.join(', ')}`);
-console.log(`Volatility: ${patterns.volatility}`);
-```
-
 ### DCA Automation
 
 ```typescript
@@ -2054,6 +1979,14 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Social recovery management
 - ✅ On-chain reputation system
 - ✅ Options & derivatives dashboard
+- ✅ Token launchpad platform
+- ✅ Profit/loss calculator
+- ✅ Network status monitor
+- ✅ Quick actions manager
+- ✅ Security badge generator
+- ✅ Smart alert automation
+- ✅ DAO treasury manager
+- ✅ Token vesting scheduler
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
@@ -2073,9 +2006,6 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Transaction fee optimizer
 - ✅ Comprehensive security audit
 - ✅ Cross-chain portfolio aggregator
-- ✅ Smart contract verifier
-- ✅ Token approval batch manager
-- ✅ Gas price predictor
 
 ### In Progress 🚧
 
