@@ -96,7 +96,9 @@ wallet-health/
 │   │       ├── portfolio-performance.ts  # Portfolio performance metrics
 │   │       ├── contract-interaction-tracker.ts # Smart contract interaction tracking
 │   │       ├── gas-optimizer.ts          # Gas price optimization recommendations
-│   │       └── token-unlock-tracker.ts  # Token vesting & unlock tracking
+│   │       ├── token-unlock-tracker.ts  # Token vesting & unlock tracking
+│   │       ├── cross-chain-bridge-tracker.ts # Cross-chain bridge tracking
+│   │       └── staking-tracker.ts       # Staking positions & rewards tracking
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
