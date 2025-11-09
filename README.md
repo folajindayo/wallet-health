@@ -579,6 +579,18 @@ The security score is calculated based on multiple risk factors:
 
 - `POST /api/risk/trend` - Analyze risk trends and predict future risks
 
+### Token Distribution
+
+- `POST /api/tokens/distribution` - Analyze token distribution and concentration
+
+### Wallet Reputation
+
+- `POST /api/wallet/reputation` - Calculate and compare wallet reputation scores
+
+### Gas Price Prediction
+
+- `POST /api/gas/predict` - Predict optimal gas prices based on historical data
+
 ### Governance
 
 - `POST /api/governance/track` - Track DAO governance participation and voting
