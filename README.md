@@ -42,9 +42,17 @@ wallet-health/
 │   │   │   ├── dashboard/    # Dashboard components
 │   │   │   └── ui/          # Shadcn UI components
 │   │   └── lib/
-│   │       ├── web3-config.ts    # Wagmi & WalletConnect config
-│   │       ├── mongodb.ts        # Database connection
-│   │       └── risk-scorer.ts    # Risk scoring algorithm
+│   │       ├── web3-config.ts              # Wagmi & WalletConnect config
+│   │       ├── mongodb.ts                  # Database connection
+│   │       ├── risk-scorer.ts              # Risk scoring algorithm
+│   │       ├── wallet-monitor.ts           # Real-time wallet monitoring
+│   │       ├── gas-tracker.ts              # Gas price tracking & optimization
+│   │       ├── nft-security-scanner.ts      # NFT security analysis
+│   │       ├── defi-exposure-analyzer.ts   # DeFi protocol exposure analysis
+│   │       ├── transaction-simulator.ts    # Transaction simulation & preview
+│   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
+│   │       ├── risk-model-engine.ts        # Advanced risk modeling
+│   │       └── yield-optimizer.ts          # Yield farming optimization
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
