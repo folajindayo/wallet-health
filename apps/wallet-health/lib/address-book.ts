@@ -1,363 +1,374 @@
 /**
- * Address Book Manager
- * Manages trusted addresses, labels, and contact information
+ * Address Book Manager Utility
+ * Manage saved addresses with labels and notes
  */
 
-export interface AddressEntry {
-  id: string;
+export interface SavedAddress {
   address: string;
   label: string;
-  chainId?: number; // If specific to a chain
-  tags: string[];
   notes?: string;
-  isTrusted: boolean;
-  isContract: boolean;
-  ensName?: string;
-  avatar?: string;
-  createdAt: number;
-  updatedAt: number;
+  tags?: string[];
+  chainId?: number;
+  addedAt: number;
   lastUsed?: number;
-  usageCount: number;
-  metadata?: Record<string, any>;
+  useCount: number;
+  isVerified?: boolean;
+  verificationSource?: string; // e.g., 'ens', 'contract', 'manual'
 }
 
-export interface AddressBookGroup {
+export interface AddressGroup {
   id: string;
   name: string;
-  description?: string;
-  addresses: string[]; // Address IDs
   color?: string;
+  addresses: string[];
   createdAt: number;
 }
 
-export interface AddressBook {
-  entries: Map<string, AddressEntry>; // address -> entry
-  groups: Map<string, AddressBookGroup>; // groupId -> group
-  tags: Set<string>;
-}
-
-export class AddressBookManager {
-  private addressBooks: Map<string, AddressBook> = new Map(); // wallet -> address book
+export class AddressBook {
+  private addresses: Map<string, SavedAddress> = new Map();
+  private groups: Map<string, AddressGroup> = new Map();
 
   /**
-   * Get or create address book for a wallet
+   * Add address to address book
    */
-  private getAddressBook(walletAddress: string): AddressBook {
-    const walletKey = walletAddress.toLowerCase();
-    if (!this.addressBooks.has(walletKey)) {
-      this.addressBooks.set(walletKey, {
-        entries: new Map(),
-        groups: new Map(),
-        tags: new Set(),
-      });
+  addAddress(address: Omit<SavedAddress, 'addedAt' | 'useCount'>): SavedAddress {
+    const addressLower = address.address.toLowerCase();
+    const existing = this.addresses.get(addressLower);
+
+    if (existing) {
+      // Update existing address
+      const updated: SavedAddress = {
+        ...existing,
+        ...address,
+        useCount: existing.useCount,
+      };
+      this.addresses.set(addressLower, updated);
+      this.saveToStorage();
+      return updated;
     }
-    return this.addressBooks.get(walletKey)!;
-  }
 
-  /**
-   * Add or update an address entry
-   */
-  addAddress(
-    walletAddress: string,
-    entry: Omit<AddressEntry, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>
-  ): AddressEntry {
-    const book = this.getAddressBook(walletAddress);
-    const addressKey = entry.address.toLowerCase();
-
-    const existing = book.entries.get(addressKey);
-    const now = Date.now();
-
-    const fullEntry: AddressEntry = {
-      ...entry,
-      id: existing?.id || `addr_${now}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: existing?.createdAt || now,
-      updatedAt: now,
-      usageCount: existing?.usageCount || 0,
-      tags: entry.tags || [],
+    const newAddress: SavedAddress = {
+      ...address,
+      address: addressLower,
+      addedAt: Date.now(),
+      useCount: 0,
     };
 
-    book.entries.set(addressKey, fullEntry);
-
-    // Update tags set
-    fullEntry.tags.forEach(tag => book.tags.add(tag));
-
-    return fullEntry;
+    this.addresses.set(addressLower, newAddress);
+    this.saveToStorage();
+    return newAddress;
   }
 
   /**
-   * Get address entry
+   * Get address by address string
    */
-  getAddress(walletAddress: string, address: string): AddressEntry | null {
-    const book = this.getAddressBook(walletAddress);
-    return book.entries.get(address.toLowerCase()) || null;
+  getAddress(address: string): SavedAddress | null {
+    return this.addresses.get(address.toLowerCase()) || null;
   }
 
   /**
-   * Update address entry
+   * Update address
    */
   updateAddress(
-    walletAddress: string,
     address: string,
-    updates: Partial<Omit<AddressEntry, 'id' | 'address' | 'createdAt' | 'usageCount'>>
-  ): AddressEntry | null {
-    const book = this.getAddressBook(walletAddress);
-    const entry = book.entries.get(address.toLowerCase());
+    updates: Partial<SavedAddress>
+  ): SavedAddress | null {
+    const addressLower = address.toLowerCase();
+    const existing = this.addresses.get(addressLower);
+    if (!existing) return null;
 
-    if (!entry) return null;
-
-    const updated: AddressEntry = {
-      ...entry,
-      ...updates,
-      updatedAt: Date.now(),
-    };
-
-    book.entries.set(address.toLowerCase(), updated);
-
-    // Update tags if changed
-    if (updates.tags) {
-      updates.tags.forEach(tag => book.tags.add(tag));
-    }
-
+    const updated = { ...existing, ...updates };
+    this.addresses.set(addressLower, updated);
+    this.saveToStorage();
     return updated;
   }
 
   /**
-   * Remove address entry
+   * Remove address
    */
-  removeAddress(walletAddress: string, address: string): boolean {
-    const book = this.getAddressBook(walletAddress);
-    return book.entries.delete(address.toLowerCase());
+  removeAddress(address: string): boolean {
+    const removed = this.addresses.delete(address.toLowerCase());
+    if (removed) {
+      // Remove from all groups
+      this.groups.forEach(group => {
+        const index = group.addresses.indexOf(address.toLowerCase());
+        if (index > -1) {
+          group.addresses.splice(index, 1);
+        }
+      });
+      this.saveToStorage();
+    }
+    return removed;
   }
 
   /**
    * Record address usage
    */
-  recordUsage(walletAddress: string, address: string): void {
-    const book = this.getAddressBook(walletAddress);
-    const entry = book.entries.get(address.toLowerCase());
-
-    if (entry) {
-      entry.usageCount++;
-      entry.lastUsed = Date.now();
-      entry.updatedAt = Date.now();
+  recordUsage(address: string): void {
+    const addressLower = address.toLowerCase();
+    const existing = this.addresses.get(addressLower);
+    if (existing) {
+      existing.useCount++;
+      existing.lastUsed = Date.now();
+      this.addresses.set(addressLower, existing);
+      this.saveToStorage();
     }
-  }
-
-  /**
-   * Search addresses
-   */
-  searchAddresses(
-    walletAddress: string,
-    query: {
-      search?: string;
-      tags?: string[];
-      isTrusted?: boolean;
-      isContract?: boolean;
-      chainId?: number;
-      limit?: number;
-    }
-  ): AddressEntry[] {
-    const book = this.getAddressBook(walletAddress);
-    let results = Array.from(book.entries.values());
-
-    // Filter by search term
-    if (query.search) {
-      const searchLower = query.search.toLowerCase();
-      results = results.filter(
-        entry =>
-          entry.label.toLowerCase().includes(searchLower) ||
-          entry.address.toLowerCase().includes(searchLower) ||
-          entry.ensName?.toLowerCase().includes(searchLower) ||
-          entry.notes?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Filter by tags
-    if (query.tags && query.tags.length > 0) {
-      results = results.filter(entry =>
-        query.tags!.some(tag => entry.tags.includes(tag))
-      );
-    }
-
-    // Filter by trusted status
-    if (query.isTrusted !== undefined) {
-      results = results.filter(entry => entry.isTrusted === query.isTrusted);
-    }
-
-    // Filter by contract status
-    if (query.isContract !== undefined) {
-      results = results.filter(entry => entry.isContract === query.isContract);
-    }
-
-    // Filter by chain
-    if (query.chainId !== undefined) {
-      results = results.filter(
-        entry => !entry.chainId || entry.chainId === query.chainId
-      );
-    }
-
-    // Sort by usage count and last used
-    results.sort((a, b) => {
-      if (b.usageCount !== a.usageCount) {
-        return b.usageCount - a.usageCount;
-      }
-      return (b.lastUsed || 0) - (a.lastUsed || 0);
-    });
-
-    // Apply limit
-    if (query.limit) {
-      results = results.slice(0, query.limit);
-    }
-
-    return results;
   }
 
   /**
    * Get all addresses
    */
-  getAllAddresses(walletAddress: string): AddressEntry[] {
-    const book = this.getAddressBook(walletAddress);
-    return Array.from(book.entries.values());
+  getAllAddresses(): SavedAddress[] {
+    return Array.from(this.addresses.values());
   }
 
   /**
-   * Create a group
+   * Search addresses
    */
-  createGroup(
-    walletAddress: string,
-    group: Omit<AddressBookGroup, 'id' | 'createdAt'>
-  ): AddressBookGroup {
-    const book = this.getAddressBook(walletAddress);
-    const now = Date.now();
+  searchAddresses(query: string): SavedAddress[] {
+    const lowerQuery = query.toLowerCase();
+    return Array.from(this.addresses.values()).filter(addr => {
+      return (
+        addr.address.toLowerCase().includes(lowerQuery) ||
+        addr.label.toLowerCase().includes(lowerQuery) ||
+        addr.notes?.toLowerCase().includes(lowerQuery) ||
+        addr.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+      );
+    });
+  }
 
-    const fullGroup: AddressBookGroup = {
+  /**
+   * Get addresses by tag
+   */
+  getAddressesByTag(tag: string): SavedAddress[] {
+    return Array.from(this.addresses.values()).filter(
+      addr => addr.tags?.includes(tag)
+    );
+  }
+
+  /**
+   * Get frequently used addresses
+   */
+  getFrequentlyUsed(limit = 10): SavedAddress[] {
+    return Array.from(this.addresses.values())
+      .sort((a, b) => b.useCount - a.useCount)
+      .slice(0, limit);
+  }
+
+  /**
+   * Get recently used addresses
+   */
+  getRecentlyUsed(limit = 10): SavedAddress[] {
+    return Array.from(this.addresses.values())
+      .filter(addr => addr.lastUsed)
+      .sort((a, b) => (b.lastUsed || 0) - (a.lastUsed || 0))
+      .slice(0, limit);
+  }
+
+  /**
+   * Create address group
+   */
+  createGroup(group: Omit<AddressGroup, 'id' | 'createdAt'>): AddressGroup {
+    const newGroup: AddressGroup = {
       ...group,
-      id: `group_${now}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: now,
-      addresses: group.addresses || [],
+      id: `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: Date.now(),
     };
 
-    book.groups.set(fullGroup.id, fullGroup);
-    return fullGroup;
+    this.groups.set(newGroup.id, newGroup);
+    this.saveToStorage();
+    return newGroup;
   }
 
   /**
    * Add address to group
    */
-  addAddressToGroup(
-    walletAddress: string,
-    groupId: string,
-    addressId: string
-  ): boolean {
-    const book = this.getAddressBook(walletAddress);
-    const group = book.groups.get(groupId);
-
+  addAddressToGroup(groupId: string, address: string): boolean {
+    const group = this.groups.get(groupId);
     if (!group) return false;
 
-    if (!group.addresses.includes(addressId)) {
-      group.addresses.push(addressId);
+    const addressLower = address.toLowerCase();
+    if (!group.addresses.includes(addressLower)) {
+      group.addresses.push(addressLower);
+      this.saveToStorage();
     }
-
     return true;
   }
 
   /**
    * Remove address from group
    */
-  removeAddressFromGroup(
-    walletAddress: string,
-    groupId: string,
-    addressId: string
-  ): boolean {
-    const book = this.getAddressBook(walletAddress);
-    const group = book.groups.get(groupId);
-
+  removeAddressFromGroup(groupId: string, address: string): boolean {
+    const group = this.groups.get(groupId);
     if (!group) return false;
 
-    group.addresses = group.addresses.filter(id => id !== addressId);
-    return true;
+    const index = group.addresses.indexOf(address.toLowerCase());
+    if (index > -1) {
+      group.addresses.splice(index, 1);
+      this.saveToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Get group addresses
+   */
+  getGroupAddresses(groupId: string): SavedAddress[] {
+    const group = this.groups.get(groupId);
+    if (!group) return [];
+
+    return group.addresses
+      .map(address => this.addresses.get(address))
+      .filter((addr): addr is SavedAddress => addr !== undefined);
   }
 
   /**
    * Get all groups
    */
-  getAllGroups(walletAddress: string): AddressBookGroup[] {
-    const book = this.getAddressBook(walletAddress);
-    return Array.from(book.groups.values());
+  getAllGroups(): AddressGroup[] {
+    return Array.from(this.groups.values());
   }
 
   /**
-   * Get all tags
+   * Delete group
    */
-  getAllTags(walletAddress: string): string[] {
-    const book = this.getAddressBook(walletAddress);
-    return Array.from(book.tags);
+  deleteGroup(groupId: string): boolean {
+    return this.groups.delete(groupId);
+  }
+
+  /**
+   * Verify address (mark as verified)
+   */
+  verifyAddress(
+    address: string,
+    source: string,
+    verified = true
+  ): SavedAddress | null {
+    const addressLower = address.toLowerCase();
+    const existing = this.addresses.get(addressLower);
+    if (!existing) return null;
+
+    existing.isVerified = verified;
+    existing.verificationSource = source;
+    this.addresses.set(addressLower, existing);
+    this.saveToStorage();
+    return existing;
   }
 
   /**
    * Get statistics
    */
-  getStatistics(walletAddress: string): {
+  getStatistics(): {
     totalAddresses: number;
-    trustedAddresses: number;
-    contractAddresses: number;
+    verifiedAddresses: number;
     totalGroups: number;
-    totalTags: number;
-    mostUsedAddresses: AddressEntry[];
+    mostUsedAddress: SavedAddress | null;
+    averageUseCount: number;
   } {
-    const book = this.getAddressBook(walletAddress);
-    const entries = Array.from(book.entries.values());
+    const addresses = Array.from(this.addresses.values());
+    const verified = addresses.filter(a => a.isVerified).length;
+    const totalUseCount = addresses.reduce((sum, a) => sum + a.useCount, 0);
+    const averageUseCount = addresses.length > 0
+      ? totalUseCount / addresses.length
+      : 0;
 
-    const trustedAddresses = entries.filter(e => e.isTrusted).length;
-    const contractAddresses = entries.filter(e => e.isContract).length;
-
-    const mostUsedAddresses = entries
-      .sort((a, b) => b.usageCount - a.usageCount)
-      .slice(0, 10);
+    const mostUsed = addresses.length > 0
+      ? addresses.reduce((max, a) => a.useCount > max.useCount ? a : max, addresses[0])
+      : null;
 
     return {
-      totalAddresses: entries.length,
-      trustedAddresses,
-      contractAddresses,
-      totalGroups: book.groups.size,
-      totalTags: book.tags.size,
-      mostUsedAddresses,
+      totalAddresses: addresses.length,
+      verifiedAddresses: verified,
+      totalGroups: this.groups.size,
+      mostUsedAddress: mostUsed,
+      averageUseCount: Math.round(averageUseCount * 100) / 100,
     };
   }
 
   /**
    * Export address book
    */
-  exportAddressBook(walletAddress: string): AddressBook {
-    const book = this.getAddressBook(walletAddress);
-    return {
-      entries: new Map(book.entries),
-      groups: new Map(book.groups),
-      tags: new Set(book.tags),
-    };
+  exportAddressBook(): string {
+    return JSON.stringify({
+      addresses: Array.from(this.addresses.values()),
+      groups: Array.from(this.groups.values()),
+      exportDate: new Date().toISOString(),
+    }, null, 2);
   }
 
   /**
    * Import address book
    */
-  importAddressBook(walletAddress: string, importedBook: AddressBook): void {
-    const book = this.getAddressBook(walletAddress);
-    
-    // Merge entries
-    importedBook.entries.forEach((entry, address) => {
-      book.entries.set(address, entry);
-    });
+  importAddressBook(data: {
+    addresses: SavedAddress[];
+    groups?: AddressGroup[];
+  }): void {
+    if (data.addresses) {
+      data.addresses.forEach(addr => {
+        this.addresses.set(addr.address.toLowerCase(), addr);
+      });
+    }
 
-    // Merge groups
-    importedBook.groups.forEach((group, id) => {
-      book.groups.set(id, group);
-    });
+    if (data.groups) {
+      data.groups.forEach(group => {
+        this.groups.set(group.id, group);
+      });
+    }
 
-    // Merge tags
-    importedBook.tags.forEach(tag => book.tags.add(tag));
+    this.saveToStorage();
+  }
+
+  /**
+   * Save to localStorage
+   */
+  private saveToStorage(): void {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          'wallet-health-address-book',
+          JSON.stringify({
+            addresses: Array.from(this.addresses.values()),
+            groups: Array.from(this.groups.values()),
+          })
+        );
+      } catch (error) {
+        console.error('Failed to save address book to storage:', error);
+      }
+    }
+  }
+
+  /**
+   * Load from localStorage
+   */
+  loadFromStorage(): void {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('wallet-health-address-book');
+        if (stored) {
+          const data = JSON.parse(stored);
+          if (data.addresses) {
+            data.addresses.forEach((addr: SavedAddress) => {
+              this.addresses.set(addr.address.toLowerCase(), addr);
+            });
+          }
+          if (data.groups) {
+            data.groups.forEach((group: AddressGroup) => {
+              this.groups.set(group.id, group);
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load address book from storage:', error);
+      }
+    }
   }
 }
 
 // Singleton instance
-export const addressBookManager = new AddressBookManager();
+export const addressBook = new AddressBook();
 
+// Initialize from storage if available
+if (typeof window !== 'undefined') {
+  addressBook.loadFromStorage();
+}
