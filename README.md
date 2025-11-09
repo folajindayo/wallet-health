@@ -808,6 +808,152 @@ if (!simulation.success) {
 }
 ```
 
+### Portfolio Performance Tracking
+
+```typescript
+import { portfolioPerformanceTracker } from '@/lib/portfolio-performance-tracker';
+
+// Add portfolio snapshot
+portfolioPerformanceTracker.addSnapshot({
+  timestamp: Date.now(),
+  totalValueUSD: 10000,
+  tokenBreakdown: [...],
+  chainBreakdown: [...],
+});
+
+// Calculate performance metrics
+const metrics = portfolioPerformanceTracker.calculateMetrics();
+console.log(`Total Return: ${metrics?.totalReturnPercent}%`);
+console.log(`Best Performer: ${metrics?.bestPerformer.symbol}`);
+```
+
+### Contract Interaction Tracking
+
+```typescript
+import { contractInteractionTracker } from '@/lib/contract-interaction-tracker';
+
+// Add interaction
+contractInteractionTracker.addInteraction({
+  hash: '0x...',
+  timestamp: Date.now(),
+  from: '0x...',
+  to: '0x...',
+  contractAddress: '0x...',
+  method: 'transfer',
+  value: '1000000000000000000',
+  gasUsed: 21000,
+  gasPrice: 30e9,
+  status: 'success',
+  chainId: 1,
+  blockNumber: 12345678,
+});
+
+// Get contract statistics
+const stats = contractInteractionTracker.getContractStats('0x...');
+console.log(`Total Interactions: ${stats?.totalInteractions}`);
+console.log(`Risk Score: ${stats?.riskScore}`);
+```
+
+### Price Alerts
+
+```typescript
+import { priceAlertManager } from '@/lib/price-alert-manager';
+
+// Create price alert
+const alert = priceAlertManager.createAlert(
+  '0x...', // token address
+  'ETH',
+  1, // chain ID
+  'above', // condition
+  2000 // target price in USD
+);
+
+// Update price and check alerts
+const triggers = await priceAlertManager.updatePrice('0x...', 1, 2100);
+triggers.forEach(trigger => {
+  console.log(`Alert triggered: ${trigger.tokenSymbol} reached ${trigger.actualPrice}`);
+});
+```
+
+### Activity Heatmap
+
+```typescript
+import { activityHeatmapGenerator } from '@/lib/activity-heatmap-generator';
+
+const activities = [
+  { timestamp: Date.now(), type: 'transfer', value: 100, chainId: 1 },
+  // ... more activities
+];
+
+// Generate heatmap data
+const heatmap = activityHeatmapGenerator.generateHeatmap(activities, 7); // 7 days
+
+// Generate statistics
+const stats = activityHeatmapGenerator.generateStats(activities);
+console.log(`Busiest Day: ${stats.busiestDay}`);
+console.log(`Busiest Hour: ${stats.busiestHour}`);
+```
+
+### Risk Trend Analysis
+
+```typescript
+import { riskTrendAnalyzer } from '@/lib/risk-trend-analyzer';
+
+// Add risk snapshot
+riskTrendAnalyzer.addSnapshot({
+  timestamp: Date.now(),
+  score: 85,
+  riskLevel: 'safe',
+  factors: [...],
+});
+
+// Analyze trend
+const trend = riskTrendAnalyzer.analyzeTrend();
+console.log(`Trend: ${trend?.trend}`);
+console.log(`Predicted Score: ${trend?.prediction?.nextScore}`);
+```
+
+### Approval Optimization
+
+```typescript
+import { approvalOptimizer } from '@/lib/approval-optimizer';
+
+const analysis = approvalOptimizer.analyzeApprovals(approvals, usagePatterns);
+
+console.log(`Unlimited Approvals: ${analysis.unlimitedApprovals}`);
+console.log(`Recommendations: ${analysis.recommendations.length}`);
+
+// Get approval health score
+const healthScore = approvalOptimizer.getApprovalHealthScore(analysis);
+console.log(`Approval Health Score: ${healthScore}`);
+```
+
+### Cross-chain Bridge Tracking
+
+```typescript
+import { crossChainBridgeTracker } from '@/lib/cross-chain-bridge-tracker';
+
+// Add bridge transaction
+crossChainBridgeTracker.addBridge({
+  hash: '0x...',
+  timestamp: Date.now(),
+  fromChain: 1,
+  toChain: 8453,
+  fromAddress: '0x...',
+  toAddress: '0x...',
+  tokenAddress: '0x...',
+  tokenSymbol: 'ETH',
+  amount: '1000000000000000000',
+  bridgeProtocol: 'Base Bridge',
+  status: 'pending',
+});
+
+// Get bridge statistics
+const stats = crossChainBridgeTracker.getStats();
+console.log(`Total Bridges: ${stats.totalBridges}`);
+console.log(`Success Rate: ${stats.successRate}%`);
+```
+
 ## 📊 Performance Metrics
 
 - **Scan Speed**: < 5 seconds for multi-chain wallet scan
