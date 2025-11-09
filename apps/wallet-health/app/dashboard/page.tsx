@@ -3,14 +3,20 @@
 import { useAccount, useChainId } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Shield, LogOut } from 'lucide-react';
+import { Shield, LogOut, Download, Copy, FileJson, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SecurityScoreCard } from '@/components/dashboard/security-score-card';
 import { ApprovalList } from '@/components/dashboard/approval-list';
 import { RiskAlerts } from '@/components/dashboard/risk-alerts';
+import { TokenList } from '@/components/dashboard/token-list';
+import { ChainSelector } from '@/components/dashboard/chain-selector';
+import { Recommendations } from '@/components/dashboard/recommendations';
+import { ScanHistory } from '@/components/dashboard/scan-history';
 import { formatAddress } from '@/lib/utils';
 import { useAppKit } from '@reown/appkit/react';
 import axios from 'axios';
+import { exportAsJSON, exportAsCSV, copyToClipboard } from '@/lib/export-report';
+import { calculateRiskScore } from '@/lib/risk-scorer';
 import type { WalletScanResult, TokenApproval, TokenInfo, RiskAlert } from '@wallet-health/types';
 
 export default function DashboardPage() {
@@ -21,7 +27,9 @@ export default function DashboardPage() {
 
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<WalletScanResult | null>(null);
+  const [scanHistory, setScanHistory] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   // Redirect to landing if not connected
   useEffect(() => {
@@ -34,9 +42,24 @@ export default function DashboardPage() {
   useEffect(() => {
     if (address && chainId) {
       performScan();
+      fetchScanHistory();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, chainId]);
+
+  // Fetch scan history
+  const fetchScanHistory = async () => {
+    if (!address) return;
+    
+    try {
+      const response = await axios.get(`/api/db/scan-history?walletAddress=${address}&limit=10`);
+      if (response.data.success) {
+        setScanHistory(response.data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch scan history:', err);
+    }
+  };
 
   const performScan = async () => {
     if (!address) return;
@@ -88,6 +111,9 @@ export default function DashboardPage() {
 
       // Save to database
       await axios.post('/api/db/save-scan', result);
+      
+      // Refresh scan history
+      fetchScanHistory();
     } catch (err: any) {
       console.error('Scan error:', err);
       setError(err.response?.data?.message || 'Failed to scan wallet. Please try again.');
@@ -124,14 +150,62 @@ export default function DashboardPage() {
                 </span>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => open()}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Disconnect
-            </Button>
+            <div className="flex items-center gap-2">
+              {scanResult && (
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowExportMenu(!showExportMenu)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  {showExportMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-1 z-20">
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                        onClick={() => {
+                          exportAsJSON(scanResult);
+                          setShowExportMenu(false);
+                        }}
+                      >
+                        <FileJson className="h-4 w-4" />
+                        Export as JSON
+                      </button>
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                        onClick={() => {
+                          exportAsCSV(scanResult);
+                          setShowExportMenu(false);
+                        }}
+                      >
+                        <FileSpreadsheet className="h-4 w-4" />
+                        Export as CSV
+                      </button>
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                        onClick={() => {
+                          copyToClipboard(scanResult);
+                          setShowExportMenu(false);
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy to Clipboard
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => open()}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Disconnect
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -158,12 +232,21 @@ export default function DashboardPage() {
 
         {scanResult && (
           <div className="space-y-6">
+            {/* Chain Selector */}
+            <ChainSelector />
+
             {/* Security Score */}
             <SecurityScoreCard
               score={scanResult.score}
               riskLevel={scanResult.riskLevel}
               onScanAgain={performScan}
               isScanning={isScanning}
+            />
+
+            {/* Recommendations */}
+            <Recommendations 
+              riskScore={calculateRiskScore(scanResult.approvals, scanResult.tokens, false)} 
+              chainId={chainId} 
             />
 
             {/* Two Column Layout */}
@@ -174,6 +257,14 @@ export default function DashboardPage() {
               {/* Approvals List */}
               <ApprovalList approvals={scanResult.approvals} chainId={chainId} />
             </div>
+
+            {/* Token List */}
+            <TokenList tokens={scanResult.tokens} chainId={chainId} />
+
+            {/* Scan History */}
+            {scanHistory.length > 0 && (
+              <ScanHistory scans={scanHistory} />
+            )}
 
             {/* Info Footer */}
             <div className="text-center text-sm text-muted-foreground pt-8">
