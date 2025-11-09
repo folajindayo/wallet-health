@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd apps/wallet-health && npm run build",
+  "outputDirectory": "apps/wallet-health/.next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/apps/wallet-health/$1"
+    }
+  ]
+}
+
