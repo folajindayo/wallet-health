@@ -860,6 +860,105 @@ console.log(`Common approvals: ${comparison.commonApprovals.length}`);
 console.log(`Unique to wallet 1: ${comparison.uniqueApprovals1.length}`);
 ```
 
+### Approval Revocation
+
+```typescript
+import { approvalRevoker } from '@/lib/approval-revoker';
+
+// Analyze approvals for revocation
+const plan = approvalRevoker.analyzeApprovalsForRevocation(approvals);
+console.log(`High priority: ${plan.recommendations.filter(r => r.priority === 'high').length}`);
+
+// Generate revocation transaction
+const transaction = approvalRevoker.generateRevocationTransaction(approval, '0');
+
+// Batch revocation (saves gas)
+const batchTx = approvalRevoker.generateBatchRevocationTransaction(approvals);
+console.log(`Gas savings: ${batchTx.totalGasEstimate} vs individual`);
+```
+
+### Health Trends
+
+```typescript
+import { healthTrendsTracker } from '@/lib/health-trends';
+
+// Record a snapshot
+healthTrendsTracker.recordSnapshot('0x...', {
+  timestamp: Date.now(),
+  score: 85,
+  riskLevel: 'safe',
+  factors: { /* ... */ },
+});
+
+// Get trends
+const trends = healthTrendsTracker.getTrends('0x...', ['7d', '30d', '90d']);
+console.log(`7-day trend: ${trends.trends[0].trend}`);
+console.log(`Predicted next week: ${trends.trends[0].predictions?.nextWeek}`);
+```
+
+### Address Book
+
+```typescript
+import { addressBookManager } from '@/lib/address-book';
+
+// Add address
+const entry = addressBookManager.addAddress('0x...', {
+  address: '0x...',
+  label: 'My DeFi Protocol',
+  tags: ['defi', 'trusted'],
+  isTrusted: true,
+  isContract: true,
+});
+
+// Search addresses
+const results = addressBookManager.searchAddresses('0x...', {
+  search: 'defi',
+  tags: ['trusted'],
+});
+
+// Record usage
+addressBookManager.recordUsage('0x...', '0x...');
+```
+
+### Transaction Batch Analysis
+
+```typescript
+import { transactionBatchAnalyzer } from '@/lib/transaction-batch-analyzer';
+
+const analysis = transactionBatchAnalyzer.analyzeBatch(transactions);
+
+console.log(`Total transactions: ${analysis.summary.total}`);
+console.log(`Frequent recipients: ${analysis.patterns.frequentRecipients.length}`);
+console.log(`Risks detected: ${analysis.risks.length}`);
+
+// Compare two batches
+const comparison = transactionBatchAnalyzer.compareBatches(batch1, batch2);
+console.log(`Common recipients: ${comparison.commonRecipients.length}`);
+```
+
+### Recovery Phrase Security
+
+```typescript
+import { recoveryChecker } from '@/lib/recovery-checker';
+
+// Check phrase security (without storing)
+const result = recoveryChecker.checkRecoveryPhrase('word1 word2 ...');
+console.log(`Security score: ${result.score}`);
+console.log(`Risk level: ${result.riskLevel}`);
+
+// Check for exposure
+const exposure = recoveryChecker.checkForExposure(phrase, {
+  storedInCloud: false,
+  sharedWithOthers: false,
+  writtenDown: true,
+});
+console.log(`Exposure risk: ${exposure.exposureRisk}`);
+
+// Validate BIP39 format
+const validation = recoveryChecker.validateBIP39Format(phrase);
+console.log(`Valid: ${validation.valid}`);
+```
+
 ### Transaction Simulation
 
 ```typescript
