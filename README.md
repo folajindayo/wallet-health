@@ -1005,6 +1005,270 @@ console.log(`Total Bridges: ${stats.totalBridges}`);
 console.log(`Success Rate: ${stats.successRate}%`);
 ```
 
+### Approval Revoker
+
+```typescript
+import { approvalRevoker } from '@/lib/approval-revoker';
+
+// Generate revoke transaction
+const revokeTx = approvalRevoker.generateRevokeTransaction({
+  tokenAddress: '0x...',
+  spenderAddress: '0x...',
+  chainId: 1,
+  walletAddress: '0x...',
+});
+
+// Get revoke recommendations
+const recommendations = approvalRevoker.getRevokeRecommendations(approvals);
+console.log(`Critical: ${recommendations.critical.length}`);
+console.log(`High: ${recommendations.high.length}`);
+
+// Estimate gas cost
+const gasEstimate = approvalRevoker.estimateGasCost(approvals, '30');
+console.log(`Total Cost: ${gasEstimate.totalCostETH} ETH`);
+```
+
+### Wallet Backup & Export
+
+```typescript
+import { walletBackup } from '@/lib/wallet-backup';
+
+// Create backup
+const backup = walletBackup.createBackup(
+  '0x...',
+  1,
+  scanResults,
+  { alerts: true, monitoring: true, theme: 'dark' }
+);
+
+// Export as JSON
+walletBackup.exportAsJSON(backup);
+
+// Export as encrypted
+await walletBackup.exportAsEncrypted(backup, 'your-password');
+
+// Import encrypted backup
+const imported = await walletBackup.importEncrypted(encryptedData, 'your-password');
+```
+
+### Watchlist Manager
+
+```typescript
+import { watchlistManager } from '@/lib/watchlist-manager';
+
+// Add wallet to watchlist
+watchlistManager.addWallet({
+  address: '0x...',
+  label: 'My Main Wallet',
+  tags: ['personal', 'defi'],
+  chainId: 1,
+  alertsEnabled: true,
+});
+
+// Create watchlist group
+const group = watchlistManager.createGroup({
+  name: 'DeFi Wallets',
+  wallets: ['0x...', '0x...'],
+  color: '#10b981',
+});
+
+// Get watchlist statistics
+const stats = watchlistManager.getStats();
+console.log(`Total Wallets: ${stats.totalWallets}`);
+console.log(`Average Score: ${stats.averageScore}`);
+```
+
+### Token Metadata Cache
+
+```typescript
+import { tokenMetadataCache } from '@/lib/token-metadata-cache';
+
+// Set token metadata
+tokenMetadataCache.set({
+  address: '0x...',
+  chainId: 1,
+  symbol: 'USDC',
+  name: 'USD Coin',
+  decimals: 6,
+  logoURI: 'https://...',
+  priceUSD: 1.0,
+});
+
+// Get cached metadata
+const metadata = tokenMetadataCache.get('0x...', 1);
+if (metadata) {
+  console.log(`Token: ${metadata.symbol} - $${metadata.priceUSD}`);
+}
+
+// Search tokens
+const results = tokenMetadataCache.search('USDC');
+```
+
+### Transaction Batch Analyzer
+
+```typescript
+import { transactionBatchAnalyzer } from '@/lib/transaction-batch-analyzer';
+
+// Analyze batch of transactions
+const analysis = transactionBatchAnalyzer.analyzeBatch(transactions);
+
+console.log(`Total: ${analysis.summary.total}`);
+console.log(`Successful: ${analysis.summary.successful}`);
+console.log(`Risks: ${analysis.risks.length}`);
+
+// Get patterns
+console.log(`Most Active Hour: ${analysis.patterns.timePatterns.mostActiveHour}`);
+console.log(`Frequent Recipients: ${analysis.patterns.frequentRecipients.length}`);
+```
+
+### Wallet Tagging
+
+```typescript
+import { walletTagging } from '@/lib/wallet-tagging';
+
+// Create tag
+const tag = walletTagging.createTag({
+  name: 'High Risk',
+  color: '#ef4444',
+  description: 'Wallets with high risk scores',
+});
+
+// Tag wallet
+walletTagging.tagWallet('0x...', [tag.id], 'Needs review', 'critical');
+
+// Get wallets by tag
+const taggedWallets = walletTagging.getWalletsByTag(tag.id);
+
+// Get tag statistics
+const stats = walletTagging.getTagStats();
+console.log(`Total Tags: ${stats.totalTags}`);
+```
+
+### Security Recommendations
+
+```typescript
+import { securityRecommendationsEngine } from '@/lib/security-recommendations';
+
+// Generate recommendations
+const recommendations = securityRecommendationsEngine.generateRecommendations({
+  approvals,
+  tokens,
+  contracts,
+  riskScore: 65,
+  alerts,
+});
+
+// Get critical recommendations
+const critical = securityRecommendationsEngine.getRecommendationsBySeverity(
+  'critical',
+  context
+);
+
+critical.forEach(rec => {
+  console.log(`${rec.title}: ${rec.action}`);
+});
+```
+
+### Approval History Tracker
+
+```typescript
+import { approvalHistoryTracker } from '@/lib/approval-history-tracker';
+
+// Add history entry
+approvalHistoryTracker.addHistoryEntry({
+  tokenAddress: '0x...',
+  tokenSymbol: 'USDC',
+  spenderAddress: '0x...',
+  action: 'granted',
+  newAllowance: '1000000000',
+  chainId: 1,
+});
+
+// Get approval trends
+const trends = approvalHistoryTracker.getApprovalTrends();
+trends.forEach(trend => {
+  console.log(`${trend.tokenSymbol}: ${trend.trend}`);
+});
+
+// Get statistics
+const stats = approvalHistoryTracker.getStatistics();
+console.log(`Total Grants: ${stats.grants}`);
+console.log(`Average Lifetime: ${stats.averageLifetime} days`);
+```
+
+### Address Book
+
+```typescript
+import { addressBook } from '@/lib/address-book';
+
+// Add address
+addressBook.addAddress({
+  address: '0x...',
+  label: 'Uniswap Router',
+  notes: 'Main DEX router',
+  tags: ['defi', 'dex'],
+  chainId: 1,
+  isVerified: true,
+  verificationSource: 'contract',
+});
+
+// Record usage
+addressBook.recordUsage('0x...');
+
+// Get frequently used addresses
+const frequent = addressBook.getFrequentlyUsed(10);
+frequent.forEach(addr => {
+  console.log(`${addr.label}: ${addr.useCount} uses`);
+});
+```
+
+### Gas Optimization Calculator
+
+```typescript
+import { gasOptimizationCalculator } from '@/lib/gas-optimization-calculator';
+
+// Calculate gas estimate
+const estimate = gasOptimizationCalculator.calculateGasEstimate(
+  21000, // gas limit
+  gasPriceData,
+  'standard',
+  2000 // ETH price USD
+);
+
+console.log(`Cost: ${estimate.costETH} ETH ($${estimate.costUSD})`);
+
+// Get optimization recommendation
+const recommendation = gasOptimizationCalculator.getOptimizationRecommendation(
+  50, // current gas price (gwei)
+  gasPriceData,
+  'medium'
+);
+
+console.log(`Recommended: ${recommendation.recommendedGasPrice} gwei`);
+console.log(`Savings: ${recommendation.savings.percentage}%`);
+```
+
+### Wallet Health Report Generator
+
+```typescript
+import { walletHealthReportGenerator } from '@/lib/wallet-health-report';
+
+// Generate report
+const report = walletHealthReportGenerator.generateReport(scanResults, {
+  includeTrends: true,
+  includeDetailedAnalysis: true,
+});
+
+console.log(`Overall Score: ${report.summary.overallScore}/100`);
+console.log(`Risk Level: ${report.summary.riskLevel}`);
+
+// Export as markdown
+const markdown = walletHealthReportGenerator.exportAsMarkdown(report);
+
+// Export as JSON
+const json = walletHealthReportGenerator.exportAsJSON(report);
+```
+
 ## 📊 Performance Metrics
 
 - **Scan Speed**: < 5 seconds for multi-chain wallet scan
