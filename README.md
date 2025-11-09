@@ -1541,6 +1541,14 @@ analysis.relationships.forEach(rel => {
 - ✅ Airdrop eligibility checking
 - ✅ Portfolio rebalancing
 - ✅ Yield opportunity finding
+- ✅ Whale activity tracking
+- ✅ Rug pull detection
+- ✅ Transaction batch execution
+- ✅ Activity timeline generation
+- ✅ Token metadata fetching
+- ✅ Address book management
+- ✅ Gas price prediction
+- ✅ Smart contract deployment helper
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
