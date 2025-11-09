@@ -9,39 +9,52 @@ export interface GovernanceProposal {
   daoName: string;
   chainId: number;
   title: string;
-  description?: string;
+  description: string;
   proposer: string;
   startBlock: number;
   endBlock: number;
-  startDate: number;
-  endDate: number;
+  startTime: number;
+  endTime: number;
   status: 'pending' | 'active' | 'succeeded' | 'defeated' | 'executed' | 'cancelled';
+  votesFor: string;
+  votesAgainst: string;
+  quorum: string;
   votingPower?: string;
-  forVotes?: string;
-  againstVotes?: string;
-  abstainVotes?: string;
-  quorum?: string;
-  metadata?: Record<string, any>;
 }
 
 export interface GovernanceVote {
   proposalId: string;
   voter: string;
   timestamp: number;
-  support: 'for' | 'against' | 'abstain';
+  support: boolean; // true = for, false = against
   votingPower: string;
+  votingPowerUSD?: number;
   reason?: string;
-  transactionHash?: string;
-  chainId: number;
+  transactionHash: string;
 }
 
-export interface GovernanceParticipation {
-  walletAddress: string;
+export interface GovernancePosition {
+  dao: string;
+  daoName: string;
+  chainId: number;
+  tokenAddress: string;
+  tokenSymbol: string;
+  balance: string;
+  balanceUSD?: number;
+  votingPower: string;
+  delegations?: Array<{
+    delegate: string;
+    amount: string;
+  }>;
+}
+
+export interface GovernanceSummary {
   totalProposals: number;
   votedProposals: number;
   participationRate: number;
   totalVotingPower: string;
-  averageVotingPower: string;
+  totalVotingPowerUSD?: number;
+  positions: GovernancePosition[];
   daos: Record<string, {
     dao: string;
     daoName: string;
@@ -49,35 +62,31 @@ export interface GovernanceParticipation {
     votes: number;
     participationRate: number;
   }>;
-  votingHistory: GovernanceVote[];
-  recentActivity: Array<{
-    date: number;
-    proposals: number;
-    votes: number;
-  }>;
+  recentVotes: GovernanceVote[];
 }
 
 export class GovernanceTracker {
-  private proposals: Map<string, GovernanceProposal[]> = new Map(); // dao -> proposals
+  private proposals: Map<string, GovernanceProposal[]> = new Map(); // wallet -> proposals
   private votes: Map<string, GovernanceVote[]> = new Map(); // wallet -> votes
+  private positions: Map<string, GovernancePosition[]> = new Map(); // wallet -> positions
 
   /**
    * Add governance proposal
    */
-  addProposal(proposal: GovernanceProposal): void {
-    const daoKey = `${proposal.dao.toLowerCase()}-${proposal.chainId}`;
-    if (!this.proposals.has(daoKey)) {
-      this.proposals.set(daoKey, []);
+  addProposal(
+    walletAddress: string,
+    proposal: GovernanceProposal
+  ): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.proposals.has(walletKey)) {
+      this.proposals.set(walletKey, []);
     }
 
-    const daoProposals = this.proposals.get(daoKey)!;
+    const walletProposals = this.proposals.get(walletKey)!;
     
     // Check if already exists
-    const existingIndex = daoProposals.findIndex(p => p.id === proposal.id);
-    if (existingIndex >= 0) {
-      daoProposals[existingIndex] = proposal;
-    } else {
-      daoProposals.push(proposal);
+    if (!walletProposals.find(p => p.id === proposal.id)) {
+      walletProposals.push(proposal);
     }
   }
 
@@ -93,46 +102,58 @@ export class GovernanceTracker {
       this.votes.set(walletKey, []);
     }
 
-    const walletVotes = this.votes.get(walletKey)!;
+    this.votes.get(walletKey)!.push(vote);
+  }
+
+  /**
+   * Add governance position
+   */
+  addPosition(
+    walletAddress: string,
+    position: GovernancePosition
+  ): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.positions.has(walletKey)) {
+      this.positions.set(walletKey, []);
+    }
+
+    const walletPositions = this.positions.get(walletKey)!;
     
-    // Check if already exists
-    const existingIndex = walletVotes.findIndex(
-      v => v.proposalId === vote.proposalId && v.voter.toLowerCase() === vote.voter.toLowerCase()
+    // Update if exists, otherwise add
+    const existingIndex = walletPositions.findIndex(
+      p => p.dao === position.dao && p.chainId === position.chainId
     );
 
     if (existingIndex >= 0) {
-      walletVotes[existingIndex] = vote;
+      walletPositions[existingIndex] = position;
     } else {
-      walletVotes.push(vote);
+      walletPositions.push(position);
     }
   }
 
   /**
-   * Get participation summary
+   * Get governance summary
    */
-  getParticipation(walletAddress: string): GovernanceParticipation {
+  getSummary(walletAddress: string): GovernanceSummary {
     const walletKey = walletAddress.toLowerCase();
+    const proposals = this.proposals.get(walletKey) || [];
     const votes = this.votes.get(walletKey) || [];
+    const positions = this.positions.get(walletKey) || [];
 
-    // Get all proposals this wallet could vote on
-    const allProposals: GovernanceProposal[] = [];
-    this.proposals.forEach(daoProposals => {
-      allProposals.push(...daoProposals);
-    });
-
-    // Filter proposals that overlap with vote timestamps
     const votedProposalIds = new Set(votes.map(v => v.proposalId));
-    const votedProposals = allProposals.filter(p => votedProposalIds.has(p.id));
+    const participationRate = proposals.length > 0
+      ? (votedProposalIds.size / proposals.length) * 100
+      : 0;
 
-    const totalVotingPower = votes.reduce(
-      (sum, v) => sum + BigInt(v.votingPower || '0'),
+    const totalVotingPower = positions.reduce(
+      (sum, p) => sum + BigInt(p.votingPower || '0'),
       BigInt(0)
     ).toString();
 
-    const averageVotingPower =
-      votes.length > 0
-        ? (BigInt(totalVotingPower) / BigInt(votes.length)).toString()
-        : '0';
+    const totalVotingPowerUSD = positions.reduce(
+      (sum, p) => sum + (p.balanceUSD || 0),
+      0
+    );
 
     // DAO breakdown
     const daos: Record<string, {
@@ -143,148 +164,115 @@ export class GovernanceTracker {
       participationRate: number;
     }> = {};
 
+    proposals.forEach(proposal => {
+      if (!daos[proposal.dao]) {
+        daos[proposal.dao] = {
+          dao: proposal.dao,
+          daoName: proposal.daoName,
+          proposals: 0,
+          votes: 0,
+          participationRate: 0,
+        };
+      }
+      daos[proposal.dao].proposals++;
+    });
+
     votes.forEach(vote => {
-      const proposal = allProposals.find(p => p.id === vote.proposalId);
-      if (proposal) {
-        const daoKey = `${proposal.dao.toLowerCase()}-${proposal.chainId}`;
-        if (!daos[daoKey]) {
-          daos[daoKey] = {
-            dao: proposal.dao,
-            daoName: proposal.daoName,
-            proposals: 0,
-            votes: 0,
-            participationRate: 0,
-          };
-        }
-
-        daos[daoKey].votes++;
+      const proposal = proposals.find(p => p.id === vote.proposalId);
+      if (proposal && daos[proposal.dao]) {
+        daos[proposal.dao].votes++;
       }
     });
 
-    // Count proposals per DAO
-    this.proposals.forEach((daoProposals, daoKey) => {
-      if (!daos[daoKey]) {
-        const firstProposal = daoProposals[0];
-        if (firstProposal) {
-          daos[daoKey] = {
-            dao: firstProposal.dao,
-            daoName: firstProposal.daoName,
-            proposals: daoProposals.length,
-            votes: 0,
-            participationRate: 0,
-          };
-        }
-      } else {
-        daos[daoKey].proposals = daoProposals.length;
-        daos[daoKey].participationRate =
-          daoProposals.length > 0
-            ? (daos[daoKey].votes / daoProposals.length) * 100
-            : 0;
-      }
+    // Calculate participation rate per DAO
+    Object.values(daos).forEach(dao => {
+      dao.participationRate = dao.proposals > 0
+        ? (dao.votes / dao.proposals) * 100
+        : 0;
     });
 
-    // Recent activity (last 30 days)
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const recentVotes = votes.filter(v => v.timestamp >= thirtyDaysAgo);
-    const recentProposals = allProposals.filter(p => p.startDate >= thirtyDaysAgo);
-
-    const recentActivity: Array<{ date: number; proposals: number; votes: number }> = [];
-    for (let i = 29; i >= 0; i--) {
-      const date = Date.now() - i * 24 * 60 * 60 * 1000;
-      const dayStart = new Date(date).setHours(0, 0, 0, 0);
-      const dayEnd = new Date(date).setHours(23, 59, 59, 999);
-
-      const dayProposals = recentProposals.filter(
-        p => p.startDate >= dayStart && p.startDate <= dayEnd
-      ).length;
-
-      const dayVotes = recentVotes.filter(
-        v => v.timestamp >= dayStart && v.timestamp <= dayEnd
-      ).length;
-
-      recentActivity.push({
-        date: dayStart,
-        proposals: dayProposals,
-        votes: dayVotes,
-      });
-    }
+    // Recent votes (last 10)
+    const recentVotes = votes
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 10);
 
     return {
-      walletAddress: walletKey,
-      totalProposals: allProposals.length,
-      votedProposals: votedProposals.length,
-      participationRate:
-        allProposals.length > 0
-          ? (votedProposals.length / allProposals.length) * 100
-          : 0,
+      totalProposals: proposals.length,
+      votedProposals: votedProposalIds.size,
+      participationRate: Math.round(participationRate * 100) / 100,
       totalVotingPower,
-      averageVotingPower,
+      totalVotingPowerUSD,
+      positions,
       daos,
-      votingHistory: votes.sort((a, b) => b.timestamp - a.timestamp),
-      recentActivity,
+      recentVotes,
     };
   }
 
   /**
    * Get proposals for a DAO
    */
-  getProposals(dao: string, chainId: number): GovernanceProposal[] {
-    const daoKey = `${dao.toLowerCase()}-${chainId}`;
-    return this.proposals.get(daoKey) || [];
+  getProposals(
+    walletAddress: string,
+    dao?: string,
+    status?: GovernanceProposal['status']
+  ): GovernanceProposal[] {
+    const walletKey = walletAddress.toLowerCase();
+    let proposals = this.proposals.get(walletKey) || [];
+
+    if (dao) {
+      proposals = proposals.filter(p => p.dao === dao);
+    }
+
+    if (status) {
+      proposals = proposals.filter(p => p.status === status);
+    }
+
+    return proposals.sort((a, b) => b.startTime - a.startTime);
   }
 
   /**
-   * Get votes for a wallet
+   * Get votes for a proposal
    */
   getVotes(
     walletAddress: string,
-    options: {
-      proposalId?: string;
-      dao?: string;
-      limit?: number;
-    } = {}
+    proposalId?: string
   ): GovernanceVote[] {
     const walletKey = walletAddress.toLowerCase();
     let votes = this.votes.get(walletKey) || [];
 
-    if (options.proposalId) {
-      votes = votes.filter(v => v.proposalId === options.proposalId);
+    if (proposalId) {
+      votes = votes.filter(v => v.proposalId === proposalId);
     }
 
-    if (options.dao) {
-      // Filter by DAO through proposals
-      const daoProposals = this.getProposals(options.dao, votes[0]?.chainId || 1);
-      const proposalIds = new Set(daoProposals.map(p => p.id));
-      votes = votes.filter(v => proposalIds.has(v.proposalId));
-    }
-
-    votes.sort((a, b) => b.timestamp - a.timestamp);
-
-    if (options.limit) {
-      votes = votes.slice(0, options.limit);
-    }
-
-    return votes;
+    return votes.sort((a, b) => b.timestamp - a.timestamp);
   }
 
   /**
    * Get active proposals
    */
-  getActiveProposals(dao?: string, chainId?: number): GovernanceProposal[] {
+  getActiveProposals(walletAddress: string): GovernanceProposal[] {
     const now = Date.now();
-    let allProposals: GovernanceProposal[] = [];
-
-    if (dao && chainId) {
-      allProposals = this.getProposals(dao, chainId);
-    } else {
-      this.proposals.forEach(daoProposals => {
-        allProposals.push(...daoProposals);
-      });
-    }
-
-    return allProposals.filter(
-      p => p.status === 'active' && p.startDate <= now && p.endDate >= now
+    return this.getProposals(walletAddress).filter(
+      p => p.status === 'active' && p.startTime <= now && p.endTime >= now
     );
+  }
+
+  /**
+   * Calculate voting power for a DAO
+   */
+  getVotingPower(
+    walletAddress: string,
+    dao: string,
+    chainId: number
+  ): string {
+    const walletKey = walletAddress.toLowerCase();
+    const positions = this.positions.get(walletKey) || [];
+    
+    const position = positions.find(
+      p => p.dao === dao && p.chainId === chainId
+    );
+
+    return position?.votingPower || '0';
   }
 }
 
