@@ -34,6 +34,7 @@ export interface TokenInfo {
   isVerified: boolean;
   price?: number;
   value?: number;
+  nativeToken?: boolean;
 }
 
 export interface RiskAlert {
