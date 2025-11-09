@@ -1805,6 +1805,95 @@ const health = crossChainPortfolioAggregator.calculatePortfolioHealth(portfolio)
 console.log(`Portfolio Health Score: ${health.score}/100`);
 ```
 
+### Wallet Health Score Calculator
+
+```typescript
+import { walletHealthScoreCalculator } from '@/lib/wallet-health-score-calculator';
+
+// Calculate comprehensive health score
+const healthScore = walletHealthScoreCalculator.calculateHealthScore({
+  approvals,
+  tokens,
+  contracts,
+  transactions,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+  previousScore: 75,
+});
+
+console.log(`Overall Score: ${healthScore.overallScore}/100`);
+console.log(`Risk Level: ${healthScore.riskLevel}`);
+
+// View breakdown
+healthScore.breakdown.forEach(category => {
+  console.log(`${category.category}: ${category.score} (contribution: ${category.contribution})`);
+});
+
+// Calculate potential improvement
+const improvement = walletHealthScoreCalculator.calculatePotentialImprovement(
+  healthScore.overallScore,
+  healthScore.recommendations
+);
+console.log(`Potential Score: ${improvement.potentialScore} (+${improvement.improvement})`);
+```
+
+### Enhanced Transaction Simulator
+
+```typescript
+import { transactionSimulatorEnhanced } from '@/lib/transaction-simulator-enhanced';
+
+// Simulate transaction
+const simulation = await transactionSimulatorEnhanced.simulateTransaction({
+  from: '0x...',
+  to: '0x...',
+  value: '1000000000000000000', // 1 ETH
+  chainId: 1,
+  gasPrice: 30,
+  ethPriceUSD: 2000,
+});
+
+console.log(`Success: ${simulation.success}`);
+console.log(`Gas Cost: ${simulation.gasCost} ETH ($${simulation.gasCostUSD})`);
+console.log(`Risk Level: ${simulation.riskAssessment.riskLevel}`);
+
+// View state changes
+simulation.stateChanges.forEach(change => {
+  console.log(`${change.type}: ${change.description}`);
+});
+
+// View warnings
+simulation.warnings.forEach(warning => {
+  console.log(`${warning.severity}: ${warning.message}`);
+});
+```
+
+### Wallet Backup Validator
+
+```typescript
+import { walletBackupValidator } from '@/lib/wallet-backup-validator';
+
+// Validate backup
+const validation = walletBackupValidator.validateBackup(backupData);
+
+console.log(`Valid: ${validation.valid}`);
+console.log(`Score: ${validation.score}/100`);
+
+// Check integrity
+console.log(`Integrity: ${validation.integrity.checksumValid}`);
+console.log(`Security: ${validation.security.isEncrypted}`);
+
+// View issues
+validation.issues.forEach(issue => {
+  console.log(`${issue.severity}: ${issue.message}`);
+});
+
+// Verify restore capability
+const restoreCheck = walletBackupValidator.verifyRestoreCapability(backupData);
+console.log(`Can Restore: ${restoreCheck.canRestore}`);
+```
+
 ### DCA Automation
 
 ```typescript
