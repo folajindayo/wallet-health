@@ -112,7 +112,10 @@ wallet-health/
 │   │       ├── gas-optimizer.ts          # Gas price optimization recommendations
 │   │       ├── token-unlock-tracker.ts  # Token vesting & unlock tracking
 │   │       ├── cross-chain-bridge-tracker.ts # Cross-chain bridge tracking
-│   │       └── staking-tracker.ts       # Staking positions & rewards tracking
+│   │       ├── staking-tracker.ts       # Staking positions & rewards tracking
+│   │       ├── mev-protection-analyzer.ts # MEV protection analysis
+│   │       ├── governance-tracker.ts    # DAO governance participation tracking
+│   │       └── activity-heatmap.ts      # Activity heatmap generation
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
