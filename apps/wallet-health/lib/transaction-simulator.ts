@@ -1,266 +1,251 @@
 /**
  * Transaction Simulator Utility
- * Simulates transactions to predict outcomes and detect potential issues
+ * Simulate transactions before executing them
  */
 
-export interface TransactionSimulation {
-  success: boolean;
-  gasUsed: number;
-  gasCost: number; // in native token
-  gasCostUSD?: number;
-  balanceChanges: BalanceChange[];
-  tokenApprovals?: ApprovalChange[];
-  errors?: SimulationError[];
-  warnings?: SimulationWarning[];
-  estimatedTime?: string;
-}
-
-export interface BalanceChange {
-  token: string;
-  tokenSymbol: string;
-  before: string;
-  after: string;
-  change: string; // positive = increase, negative = decrease
-  changeUSD?: number;
-}
-
-export interface ApprovalChange {
-  token: string;
-  tokenSymbol: string;
-  spender: string;
-  before: string;
-  after: string;
-  isUnlimited: boolean;
-}
-
-export interface SimulationError {
-  type: 'insufficient_balance' | 'insufficient_gas' | 'contract_error' | 'slippage' | 'approval_required';
-  message: string;
-  severity: 'critical' | 'error' | 'warning';
-}
-
-export interface SimulationWarning {
-  type: 'high_gas' | 'large_amount' | 'unlimited_approval' | 'suspicious_contract' | 'slippage_risk';
-  message: string;
-  recommendation?: string;
-}
-
-export interface SimulateTransactionParams {
+export interface SimulationInput {
   from: string;
   to: string;
-  value?: string; // in wei
+  value?: string;
   data?: string;
-  chainId: number;
-  gasPrice?: number; // in gwei
   gasLimit?: number;
+  gasPrice?: number;
+  chainId: number;
+}
+
+export interface SimulationResult {
+  success: boolean;
+  gasUsed: number;
+  gasCost: number; // USD
+  balanceChanges: Array<{
+    address: string;
+    token?: string;
+    before: string;
+    after: string;
+    change: string;
+  }>;
+  events: Array<{
+    name: string;
+    args: Record<string, any>;
+  }>;
+  errors?: string[];
+  warnings?: string[];
+  estimatedTime: number; // seconds
+}
+
+export interface SimulationComparison {
+  scenarios: Array<{
+    name: string;
+    input: SimulationInput;
+    result: SimulationResult;
+  }>;
+  bestScenario: {
+    name: string;
+    gasCost: number;
+    success: boolean;
+  } | null;
 }
 
 export class TransactionSimulator {
+  private readonly ETH_PRICE_USD = 2000; // Would fetch from API
+
   /**
-   * Simulate a transaction
+   * Simulate transaction
    */
-  async simulateTransaction(params: SimulateTransactionParams): Promise<TransactionSimulation> {
-    const errors: SimulationError[] = [];
-    const warnings: SimulationWarning[] = [];
-    const balanceChanges: BalanceChange[] = [];
-    const approvalChanges: ApprovalChange[] = [];
+  async simulateTransaction(input: SimulationInput): Promise<SimulationResult> {
+    // In production, would call eth_call or similar
+    // For now, simulate based on transaction type
 
-    // Check sufficient balance
-    const hasBalance = await this.checkBalance(params.from, params.value || '0', params.chainId);
-    if (!hasBalance) {
-      errors.push({
-        type: 'insufficient_balance',
-        message: 'Insufficient balance to execute transaction',
-        severity: 'critical',
-      });
-    }
+    const gasLimit = input.gasLimit || this.estimateGasLimit(input);
+    const gasPrice = input.gasPrice || 30e9; // 30 gwei default
+    const gasCost = (gasLimit * gasPrice * this.ETH_PRICE_USD) / 1e18;
 
-    // Estimate gas
-    const gasEstimate = await this.estimateGas(params);
-    if (!gasEstimate) {
-      errors.push({
-        type: 'insufficient_gas',
-        message: 'Failed to estimate gas or insufficient gas',
-        severity: 'error',
-      });
-    }
+    // Simulate balance changes
+    const balanceChanges: SimulationResult['balanceChanges'] = [];
 
-    // Check for unlimited approvals
-    if (params.data) {
-      const approvalCheck = this.checkApprovalChanges(params.data, params.to);
-      if (approvalCheck) {
-        approvalChanges.push(approvalCheck);
-        
-        if (approvalCheck.isUnlimited) {
-          warnings.push({
-            type: 'unlimited_approval',
-            message: `Unlimited approval detected for ${approvalCheck.tokenSymbol}`,
-            recommendation: 'Consider setting a specific allowance amount instead',
-          });
-        }
-      }
-    }
-
-    // Check for suspicious contract
-    const isSuspicious = await this.checkContractSafety(params.to, params.chainId);
-    if (isSuspicious) {
-      warnings.push({
-        type: 'suspicious_contract',
-        message: 'Contract has not been verified or has low reputation',
-        recommendation: 'Verify contract authenticity before proceeding',
-      });
-    }
-
-    // Check for large amounts
-    if (params.value) {
-      const valueEth = parseFloat(params.value) / 1e18;
-      if (valueEth > 10) {
-        warnings.push({
-          type: 'large_amount',
-          message: `Large transaction amount: ${valueEth.toFixed(4)} ETH`,
-          recommendation: 'Double-check recipient address and amount',
-        });
-      }
-    }
-
-    // Calculate gas cost
-    const gasPrice = params.gasPrice || 30; // default 30 gwei
-    const gasUsed = gasEstimate || 21000;
-    const gasCost = (gasPrice * gasUsed) / 1e9; // in ETH
-
-    // Estimate gas cost in USD (placeholder - would fetch from price API)
-    const gasCostUSD = gasCost * 2000; // placeholder ETH price
-
-    if (gasCostUSD > 50) {
-      warnings.push({
-        type: 'high_gas',
-        message: `High gas cost: $${gasCostUSD.toFixed(2)}`,
-        recommendation: 'Consider waiting for lower gas prices or using a different chain',
-      });
-    }
-
-    // Simulate balance changes (placeholder)
-    if (params.value && params.value !== '0') {
+    // From address balance change
+    if (input.value) {
+      const valueWei = BigInt(input.value);
       balanceChanges.push({
-        token: 'native',
-        tokenSymbol: 'ETH',
-        before: '0', // Would fetch actual balance
-        after: '0', // Would calculate
-        change: `-${params.value}`,
-        changeUSD: parseFloat(params.value) / 1e18 * 2000, // placeholder
+        address: input.from,
+        before: '1000000000000000000', // Would fetch actual balance
+        after: (BigInt('1000000000000000000') - valueWei).toString(),
+        change: `-${input.value}`,
+      });
+
+      // To address balance change
+      balanceChanges.push({
+        address: input.to,
+        before: '500000000000000000', // Would fetch actual balance
+        after: (BigInt('500000000000000000') + valueWei).toString(),
+        change: `+${input.value}`,
       });
     }
 
-    const success = errors.filter(e => e.severity === 'critical').length === 0;
+    // Simulate events (would parse from actual simulation)
+    const events: SimulationResult['events'] = [];
+    if (input.data && input.data.length > 0) {
+      events.push({
+        name: 'Transfer',
+        args: {
+          from: input.from,
+          to: input.to,
+          value: input.value || '0',
+        },
+      });
+    }
+
+    // Estimate block time
+    const blockTime = this.getBlockTime(input.chainId);
+    const estimatedTime = blockTime * 2; // ~2 blocks
+
+    // Check for potential issues
+    const warnings: string[] = [];
+    const errors: string[] = [];
+
+    if (gasCost > 100) {
+      warnings.push('High gas cost detected. Consider waiting for lower gas prices.');
+    }
+
+    if (gasLimit > 500000) {
+      warnings.push('High gas limit. Transaction may fail if contract logic is complex.');
+    }
 
     return {
-      success,
-      gasUsed,
-      gasCost,
-      gasCostUSD,
+      success: true,
+      gasUsed: gasLimit,
+      gasCost: Math.round(gasCost * 100) / 100,
       balanceChanges,
-      tokenApprovals: approvalChanges.length > 0 ? approvalChanges : undefined,
+      events,
       errors: errors.length > 0 ? errors : undefined,
       warnings: warnings.length > 0 ? warnings : undefined,
-      estimatedTime: this.estimateConfirmationTime(gasPrice),
+      estimatedTime: Math.round(estimatedTime),
     };
   }
 
   /**
-   * Check if address has sufficient balance
+   * Estimate gas limit
    */
-  private async checkBalance(
-    address: string,
-    required: string,
-    chainId: number
-  ): Promise<boolean> {
-    // Placeholder - would fetch from blockchain
-    return true;
+  private estimateGasLimit(input: SimulationInput): number {
+    if (input.data && input.data.length > 0) {
+      // Contract interaction
+      const dataLength = input.data.length / 2 - 1; // Remove 0x prefix
+      return 21000 + dataLength * 16; // Base + data cost
+    }
+    // Simple transfer
+    return 21000;
   }
 
   /**
-   * Estimate gas for transaction
+   * Get block time for chain
    */
-  private async estimateGas(params: SimulateTransactionParams): Promise<number | null> {
-    // Placeholder - would call eth_estimateGas RPC
-    return 21000; // Default for simple transfer
+  private getBlockTime(chainId: number): number {
+    const blockTimes: Record<number, number> = {
+      1: 12, // Ethereum
+      137: 2, // Polygon
+      42161: 0.25, // Arbitrum
+      10: 2, // Optimism
+      56: 3, // BSC
+      8453: 2, // Base
+    };
+    return blockTimes[chainId] || 12;
   }
 
   /**
-   * Check for approval changes in transaction data
+   * Compare multiple transaction scenarios
    */
-  private checkApprovalChanges(data: string, to: string): ApprovalChange | null {
-    // Placeholder - would decode transaction data to detect approve() calls
-    // Method signature: approve(address,uint256) = 0x095ea7b3
-    return null;
+  async compareScenarios(
+    scenarios: Array<{ name: string; input: SimulationInput }>
+  ): Promise<SimulationComparison> {
+    const results = await Promise.all(
+      scenarios.map(async scenario => ({
+        name: scenario.name,
+        input: scenario.input,
+        result: await this.simulateTransaction(scenario.input),
+      }))
+    );
+
+    // Find best scenario (lowest gas cost, successful)
+    const successfulScenarios = results.filter(s => s.result.success);
+    const bestScenario = successfulScenarios.length > 0
+      ? successfulScenarios.reduce((best, current) =>
+          current.result.gasCost < best.result.gasCost ? current : best
+        )
+      : null;
+
+    return {
+      scenarios: results,
+      bestScenario: bestScenario
+        ? {
+            name: bestScenario.name,
+            gasCost: bestScenario.result.gasCost,
+            success: bestScenario.result.success,
+          }
+        : null,
+    };
   }
 
   /**
-   * Check contract safety
+   * Simulate batch transactions
    */
-  private async checkContractSafety(
-    address: string,
-    chainId: number
-  ): Promise<boolean> {
-    // Placeholder - would check verification status and reputation
-    return false;
-  }
-
-  /**
-   * Estimate confirmation time based on gas price
-   */
-  private estimateConfirmationTime(gasPrice: number): string {
-    if (gasPrice < 20) return '5-15 minutes';
-    if (gasPrice < 50) return '1-3 minutes';
-    if (gasPrice < 100) return '30-60 seconds';
-    return '10-30 seconds';
-  }
-
-  /**
-   * Batch simulate multiple transactions
-   */
-  async batchSimulate(transactions: SimulateTransactionParams[]): Promise<TransactionSimulation[]> {
-    return Promise.all(
+  async simulateBatch(
+    transactions: SimulationInput[]
+  ): Promise<{
+    totalGasUsed: number;
+    totalGasCost: number; // USD
+    results: SimulationResult[];
+    success: boolean;
+  }> {
+    const results = await Promise.all(
       transactions.map(tx => this.simulateTransaction(tx))
     );
+
+    const totalGasUsed = results.reduce((sum, r) => sum + r.gasUsed, 0);
+    const totalGasCost = results.reduce((sum, r) => sum + r.gasCost, 0);
+    const success = results.every(r => r.success);
+
+    return {
+      totalGasUsed,
+      totalGasCost: Math.round(totalGasCost * 100) / 100,
+      results,
+      success,
+    };
   }
 
   /**
-   * Compare simulation results
+   * Validate transaction before simulation
    */
-  compareSimulations(
-    sim1: TransactionSimulation,
-    sim2: TransactionSimulation
-  ): {
-    gasDifference: number;
-    costDifference: number;
-    costDifferenceUSD?: number;
-    recommendation: string;
+  validateTransaction(input: SimulationInput): {
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
   } {
-    const gasDiff = sim2.gasUsed - sim1.gasUsed;
-    const costDiff = sim2.gasCost - sim1.gasCost;
-    const costDiffUSD = sim2.gasCostUSD && sim1.gasCostUSD 
-      ? sim2.gasCostUSD - sim1.gasCostUSD 
-      : undefined;
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
-    let recommendation = '';
-    if (gasDiff < 0) {
-      recommendation = `Second transaction uses ${Math.abs(gasDiff)} less gas`;
-    } else if (gasDiff > 0) {
-      recommendation = `First transaction uses ${gasDiff} less gas`;
-    } else {
-      recommendation = 'Both transactions use similar gas';
+    if (!input.from || !input.to) {
+      errors.push('From and to addresses are required');
+    }
+
+    if (input.value && BigInt(input.value) < 0) {
+      errors.push('Value cannot be negative');
+    }
+
+    if (input.gasLimit && input.gasLimit < 21000) {
+      warnings.push('Gas limit seems too low for a transaction');
+    }
+
+    if (input.gasLimit && input.gasLimit > 10000000) {
+      warnings.push('Gas limit is very high. Transaction may fail.');
     }
 
     return {
-      gasDifference: gasDiff,
-      costDifference: costDiff,
-      costDifferenceUSD,
-      recommendation,
+      valid: errors.length === 0,
+      errors,
+      warnings,
     };
   }
 }
 
 // Singleton instance
 export const transactionSimulator = new TransactionSimulator();
-
