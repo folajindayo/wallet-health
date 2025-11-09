@@ -1616,6 +1616,179 @@ const health = crossChainPortfolioAggregator.calculatePortfolioHealth(portfolio)
 console.log(`Portfolio Health Score: ${health.score}/100`);
 ```
 
+### DCA Automation
+
+```typescript
+import { dcaAutomation } from '@/lib/dca-automation';
+
+// Create DCA strategy
+const strategy = dcaAutomation.createStrategy({
+  name: 'ETH DCA',
+  tokenIn: '0x...', // USDC
+  tokenOut: '0x...', // ETH
+  tokenInSymbol: 'USDC',
+  tokenOutSymbol: 'ETH',
+  amountPerPeriod: 100, // $100 per period
+  frequency: 'weekly',
+  startDate: Date.now(),
+  chainId: 1,
+  isActive: true,
+});
+
+// Get statistics
+const stats = dcaAutomation.getStats();
+console.log(`Total Invested: $${stats.totalInvested}`);
+console.log(`Average ROI: ${stats.averageROI}%`);
+```
+
+### Limit Order Management
+
+```typescript
+import { limitOrderManager } from '@/lib/limit-order-manager';
+
+// Create limit order
+const order = limitOrderManager.createOrder({
+  tokenIn: '0x...',
+  tokenInSymbol: 'USDC',
+  tokenOut: '0x...',
+  tokenOutSymbol: 'ETH',
+  amountIn: '1000000000', // 1000 USDC
+  limitPrice: 2000, // Buy ETH at $2000 or lower
+  chainId: 1,
+  protocol: 'Uniswap V3',
+});
+
+// Check orders
+const pending = limitOrderManager.getPendingOrders();
+console.log(`Pending Orders: ${pending.length}`);
+```
+
+### Recurring Payments
+
+```typescript
+import { recurringPaymentsManager } from '@/lib/recurring-payments-manager';
+
+// Create recurring payment
+const payment = recurringPaymentsManager.createPayment({
+  name: 'Monthly Subscription',
+  from: '0x...',
+  to: '0x...',
+  token: '0x...',
+  tokenSymbol: 'USDC',
+  amount: '100000000', // 100 USDC
+  frequency: 'monthly',
+  startDate: Date.now(),
+  chainId: 1,
+  isActive: true,
+});
+
+// Get upcoming payments
+const upcoming = recurringPaymentsManager.getUpcomingPayments(30);
+console.log(`Upcoming Payments: ${upcoming.length}`);
+```
+
+### Token Swap Aggregation
+
+```typescript
+import { tokenSwapAggregator } from '@/lib/token-swap-aggregator';
+
+// Get swap quote
+const quote = await tokenSwapAggregator.getQuote(
+  '0x...', // USDC
+  '0x...', // ETH
+  '1000000000', // 1000 USDC
+  1
+);
+
+console.log(`Best Route: ${quote.bestRoute?.protocol}`);
+console.log(`Amount Out: ${quote.bestRoute?.amountOut}`);
+```
+
+### Carbon Footprint Tracking
+
+```typescript
+import { carbonFootprintTracker } from '@/lib/carbon-footprint-tracker';
+
+// Calculate emission
+const emission = carbonFootprintTracker.calculateEmission(1, 21000, 'transfer');
+
+// Calculate footprint
+const footprint = carbonFootprintTracker.calculateFootprint('0x...');
+console.log(`Total Emissions: ${footprint.totalEmissions} kg CO2`);
+console.log(`Offset Needed: $${footprint.offsetNeeded}`);
+```
+
+### Social Recovery Management
+
+```typescript
+import { socialRecoveryManager } from '@/lib/social-recovery-manager';
+
+// Add social recovery wallet
+socialRecoveryManager.addWallet({
+  address: '0x...',
+  chainId: 1,
+  guardians: [
+    { address: '0x...', addedAt: Date.now(), isActive: true, type: 'wallet', verified: true },
+  ],
+  threshold: 2,
+  recoveryDelay: 86400 * 7, // 7 days
+  isActive: true,
+});
+
+// Create recovery request
+const request = socialRecoveryManager.createRecoveryRequest(
+  '0x...',
+  1,
+  '0x...', // new owner
+  '0x...' // requester
+);
+```
+
+### On-chain Reputation
+
+```typescript
+import { onChainReputationSystem } from '@/lib/on-chain-reputation-system';
+
+// Calculate reputation
+const reputation = await onChainReputationSystem.calculateReputation('0x...', {
+  totalTrades: 100,
+  totalVolumeUSD: 50000,
+  defiInteractions: 50,
+  governanceVotes: 10,
+});
+
+console.log(`Reputation Score: ${reputation.overallScore}`);
+console.log(`Level: ${reputation.level}`);
+console.log(`Badges: ${reputation.badges.length}`);
+```
+
+### Options & Derivatives Dashboard
+
+```typescript
+import { optionsDerivativesDashboard } from '@/lib/options-derivatives-dashboard';
+
+// Add options position
+optionsDerivativesDashboard.addOptionsPosition({
+  id: 'opt1',
+  type: 'call',
+  underlying: '0x...',
+  underlyingSymbol: 'ETH',
+  strikePrice: 2000,
+  expiration: Date.now() + 30 * 24 * 60 * 60 * 1000,
+  premium: 100,
+  quantity: 1,
+  chainId: 1,
+  protocol: 'Opyn',
+  openedAt: Date.now(),
+  status: 'open',
+});
+
+// Get dashboard
+const dashboard = optionsDerivativesDashboard.getDashboard();
+console.log(`Total P&L: $${dashboard.totalProfitLoss}`);
+console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
+```
+
 ## 📊 Performance Metrics
 
 - **Scan Speed**: < 5 seconds for multi-chain wallet scan
