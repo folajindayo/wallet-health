@@ -125,8 +125,29 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 ### Web3 Stack
 
 - **Wallet Connection**: Reown AppKit (WalletConnect v2)
+  - Multi-wallet support (MetaMask, WalletConnect, Coinbase Wallet, etc.)
+  - Session management and persistence
+  - Deep linking and QR code scanning
+  - Custom branding and theming
 - **Blockchain Interaction**: Wagmi + Viem
+  - Type-safe contract interactions
+  - Multi-chain support
+  - Transaction simulation and gas estimation
 - **State Management**: React Query (@tanstack/react-query)
+  - Optimistic updates
+  - Automatic caching and refetching
+  - Background synchronization
+
+### Base L2 Integration
+
+- **Native Base Support**: Optimized for Base network
+  - Custom RPC endpoints with load balancing
+  - Base OP Stack integration
+  - Superchain support
+  - Gas optimization strategies
+  - Transaction monitoring and analytics
+  - Bridge functionality UI
+  - Testnet support (Base Sepolia)
 
 ### APIs & Data
 
