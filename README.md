@@ -268,6 +268,27 @@ The security score is calculated based on multiple risk factors:
 
 - `POST /api/export/report` - Generate comprehensive security reports
 
+### Alerts & Notifications
+
+- `GET /api/alerts` - Get alerts for a wallet (with filtering options)
+- `POST /api/alerts` - Create or acknowledge alerts
+
+### Activity Timeline
+
+- `POST /api/timeline` - Generate chronological activity timeline with risk annotations
+
+### ENS Resolution
+
+- `POST /api/ens/resolve` - Resolve ENS domains to addresses or reverse lookup
+
+### Multi-Signature Analysis
+
+- `POST /api/multisig/analyze` - Analyze multi-signature wallet configuration and security
+
+### Wallet Comparison
+
+- `POST /api/wallet/compare` - Compare two wallets side-by-side
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
