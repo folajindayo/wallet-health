@@ -4,7 +4,7 @@ import { mevProtectionAnalyzer } from '@/lib/mev-protection-analyzer';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { transaction, transactions, action } = body;
+    const { transaction, transactions, action, chainId, transactionType, valueUSD } = body;
 
     if (action === 'analyze') {
       if (!transaction) {
@@ -29,15 +29,45 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const result = mevProtectionAnalyzer.analyzeTransactions(transactions);
-      const recommendations = mevProtectionAnalyzer.getProtectionRecommendations(result.stats);
+      const analysis = mevProtectionAnalyzer.analyzeTransactions(transactions);
+      return NextResponse.json({
+        success: true,
+        data: analysis,
+      });
+    }
+
+    if (action === 'strategies') {
+      if (!chainId) {
+        return NextResponse.json(
+          { error: 'Chain ID is required' },
+          { status: 400 }
+        );
+      }
+
+      const strategies = mevProtectionAnalyzer.getProtectionStrategies(chainId);
+      return NextResponse.json({
+        success: true,
+        data: { strategies },
+      });
+    }
+
+    if (action === 'recommend') {
+      if (!chainId || !transactionType) {
+        return NextResponse.json(
+          { error: 'Chain ID and transaction type are required' },
+          { status: 400 }
+        );
+      }
+
+      const recommendation = mevProtectionAnalyzer.recommendProtection(
+        chainId,
+        transactionType,
+        valueUSD
+      );
 
       return NextResponse.json({
         success: true,
-        data: {
-          ...result,
-          recommendations,
-        },
+        data: { recommendation },
       });
     }
 
@@ -53,4 +83,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
