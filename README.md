@@ -118,7 +118,10 @@ wallet-health/
 │   │       ├── wallet-clustering.ts      # Wallet clustering & relationships
 │   │       ├── transaction-fee-optimizer.ts # Transaction fee optimization
 │   │       ├── wallet-security-audit.ts  # Comprehensive security audit
-│   │       └── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
+│   │       ├── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
+│   │       ├── smart-contract-verifier.ts # Smart contract verification & analysis
+│   │       ├── token-approval-batch-manager.ts # Batch approval management
+│   │       └── gas-price-predictor.ts    # Gas price prediction & forecasting
 │   │       ├── token-unlock-tracker.ts  # Token vesting & unlock tracking
 │   │       ├── cross-chain-bridge-tracker.ts # Cross-chain bridge tracking
 │   │       ├── staking-tracker.ts       # Staking positions & rewards tracking
