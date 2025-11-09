@@ -512,6 +512,19 @@ The security score is calculated based on multiple risk factors:
 
 - `POST /api/activity/heatmap` - Generate activity heatmaps and statistics
 
+### Analytics & Detection
+
+- `POST /api/analytics/connection` - Track wallet connection sessions and get analytics
+- `GET /api/analytics/connection` - Get connection analytics for a wallet
+- `POST /api/analytics/patterns` - Detect unusual transaction patterns
+- `POST /api/analytics/anomalies` - Detect anomalies in wallet activity
+- `GET /api/analytics/anomalies` - Get behavior profile for a wallet
+
+### Health Trends
+
+- `POST /api/health/trends` - Add health snapshot or get trend analysis
+- `GET /api/health/trends` - Get wallet health trend analysis
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
