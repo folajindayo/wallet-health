@@ -1,274 +1,278 @@
 /**
- * Token Unlock/Vesting Tracker Utility
- * Tracks token unlocks and vesting schedules
+ * Token Unlock Tracker
+ * Tracks token vesting schedules and unlock events
  */
 
-export interface VestingSchedule {
+export interface TokenUnlock {
   tokenAddress: string;
   tokenSymbol: string;
   chainId: number;
+  unlockType: 'vesting' | 'linear' | 'cliff' | 'custom';
+  startDate: number;
+  endDate: number;
   totalAmount: string;
   unlockedAmount: string;
   lockedAmount: string;
-  startDate: number;
-  endDate: number;
-  cliffDate?: number;
-  vestingType: 'linear' | 'cliff' | 'custom';
-  releaseSchedule: VestingRelease[];
-}
-
-export interface VestingRelease {
+  unlockSchedule: Array<{
   date: number;
   amount: string;
   percentage: number;
-  isUnlocked: boolean;
+  }>;
+  nextUnlock?: {
+    date: number;
+    amount: string;
+    daysUntil: number;
+  };
+  metadata?: Record<string, any>;
 }
 
 export interface UnlockEvent {
   tokenAddress: string;
   tokenSymbol: string;
+  chainId: number;
+  date: number;
   amount: string;
-  unlockDate: number;
-  daysUntil: number;
-  valueUSD?: number;
-  isCliff?: boolean;
+  amountUSD?: number;
+  type: 'unlock' | 'vesting_release' | 'cliff_release';
+  transactionHash?: string;
 }
 
-export interface TokenUnlockSummary {
-  totalTokens: number;
-  totalValueUSD: number;
-  upcomingUnlocks: UnlockEvent[];
-  recentUnlocks: UnlockEvent[];
-  lockedValue: number;
-  unlockedValue: number;
-  nextUnlock?: UnlockEvent;
-  unlockCalendar: Array<{
+export interface UnlockSummary {
+  totalLocked: string;
+  totalUnlocked: string;
+  totalValueUSD?: number;
+  upcomingUnlocks: Array<{
     date: number;
-    unlocks: UnlockEvent[];
-    totalValue: number;
+    tokens: Array<{
+      tokenAddress: string;
+      tokenSymbol: string;
+      amount: string;
+    }>;
+    totalAmount: string;
+    daysUntil: number;
   }>;
+  unlockSchedule: UnlockEvent[];
 }
 
 export class TokenUnlockTracker {
-  private vestingSchedules: Map<string, VestingSchedule> = new Map();
+  private unlocks: Map<string, TokenUnlock[]> = new Map(); // wallet -> unlocks
+  private events: Map<string, UnlockEvent[]> = new Map(); // wallet -> events
 
   /**
-   * Add a vesting schedule
+   * Add token unlock schedule
    */
-  addVestingSchedule(schedule: VestingSchedule): void {
-    const key = `${schedule.tokenAddress.toLowerCase()}-${schedule.chainId}`;
-    this.vestingSchedules.set(key, schedule);
-  }
-
-  /**
-   * Calculate unlock schedule
-   */
-  calculateUnlockSchedule(schedule: VestingSchedule): VestingRelease[] {
-    const releases: VestingRelease[] = [];
-    const totalAmount = parseFloat(schedule.totalAmount);
-    const startTime = schedule.startDate;
-    const endTime = schedule.endDate;
-    const duration = endTime - startTime;
-
-    if (schedule.vestingType === 'linear') {
-      // Linear vesting - unlock gradually over time
-      const monthlyReleases = Math.ceil(duration / (30 * 24 * 60 * 60 * 1000));
-      const amountPerRelease = totalAmount / monthlyReleases;
-
-      for (let i = 0; i < monthlyReleases; i++) {
-        const releaseDate = startTime + (duration / monthlyReleases) * i;
-        const isUnlocked = Date.now() >= releaseDate;
-
-        releases.push({
-          date: releaseDate,
-          amount: amountPerRelease.toString(),
-          percentage: (1 / monthlyReleases) * 100,
-          isUnlocked,
-        });
-      }
-    } else if (schedule.vestingType === 'cliff') {
-      // Cliff vesting - unlock all at once after cliff
-      const cliffDate = schedule.cliffDate || endTime;
-      const isUnlocked = Date.now() >= cliffDate;
-
-      releases.push({
-        date: cliffDate,
-        amount: schedule.totalAmount,
-        percentage: 100,
-        isUnlocked,
-      });
+  addUnlockSchedule(
+    walletAddress: string,
+    unlock: TokenUnlock
+  ): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.unlocks.has(walletKey)) {
+      this.unlocks.set(walletKey, []);
     }
 
-    return releases;
+    const walletUnlocks = this.unlocks.get(walletKey)!;
+    
+    // Check if already exists
+    const existingIndex = walletUnlocks.findIndex(
+      u => u.tokenAddress.toLowerCase() === unlock.tokenAddress.toLowerCase() &&
+           u.chainId === unlock.chainId
+    );
+
+    if (existingIndex >= 0) {
+      walletUnlocks[existingIndex] = unlock;
+    } else {
+      walletUnlocks.push(unlock);
+    }
   }
 
   /**
-   * Get upcoming unlocks
+   * Record unlock event
    */
-  getUpcomingUnlocks(days = 30): UnlockEvent[] {
-    const unlocks: UnlockEvent[] = [];
-    const cutoffDate = Date.now() + days * 24 * 60 * 60 * 1000;
+  recordUnlockEvent(
+    walletAddress: string,
+    event: UnlockEvent
+  ): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.events.has(walletKey)) {
+      this.events.set(walletKey, []);
+    }
 
-    this.vestingSchedules.forEach(schedule => {
-      const releases = this.calculateUnlockSchedule(schedule);
-      
-      releases.forEach(release => {
-        if (!release.isUnlocked && release.date <= cutoffDate) {
-          const daysUntil = Math.ceil((release.date - Date.now()) / (24 * 60 * 60 * 1000));
-          
-          unlocks.push({
-            tokenAddress: schedule.tokenAddress,
-            tokenSymbol: schedule.tokenSymbol,
-            amount: release.amount,
-            unlockDate: release.date,
-            daysUntil,
-            isCliff: schedule.vestingType === 'cliff',
+    const walletEvents = this.events.get(walletKey)!;
+    walletEvents.push(event);
+
+    // Update unlock schedule
+    const unlocks = this.unlocks.get(walletKey) || [];
+    const unlock = unlocks.find(
+      u => u.tokenAddress.toLowerCase() === event.tokenAddress.toLowerCase() &&
+           u.chainId === event.chainId
+    );
+
+    if (unlock) {
+      const unlocked = BigInt(unlock.unlockedAmount) + BigInt(event.amount);
+      unlock.unlockedAmount = unlocked.toString();
+      unlock.lockedAmount = (BigInt(unlock.totalAmount) - unlocked).toString();
+    }
+  }
+
+  /**
+   * Get unlock summary for wallet
+   */
+  getUnlockSummary(
+    walletAddress: string,
+    daysAhead: number = 90
+  ): UnlockSummary {
+    const walletKey = walletAddress.toLowerCase();
+    const unlocks = this.unlocks.get(walletKey) || [];
+    const events = this.events.get(walletKey) || [];
+
+    let totalLocked = BigInt(0);
+    let totalUnlocked = BigInt(0);
+    const upcomingUnlocksMap = new Map<number, Array<{
+      tokenAddress: string;
+      tokenSymbol: string;
+      amount: string;
+    }>>();
+
+    const now = Date.now();
+    const cutoff = now + daysAhead * 24 * 60 * 60 * 1000;
+
+    unlocks.forEach(unlock => {
+      totalLocked += BigInt(unlock.lockedAmount);
+      totalUnlocked += BigInt(unlock.unlockedAmount);
+
+      // Find upcoming unlocks
+      unlock.unlockSchedule.forEach(schedule => {
+        if (schedule.date > now && schedule.date <= cutoff) {
+          const dateKey = schedule.date;
+          if (!upcomingUnlocksMap.has(dateKey)) {
+            upcomingUnlocksMap.set(dateKey, []);
+          }
+
+          upcomingUnlocksMap.get(dateKey)!.push({
+            tokenAddress: unlock.tokenAddress,
+            tokenSymbol: unlock.tokenSymbol,
+            amount: schedule.amount,
           });
         }
       });
     });
 
-    // Sort by unlock date
-    unlocks.sort((a, b) => a.unlockDate - b.unlockDate);
+    // Convert upcoming unlocks to array
+    const upcomingUnlocks = Array.from(upcomingUnlocksMap.entries())
+      .map(([date, tokens]) => {
+        const totalAmount = tokens.reduce(
+          (sum, t) => sum + BigInt(t.amount),
+          BigInt(0)
+        ).toString();
 
-    return unlocks;
-  }
-
-  /**
-   * Get recent unlocks
-   */
-  getRecentUnlocks(days = 30): UnlockEvent[] {
-    const unlocks: UnlockEvent[] = [];
-    const cutoffDate = Date.now() - days * 24 * 60 * 60 * 1000;
-
-    this.vestingSchedules.forEach(schedule => {
-      const releases = this.calculateUnlockSchedule(schedule);
-      
-      releases.forEach(release => {
-        if (release.isUnlocked && release.date >= cutoffDate) {
-          const daysSince = Math.floor((Date.now() - release.date) / (24 * 60 * 60 * 1000));
-          
-          unlocks.push({
-            tokenAddress: schedule.tokenAddress,
-            tokenSymbol: schedule.tokenSymbol,
-            amount: release.amount,
-            unlockDate: release.date,
-            daysUntil: -daysSince, // Negative for past unlocks
-          });
-        }
-      });
-    });
-
-    // Sort by unlock date (most recent first)
-    unlocks.sort((a, b) => b.unlockDate - a.unlockDate);
-
-    return unlocks;
-  }
-
-  /**
-   * Get unlock summary
-   */
-  getUnlockSummary(): TokenUnlockSummary {
-    const upcomingUnlocks = this.getUpcomingUnlocks(90);
-    const recentUnlocks = this.getRecentUnlocks(90);
-
-    // Calculate totals
-    let totalTokens = 0;
-    let lockedValue = 0;
-    let unlockedValue = 0;
-
-    this.vestingSchedules.forEach(schedule => {
-      const totalAmount = parseFloat(schedule.totalAmount);
-      totalTokens += totalAmount;
-
-      const releases = this.calculateUnlockSchedule(schedule);
-      const unlocked = releases.filter(r => r.isUnlocked);
-      const locked = releases.filter(r => !r.isUnlocked);
-
-      unlocked.forEach(r => {
-        unlockedValue += parseFloat(r.amount);
-      });
-
-      locked.forEach(r => {
-        lockedValue += parseFloat(r.amount);
-      });
-    });
-
-    // Create unlock calendar (group by date)
-    const calendarMap = new Map<number, UnlockEvent[]>();
-    upcomingUnlocks.forEach(unlock => {
-      const dateKey = Math.floor(unlock.unlockDate / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000);
-      if (!calendarMap.has(dateKey)) {
-        calendarMap.set(dateKey, []);
-      }
-      calendarMap.get(dateKey)!.push(unlock);
-    });
-
-    const unlockCalendar = Array.from(calendarMap.entries())
-      .map(([date, unlocks]) => ({
+        return {
         date,
-        unlocks,
-        totalValue: unlocks.reduce((sum, u) => sum + (u.valueUSD || 0), 0),
-      }))
+          tokens,
+          totalAmount,
+          daysUntil: Math.ceil((date - now) / (24 * 60 * 60 * 1000)),
+        };
+      })
       .sort((a, b) => a.date - b.date);
 
+    // Build unlock schedule from events
+    const unlockSchedule = events
+      .filter(e => e.date >= now - 90 * 24 * 60 * 60 * 1000) // Last 90 days
+      .sort((a, b) => b.date - a.date);
+
     return {
-      totalTokens,
-      totalValueUSD: lockedValue + unlockedValue, // Would need token prices
+      totalLocked: totalLocked.toString(),
+      totalUnlocked: totalUnlocked.toString(),
       upcomingUnlocks,
-      recentUnlocks,
-      lockedValue,
-      unlockedValue,
-      nextUnlock: upcomingUnlocks[0],
-      unlockCalendar,
+      unlockSchedule,
     };
   }
 
   /**
-   * Get vesting schedule for a token
+   * Get next unlock for a token
    */
-  getVestingSchedule(tokenAddress: string, chainId: number): VestingSchedule | null {
-    const key = `${tokenAddress.toLowerCase()}-${chainId}`;
-    return this.vestingSchedules.get(key) || null;
+  getNextUnlock(
+    walletAddress: string,
+    tokenAddress: string,
+    chainId: number
+  ): TokenUnlock['nextUnlock'] | null {
+    const walletKey = walletAddress.toLowerCase();
+    const unlocks = this.unlocks.get(walletKey) || [];
+    
+    const unlock = unlocks.find(
+      u => u.tokenAddress.toLowerCase() === tokenAddress.toLowerCase() &&
+           u.chainId === chainId
+    );
+
+    if (!unlock || !unlock.nextUnlock) return null;
+
+    return unlock.nextUnlock;
   }
 
   /**
    * Calculate unlock progress
    */
-  getUnlockProgress(tokenAddress: string, chainId: number): {
-    unlocked: number;
-    locked: number;
+  calculateUnlockProgress(
+    walletAddress: string,
+    tokenAddress: string,
+    chainId: number
+  ): {
     percentage: number;
+    unlocked: string;
+    locked: string;
+    total: string;
+    daysRemaining: number;
   } | null {
-    const schedule = this.getVestingSchedule(tokenAddress, chainId);
-    if (!schedule) {
-      return null;
-    }
+    const walletKey = walletAddress.toLowerCase();
+    const unlocks = this.unlocks.get(walletKey) || [];
+    
+    const unlock = unlocks.find(
+      u => u.tokenAddress.toLowerCase() === tokenAddress.toLowerCase() &&
+           u.chainId === chainId
+    );
 
-    const releases = this.calculateUnlockSchedule(schedule);
-    const unlocked = releases.filter(r => r.isUnlocked);
-    const locked = releases.filter(r => !r.isUnlocked);
+    if (!unlock) return null;
 
-    const unlockedAmount = unlocked.reduce((sum, r) => sum + parseFloat(r.amount), 0);
-    const lockedAmount = locked.reduce((sum, r) => sum + parseFloat(r.amount), 0);
-    const totalAmount = unlockedAmount + lockedAmount;
-    const percentage = totalAmount > 0 ? (unlockedAmount / totalAmount) * 100 : 0;
+    const total = BigInt(unlock.totalAmount);
+    const unlocked = BigInt(unlock.unlockedAmount);
+    const locked = BigInt(unlock.lockedAmount);
+    const percentage = total > 0 ? Number((unlocked * BigInt(100)) / total) : 0;
+
+    const now = Date.now();
+    const daysRemaining = unlock.endDate > now
+      ? Math.ceil((unlock.endDate - now) / (24 * 60 * 60 * 1000))
+      : 0;
 
     return {
-      unlocked: unlockedAmount,
-      locked: lockedAmount,
       percentage: Math.round(percentage * 100) / 100,
+      unlocked: unlocked.toString(),
+      locked: locked.toString(),
+      total: total.toString(),
+      daysRemaining,
     };
   }
 
   /**
-   * Clear all schedules
+   * Get all unlock schedules
    */
-  clear(): void {
-    this.vestingSchedules.clear();
+  getAllUnlocks(walletAddress: string): TokenUnlock[] {
+    const walletKey = walletAddress.toLowerCase();
+    return this.unlocks.get(walletKey) || [];
+  }
+
+  /**
+   * Get unlock events
+   */
+  getUnlockEvents(
+    walletAddress: string,
+    limit?: number
+  ): UnlockEvent[] {
+    const walletKey = walletAddress.toLowerCase();
+    const events = this.events.get(walletKey) || [];
+    
+    const sorted = events.sort((a, b) => b.date - a.date);
+    return limit ? sorted.slice(0, limit) : sorted;
   }
 }
 
 // Singleton instance
 export const tokenUnlockTracker = new TokenUnlockTracker();
-
