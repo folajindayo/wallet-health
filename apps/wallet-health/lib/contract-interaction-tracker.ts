@@ -1,348 +1,353 @@
 /**
- * Smart Contract Interaction Tracker Utility
- * Tracks and analyzes all smart contract interactions
+ * Smart Contract Interaction Tracker
+ * Tracks all smart contract interactions and analyzes patterns
  */
 
 export interface ContractInteraction {
   hash: string;
   timestamp: number;
-  from: string;
-  to: string;
-  contractAddress: string;
-  contractName?: string;
-  method: string;
-  methodSignature?: string;
-  value: string; // in wei
-  gasUsed: number;
-  gasPrice: number;
-  status: 'success' | 'failed' | 'pending';
   chainId: number;
-  blockNumber: number;
-  inputData?: string;
-  events?: ContractEvent[];
-  riskLevel?: 'low' | 'medium' | 'high';
+  from: string;
+  to: string; // Contract address
+  value: string;
+  method?: string;
+  methodSignature?: string;
+  gasUsed?: number;
+  gasPrice?: string;
+  status: 'success' | 'failed' | 'pending';
+  data?: string;
+  events?: Array<{
+    name: string;
+    signature: string;
+    topics: string[];
+    data: string;
+  }>;
+  metadata?: Record<string, any>;
 }
 
-export interface ContractEvent {
-  name: string;
-  signature: string;
-  parameters: Record<string, any>;
-}
-
-export interface ContractStats {
-  contractAddress: string;
-  contractName?: string;
-  totalInteractions: number;
-  successfulInteractions: number;
-  failedInteractions: number;
-  totalValue: string;
-  totalGasUsed: number;
-  totalGasCost: number; // in native token
+export interface ContractProfile {
+  address: string;
+  chainId: number;
+  name?: string;
+  type?: 'defi' | 'nft' | 'exchange' | 'bridge' | 'governance' | 'other';
+  isVerified: boolean;
+  interactionCount: number;
   firstInteraction: number;
   lastInteraction: number;
-  methods: MethodStats[];
-  riskScore: number;
-}
-
-export interface MethodStats {
-  method: string;
-  callCount: number;
-  successRate: number;
   totalValue: string;
-  avgGasUsed: number;
+  totalGasUsed: number;
+  methods: Record<string, number>; // method -> count
+  successRate: number;
+  riskLevel: 'low' | 'medium' | 'high';
 }
 
-export interface InteractionPattern {
-  type: 'frequent' | 'recent' | 'high_value' | 'risky';
-  description: string;
+export interface InteractionAnalysis {
   interactions: ContractInteraction[];
+  contracts: Map<string, ContractProfile>; // address -> profile
+  summary: {
+    totalInteractions: number;
+    uniqueContracts: number;
+    totalGasUsed: number;
+    totalValue: string;
+    successRate: number;
+    timeRange: {
+      start: number;
+      end: number;
+    };
+  };
+  patterns: {
+    mostUsedContracts: Array<{ address: string; count: number }>;
+    mostUsedMethods: Array<{ method: string; count: number }>;
+    activeHours: Record<number, number>; // hour -> count
+    activeDays: Record<number, number>; // day -> count
+  };
+  risks: Array<{
+    type: 'unverified' | 'high_failure_rate' | 'suspicious_pattern' | 'new_contract';
+    severity: 'high' | 'medium' | 'low';
+    description: string;
+    affectedContracts: string[];
+  }>;
 }
 
 export class ContractInteractionTracker {
-  private interactions: ContractInteraction[] = [];
-  private contractCache: Map<string, ContractStats> = new Map();
+  private interactions: Map<string, ContractInteraction[]> = new Map(); // wallet -> interactions
 
   /**
-   * Add an interaction
+   * Record a contract interaction
    */
-  addInteraction(interaction: ContractInteraction): void {
-    this.interactions.push(interaction);
-    
-    // Keep sorted by timestamp
-    this.interactions.sort((a, b) => b.timestamp - a.timestamp);
-    
-    // Keep only last 10000 interactions
-    if (this.interactions.length > 10000) {
-      this.interactions = this.interactions.slice(-10000);
+  recordInteraction(
+    walletAddress: string,
+    interaction: ContractInteraction
+  ): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.interactions.has(walletKey)) {
+      this.interactions.set(walletKey, []);
     }
 
-    // Invalidate cache for this contract
-    this.contractCache.delete(interaction.contractAddress.toLowerCase());
-  }
+    const walletInteractions = this.interactions.get(walletKey)!;
+    walletInteractions.push(interaction);
 
-  /**
-   * Add multiple interactions
-   */
-  addInteractions(interactions: ContractInteraction[]): void {
-    interactions.forEach(interaction => this.addInteraction(interaction));
-  }
-
-  /**
-   * Get interactions for a contract
-   */
-  getContractInteractions(contractAddress: string, limit = 100): ContractInteraction[] {
-    return this.interactions
-      .filter(i => i.contractAddress.toLowerCase() === contractAddress.toLowerCase())
-      .slice(0, limit);
-  }
-
-  /**
-   * Get interactions for a wallet
-   */
-  getWalletInteractions(walletAddress: string, limit = 100): ContractInteraction[] {
-    return this.interactions
-      .filter(i => i.from.toLowerCase() === walletAddress.toLowerCase())
-      .slice(0, limit);
-  }
-
-  /**
-   * Get contract statistics
-   */
-  getContractStats(contractAddress: string): ContractStats | null {
-    const cacheKey = contractAddress.toLowerCase();
-    
-    // Check cache
-    if (this.contractCache.has(cacheKey)) {
-      return this.contractCache.get(cacheKey)!;
+    // Keep last 10000 interactions per wallet
+    if (walletInteractions.length > 10000) {
+      walletInteractions.shift();
     }
 
-    const contractInteractions = this.getContractInteractions(contractAddress);
-    
-    if (contractInteractions.length === 0) {
-      return null;
+    // Sort by timestamp
+    walletInteractions.sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  /**
+   * Analyze contract interactions
+   */
+  analyzeInteractions(
+    walletAddress: string,
+    options: {
+      startDate?: number;
+      endDate?: number;
+      chainId?: number;
+    } = {}
+  ): InteractionAnalysis {
+    const walletKey = walletAddress.toLowerCase();
+    let interactions = this.interactions.get(walletKey) || [];
+
+    // Apply filters
+    if (options.startDate) {
+      interactions = interactions.filter(i => i.timestamp >= options.startDate!);
     }
 
-    const successful = contractInteractions.filter(i => i.status === 'success').length;
-    const failed = contractInteractions.filter(i => i.status === 'failed').length;
-    
-    const totalValue = contractInteractions.reduce(
+    if (options.endDate) {
+      interactions = interactions.filter(i => i.timestamp <= options.endDate!);
+    }
+
+    if (options.chainId) {
+      interactions = interactions.filter(i => i.chainId === options.chainId);
+    }
+
+    // Build contract profiles
+    const contracts = new Map<string, ContractProfile>();
+
+    interactions.forEach(interaction => {
+      const contractKey = `${interaction.to.toLowerCase()}-${interaction.chainId}`;
+      let profile = contracts.get(contractKey);
+
+      if (!profile) {
+        profile = {
+          address: interaction.to,
+          chainId: interaction.chainId,
+          isVerified: false, // Would check from contract verification API
+          interactionCount: 0,
+          firstInteraction: interaction.timestamp,
+          lastInteraction: interaction.timestamp,
+          totalValue: '0',
+          totalGasUsed: 0,
+          methods: {},
+          successRate: 0,
+          riskLevel: 'medium',
+        };
+        contracts.set(contractKey, profile);
+      }
+
+      profile.interactionCount++;
+      profile.firstInteraction = Math.min(profile.firstInteraction, interaction.timestamp);
+      profile.lastInteraction = Math.max(profile.lastInteraction, interaction.timestamp);
+      profile.totalValue = (
+        BigInt(profile.totalValue) + BigInt(interaction.value || '0')
+      ).toString();
+      profile.totalGasUsed += interaction.gasUsed || 0;
+
+      if (interaction.method) {
+        profile.methods[interaction.method] = (profile.methods[interaction.method] || 0) + 1;
+      }
+    });
+
+    // Calculate success rates and risk levels
+    contracts.forEach((profile, key) => {
+      const contractInteractions = interactions.filter(
+        i => `${i.to.toLowerCase()}-${i.chainId}` === key
+      );
+      const successful = contractInteractions.filter(i => i.status === 'success').length;
+      profile.successRate = contractInteractions.length > 0
+        ? (successful / contractInteractions.length) * 100
+        : 0;
+
+      // Determine risk level
+      if (!profile.isVerified) {
+        profile.riskLevel = 'high';
+      } else if (profile.successRate < 80) {
+        profile.riskLevel = 'medium';
+      } else {
+        profile.riskLevel = 'low';
+      }
+    });
+
+    // Calculate summary
+    const successful = interactions.filter(i => i.status === 'success').length;
+    const totalGasUsed = interactions.reduce((sum, i) => sum + (i.gasUsed || 0), 0);
+    const totalValue = interactions.reduce(
       (sum, i) => sum + BigInt(i.value || '0'),
       BigInt(0)
     ).toString();
 
-    const totalGasUsed = contractInteractions.reduce((sum, i) => sum + i.gasUsed, 0);
-    const totalGasCost = contractInteractions.reduce(
-      (sum, i) => sum + (i.gasUsed * i.gasPrice) / 1e9,
-      0
-    );
-
-    const timestamps = contractInteractions.map(i => i.timestamp);
-    const firstInteraction = Math.min(...timestamps);
-    const lastInteraction = Math.max(...timestamps);
-
-    // Calculate method statistics
-    const methodMap = new Map<string, ContractInteraction[]>();
-    contractInteractions.forEach(i => {
-      const method = i.method || 'unknown';
-      if (!methodMap.has(method)) {
-        methodMap.set(method, []);
-      }
-      methodMap.get(method)!.push(i);
-    });
-
-    const methods: MethodStats[] = Array.from(methodMap.entries()).map(([method, interactions]) => {
-      const successfulCalls = interactions.filter(i => i.status === 'success').length;
-      const totalValue = interactions.reduce(
-        (sum, i) => sum + BigInt(i.value || '0'),
-        BigInt(0)
-      ).toString();
-      const avgGasUsed = interactions.reduce((sum, i) => sum + i.gasUsed, 0) / interactions.length;
-
-      return {
-        method,
-        callCount: interactions.length,
-        successRate: (successfulCalls / interactions.length) * 100,
-        totalValue,
-        avgGasUsed: Math.round(avgGasUsed),
-      };
-    });
-
-    // Calculate risk score (0-100, higher = riskier)
-    let riskScore = 0;
-    
-    // Failed interactions increase risk
-    riskScore += (failed / contractInteractions.length) * 30;
-    
-    // New contracts are riskier
-    const contractAge = Date.now() - firstInteraction;
-    if (contractAge < 7 * 24 * 60 * 60 * 1000) { // Less than 7 days
-      riskScore += 20;
-    } else if (contractAge < 30 * 24 * 60 * 60 * 1000) { // Less than 30 days
-      riskScore += 10;
-    }
-
-    // High value interactions increase risk
-    const avgValue = parseFloat(totalValue) / contractInteractions.length / 1e18;
-    if (avgValue > 10) {
-      riskScore += 15;
-    }
-
-    riskScore = Math.min(100, Math.round(riskScore));
-
-    const stats: ContractStats = {
-      contractAddress,
-      contractName: contractInteractions[0].contractName,
-      totalInteractions: contractInteractions.length,
-      successfulInteractions: successful,
-      failedInteractions: failed,
-      totalValue,
-      totalGasUsed,
-      totalGasCost,
-      firstInteraction,
-      lastInteraction,
-      methods,
-      riskScore,
+    const timestamps = interactions.map(i => i.timestamp);
+    const timeRange = {
+      start: timestamps.length > 0 ? Math.min(...timestamps) : Date.now(),
+      end: timestamps.length > 0 ? Math.max(...timestamps) : Date.now(),
     };
 
-    // Cache result
-    this.contractCache.set(cacheKey, stats);
-
-    return stats;
-  }
-
-  /**
-   * Detect interaction patterns
-   */
-  detectPatterns(walletAddress: string): InteractionPattern[] {
-    const walletInteractions = this.getWalletInteractions(walletAddress);
-    const patterns: InteractionPattern[] = [];
-
-    // Frequent interactions
+    // Identify patterns
     const contractCounts = new Map<string, number>();
-    walletInteractions.forEach(i => {
-      const count = contractCounts.get(i.contractAddress) || 0;
-      contractCounts.set(i.contractAddress, count + 1);
+    interactions.forEach(i => {
+      const key = `${i.to.toLowerCase()}-${i.chainId}`;
+      contractCounts.set(key, (contractCounts.get(key) || 0) + 1);
     });
 
-    const frequentContracts = Array.from(contractCounts.entries())
-      .filter(([_, count]) => count >= 10)
-      .map(([address]) => address);
+    const mostUsedContracts = Array.from(contractCounts.entries())
+      .map(([address, count]) => ({ address, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
 
-    if (frequentContracts.length > 0) {
-      patterns.push({
-        type: 'frequent',
-        description: `Frequent interactions with ${frequentContracts.length} contract(s)`,
-        interactions: walletInteractions.filter(i => 
-          frequentContracts.includes(i.contractAddress)
-        ),
-      });
-    }
-
-    // Recent interactions (last 24 hours)
-    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    const recentInteractions = walletInteractions.filter(i => i.timestamp >= oneDayAgo);
-    
-    if (recentInteractions.length > 0) {
-      patterns.push({
-        type: 'recent',
-        description: `${recentInteractions.length} interactions in the last 24 hours`,
-        interactions: recentInteractions,
-      });
-    }
-
-    // High value interactions
-    const highValueInteractions = walletInteractions.filter(i => {
-      const valueEth = parseFloat(i.value || '0') / 1e18;
-      return valueEth > 1; // More than 1 ETH
+    const methodCounts = new Map<string, number>();
+    interactions.forEach(i => {
+      if (i.method) {
+        methodCounts.set(i.method, (methodCounts.get(i.method) || 0) + 1);
+      }
     });
 
-    if (highValueInteractions.length > 0) {
-      patterns.push({
-        type: 'high_value',
-        description: `${highValueInteractions.length} high-value interactions (>1 ETH)`,
-        interactions: highValueInteractions,
-      });
-    }
+    const mostUsedMethods = Array.from(methodCounts.entries())
+      .map(([method, count]) => ({ method, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
 
-    // Risky interactions
-    const riskyInteractions = walletInteractions.filter(i => 
-      i.riskLevel === 'high' || i.status === 'failed'
-    );
+    // Time patterns
+    const activeHours: Record<number, number> = {};
+    const activeDays: Record<number, number> = {};
 
-    if (riskyInteractions.length > 0) {
-      patterns.push({
-        type: 'risky',
-        description: `${riskyInteractions.length} risky or failed interactions`,
-        interactions: riskyInteractions,
-      });
-    }
+    interactions.forEach(i => {
+      const date = new Date(i.timestamp * 1000);
+      const hour = date.getHours();
+      const day = date.getDay();
 
-    return patterns;
-  }
-
-  /**
-   * Get interaction summary
-   */
-  getSummary(walletAddress: string): {
-    totalInteractions: number;
-    uniqueContracts: number;
-    totalValue: string;
-    totalGasCost: number;
-    successRate: number;
-    topContracts: Array<{ address: string; interactions: number }>;
-  } {
-    const walletInteractions = this.getWalletInteractions(walletAddress);
-    
-    const uniqueContracts = new Set(
-      walletInteractions.map(i => i.contractAddress.toLowerCase())
-    ).size;
-
-    const totalValue = walletInteractions.reduce(
-      (sum, i) => sum + BigInt(i.value || '0'),
-      BigInt(0)
-    ).toString();
-
-    const totalGasCost = walletInteractions.reduce(
-      (sum, i) => sum + (i.gasUsed * i.gasPrice) / 1e9,
-      0
-    );
-
-    const successful = walletInteractions.filter(i => i.status === 'success').length;
-    const successRate = walletInteractions.length > 0
-      ? (successful / walletInteractions.length) * 100
-      : 0;
-
-    // Top contracts by interaction count
-    const contractCounts = new Map<string, number>();
-    walletInteractions.forEach(i => {
-      const count = contractCounts.get(i.contractAddress) || 0;
-      contractCounts.set(i.contractAddress, count + 1);
+      activeHours[hour] = (activeHours[hour] || 0) + 1;
+      activeDays[day] = (activeDays[day] || 0) + 1;
     });
 
-    const topContracts = Array.from(contractCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([address, interactions]) => ({ address, interactions }));
+    // Detect risks
+    const risks = this.detectRisks(interactions, contracts);
 
     return {
-      totalInteractions: walletInteractions.length,
-      uniqueContracts,
-      totalValue,
-      totalGasCost,
-      successRate,
-      topContracts,
+      interactions,
+      contracts,
+      summary: {
+        totalInteractions: interactions.length,
+        uniqueContracts: contracts.size,
+        totalGasUsed,
+        totalValue,
+        successRate: interactions.length > 0 ? (successful / interactions.length) * 100 : 0,
+        timeRange,
+      },
+      patterns: {
+        mostUsedContracts,
+        mostUsedMethods,
+        activeHours,
+        activeDays,
+      },
+      risks,
     };
   }
 
   /**
-   * Clear all interactions
+   * Get interactions for a specific contract
    */
-  clear(): void {
-    this.interactions = [];
-    this.contractCache.clear();
+  getContractInteractions(
+    walletAddress: string,
+    contractAddress: string,
+    chainId: number
+  ): ContractInteraction[] {
+    const walletKey = walletAddress.toLowerCase();
+    const interactions = this.interactions.get(walletKey) || [];
+
+    return interactions.filter(
+      i => i.to.toLowerCase() === contractAddress.toLowerCase() && i.chainId === chainId
+    );
+  }
+
+  /**
+   * Get contract profile
+   */
+  getContractProfile(
+    walletAddress: string,
+    contractAddress: string,
+    chainId: number
+  ): ContractProfile | null {
+    const analysis = this.analyzeInteractions(walletAddress, { chainId });
+    const key = `${contractAddress.toLowerCase()}-${chainId}`;
+    return analysis.contracts.get(key) || null;
+  }
+
+  /**
+   * Detect risks in interactions
+   */
+  private detectRisks(
+    interactions: ContractInteraction[],
+    contracts: Map<string, ContractProfile>
+  ): InteractionAnalysis['risks'] {
+    const risks: InteractionAnalysis['risks'] = [];
+
+    // Unverified contracts
+    const unverifiedContracts: string[] = [];
+    contracts.forEach((profile, key) => {
+      if (!profile.isVerified) {
+        unverifiedContracts.push(profile.address);
+      }
+    });
+
+    if (unverifiedContracts.length > 0) {
+      risks.push({
+        type: 'unverified',
+        severity: 'high',
+        description: `${unverifiedContracts.length} unverified contract(s) detected`,
+        affectedContracts: unverifiedContracts,
+      });
+    }
+
+    // High failure rate
+    const highFailureContracts: string[] = [];
+    contracts.forEach((profile, key) => {
+      if (profile.successRate < 50) {
+        highFailureContracts.push(profile.address);
+      }
+    });
+
+    if (highFailureContracts.length > 0) {
+      risks.push({
+        type: 'high_failure_rate',
+        severity: 'medium',
+        description: `${highFailureContracts.length} contract(s) with high failure rate`,
+        affectedContracts: highFailureContracts,
+      });
+    }
+
+    // New contracts (first interaction in last 7 days)
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const newContracts: string[] = [];
+    contracts.forEach((profile, key) => {
+      if (profile.firstInteraction >= sevenDaysAgo) {
+        newContracts.push(profile.address);
+      }
+    });
+
+    if (newContracts.length > 0) {
+      risks.push({
+        type: 'new_contract',
+        severity: 'medium',
+        description: `${newContracts.length} newly interacted contract(s)`,
+        affectedContracts: newContracts,
+      });
+    }
+
+    return risks;
   }
 }
 
 // Singleton instance
 export const contractInteractionTracker = new ContractInteractionTracker();
-
