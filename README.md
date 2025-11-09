@@ -449,6 +449,18 @@ The security score is calculated based on multiple risk factors:
 
 - `POST /api/staking/track` - Track staking positions and rewards
 
+### MEV Protection
+
+- `POST /api/mev/analyze` - Analyze transactions for MEV protection
+
+### Governance
+
+- `POST /api/governance/track` - Track DAO governance participation and voting
+
+### Activity Heatmap
+
+- `POST /api/activity/heatmap` - Generate activity heatmaps and statistics
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
