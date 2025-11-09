@@ -12,6 +12,7 @@ import { TokenList } from '@/components/dashboard/token-list';
 import { ChainSelector } from '@/components/dashboard/chain-selector';
 import { Recommendations } from '@/components/dashboard/recommendations';
 import { ScanHistory } from '@/components/dashboard/scan-history';
+import { AlgorithmVisualizer } from '@/components/dashboard/algorithm-visualizer';
 import { formatAddress } from '@/lib/utils';
 import { useAppKit } from '@reown/appkit/react';
 import axios from 'axios';
@@ -265,6 +266,9 @@ export default function DashboardPage() {
             {scanHistory.length > 0 && (
               <ScanHistory scans={scanHistory} />
             )}
+
+            {/* Algorithm Visualizer */}
+            <AlgorithmVisualizer />
 
             {/* Info Footer */}
             <div className="text-center text-sm text-muted-foreground pt-8">
