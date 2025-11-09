@@ -2410,6 +2410,14 @@ console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
 - ✅ Cross-chain asset tracker
 - ✅ Wallet recovery assistant
 - ✅ Gas war monitor
+- ✅ Token price alert manager
+- ✅ Wallet activity heatmap generator
+- ✅ Smart contract security scanner
+- ✅ Token unlock tracker
+- ✅ Governance proposal tracker
+- ✅ Liquidity pool position analyzer
+- ✅ Staking rewards calculator
+- ✅ Wallet backup validator
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
