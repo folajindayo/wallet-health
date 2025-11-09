@@ -196,7 +196,7 @@ export function DCAAutomation({ walletAddress }: DCAAutomationProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success" className="gap-1">
+        return <Badge variant="secondary" className="gap-1">
           <Play className="h-3 w-3" />
           Active
         </Badge>;
@@ -350,7 +350,7 @@ export function DCAAutomation({ walletAddress }: DCAAutomationProps) {
                       Pause
                     </Button>
                   ) : (
-                    <Button size="sm" variant="success">
+                    <Button size="sm" variant="secondary">
                       <Play className="h-4 w-4 mr-2" />
                       Resume
                     </Button>
@@ -413,7 +413,7 @@ export function DCAAutomation({ walletAddress }: DCAAutomationProps) {
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold text-sm">{formatDate(execution.date)}</p>
                       {execution.status === 'success' && (
-                        <Badge variant="success" className="gap-1 text-xs">
+                        <Badge variant="secondary" className="gap-1 text-xs">
                           <CheckCircle2 className="h-3 w-3" />
                           Success
                         </Badge>
