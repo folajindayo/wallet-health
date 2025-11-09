@@ -82,6 +82,14 @@ wallet-health/
 │   │       ├── address-book-manager.ts              # Address book management
 │   │       ├── gas-price-predictor.ts               # Gas price prediction
 │   │       ├── smart-contract-deployer-helper.ts    # Contract deployment helper
+│   │       ├── dca-automation.ts                    # DCA automation strategies
+│   │       ├── limit-order-manager.ts               # Limit order management
+│   │       ├── recurring-payments-manager.ts         # Recurring payments management
+│   │       ├── token-swap-aggregator.ts             # Token swap route aggregation
+│   │       ├── carbon-footprint-tracker.ts          # Carbon footprint tracking
+│   │       ├── social-recovery-manager.ts           # Social recovery wallet management
+│   │       ├── on-chain-reputation-system.ts        # On-chain reputation scoring
+│   │       ├── options-derivatives-dashboard.ts     # Options & derivatives tracking
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
