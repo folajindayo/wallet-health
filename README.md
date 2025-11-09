@@ -337,6 +337,9 @@ The security score is calculated based on multiple risk factors:
 - ✅ **📜 Approval History Tracker** - Track token approval changes over time
 - ✅ **🔍 Token Metadata Cache** - Cache token metadata to reduce API calls
 - ✅ **📈 Risk Trend Analysis** - Analyze risk score trends and predict future risk levels
+- ✅ **🔐 Wallet Recovery Checker** - Check recovery phrase security and best practices
+- ✅ **👁️ Token Allowance Monitor** - Real-time monitoring of token allowances
+- ✅ **🔮 Risk Prediction Engine** - Predict future risks based on historical patterns
 
 ### Advanced DeFi Features
 
