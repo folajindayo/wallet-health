@@ -423,16 +423,16 @@ When enabled, all operations are logged to `commit.log` with timestamps:
 
 ```bash
 # Test run with verbose output
-./farm.sh --dry-run -v
+./commit.sh --dry-run -v
 
 # Production run with 2-second delay and logging
-./farm.sh -d 2 -v
+./commit.sh -d 2 -v
 
 # Commit to feature branch, skip empty commits
-./farm.sh -b feature/new-feature -s
+./commit.sh -b feature/new-feature -s
 
 # Custom configuration
-./farm.sh -d 5 -f custom-messages.txt -l custom.log -v --skip-empty
+./commit.sh -d 5 -f custom-messages.txt -l custom.log -v --skip-empty
 ```
 
 #### Requirements
