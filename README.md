@@ -1365,6 +1365,21 @@ const json = walletHealthReportGenerator.exportAsJSON(report);
 - ✅ Risk trend analysis
 - ✅ Approval optimization recommendations
 - ✅ Cross-chain bridge tracking
+- ✅ MEV protection analysis
+- ✅ Token unlock/vesting tracking
+- ✅ Governance participation tracking
+- ✅ Tax report generation
+- ✅ Liquidity pool analysis
+- ✅ Staking position tracking
+- ✅ Wallet backup management
+- ✅ Flashloan monitoring
+- ✅ Smart contract security scanning
+- ✅ Wallet reputation system
+- ✅ Multi-sig wallet management
+- ✅ ENS domain management
+- ✅ Airdrop eligibility checking
+- ✅ Portfolio rebalancing
+- ✅ Yield opportunity finding
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
