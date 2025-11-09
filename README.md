@@ -793,6 +793,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🔓 Token Unlock Tracker** - Track vesting schedules and upcoming unlocks
 - ✅ **🌉 Cross-Chain Bridges** - Track and analyze cross-chain bridge transactions
 - ✅ **💰 Staking Tracker** - Monitor staking positions, rewards, and performance
+- ✅ **🛡️ MEV Protection** - Analyze transactions for MEV protection and front-running risks
+- ✅ **🗳️ Governance Tracker** - Track DAO governance participation and voting history
+- ✅ **🔥 Activity Heatmap** - Visualize wallet activity patterns over time
 
 ## 💻 Usage Examples
 
