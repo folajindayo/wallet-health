@@ -424,7 +424,7 @@ export function SmartAlertAutomation({ walletAddress }: SmartAlertAutomationProp
                     <span className="text-xs font-medium">{channel.label}</span>
                   </div>
                   {channel.connected ? (
-                    <Badge variant={channel.enabled ? 'success' : 'outline'} className="text-xs gap-1">
+                    <Badge variant={channel.enabled ? 'secondary' : 'outline'} className="text-xs gap-1">
                       {channel.enabled ? (
                         <><CheckCircle2 className="h-3 w-3" />Active</>
                       ) : (

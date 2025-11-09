@@ -282,7 +282,7 @@ export function SocialRecoveryWallet({ walletAddress }: SocialRecoveryWalletProp
                         {request.guardianVotes.map((vote, index) => (
                           <Badge
                             key={index}
-                            variant={vote.vote === 'approve' ? 'success' : 'destructive'}
+                            variant={vote.vote === 'approve' ? 'secondary' : 'destructive'}
                             className="text-xs"
                           >
                             {vote.guardian}: {vote.vote}

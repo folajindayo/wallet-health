@@ -141,10 +141,10 @@ export function TaxReportingCenter({ walletAddress }: TaxReportingCenterProps) {
     const styles: Record<string, { label: string; variant: any }> = {
       trade: { label: 'Trade', variant: 'default' },
       transfer: { label: 'Transfer', variant: 'outline' },
-      income: { label: 'Income', variant: 'success' },
+      income: { label: 'Income', variant: 'secondary' },
       expense: { label: 'Expense', variant: 'destructive' },
       stake: { label: 'Stake', variant: 'info' },
-      reward: { label: 'Reward', variant: 'success' },
+      reward: { label: 'Reward', variant: 'secondary' },
     };
     const style = styles[type] || { label: type, variant: 'outline' };
     return <Badge variant={style.variant}>{style.label}</Badge>;
@@ -351,7 +351,7 @@ export function TaxReportingCenter({ walletAddress }: TaxReportingCenterProps) {
                         {tx.taxCategory}
                       </Badge>
                       {tx.gainLoss !== undefined && (
-                        <Badge variant={tx.gainLoss >= 0 ? 'success' : 'destructive'} className="text-xs">
+                        <Badge variant={tx.gainLoss >= 0 ? 'secondary' : 'destructive'} className="text-xs">
                           {tx.gainLoss >= 0 ? '+' : ''}{formatCurrency(tx.gainLoss)}
                         </Badge>
                       )}

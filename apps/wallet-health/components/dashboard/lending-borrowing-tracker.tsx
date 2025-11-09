@@ -268,7 +268,7 @@ export function LendingBorrowingTracker({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <h4 className="font-semibold">{position.protocol}</h4>
-                      <Badge variant={position.type === 'lending' ? 'success' : 'destructive'}>
+                      <Badge variant={position.type === 'lending' ? 'secondary' : 'destructive'}>
                         {position.type === 'lending' ? 'Lending' : 'Borrowing'}
                       </Badge>
                       {position.healthFactor && getHealthFactorBadge(position.healthFactor)}

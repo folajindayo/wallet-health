@@ -451,7 +451,7 @@ export function PortfolioDiversificationAnalyzer({ walletAddress }: PortfolioDiv
                   <div className="flex items-center gap-2 mb-2">
                     <h5 className="font-semibold text-sm">{rec.category}</h5>
                     {getPriorityBadge(rec.priority)}
-                    <Badge variant={rec.type === 'increase' ? 'success' : rec.type === 'decrease' ? 'destructive' : 'outline'}>
+                    <Badge variant={rec.type === 'increase' ? 'secondary' : rec.type === 'decrease' ? 'destructive' : 'outline'}>
                       {rec.type === 'increase' ? '↑ Increase' : rec.type === 'decrease' ? '↓ Decrease' : '→ Maintain'}
                     </Badge>
                   </div>

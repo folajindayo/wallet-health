@@ -71,7 +71,7 @@ export function PortfolioPerformance({ currentValue, previousValue = 0 }: Portfo
             </div>
             <div className="text-right">
               <Badge 
-                variant={isPositive ? 'success' : 'destructive'}
+                variant={isPositive ? 'secondary' : 'destructive'}
                 className="inline-flex items-center gap-1"
               >
                 {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}

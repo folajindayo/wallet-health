@@ -437,7 +437,7 @@ export function CryptoPaymentGateway({ walletAddress }: CryptoPaymentGatewayProp
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant={tx.type === 'received' ? 'success' : 'default'}>
+                    <Badge variant={tx.type === 'received' ? 'secondary' : 'default'}>
                       {tx.type === 'received' ? '↓ Received' : '↑ Sent'}
                     </Badge>
                     <Badge variant="outline">{tx.currency}</Badge>
