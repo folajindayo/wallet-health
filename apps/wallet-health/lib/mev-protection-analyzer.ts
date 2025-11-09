@@ -1,322 +1,312 @@
 /**
- * MEV Protection Analyzer Utility
- * Analyzes MEV risks and suggests protection strategies
+ * MEV Protection Analyzer
+ * Analyzes transactions for MEV protection and front-running risks
  */
 
-export interface MEVRisk {
-  type: 'sandwich' | 'frontrun' | 'backrun' | 'arbitrage' | 'liquidate';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  potentialLoss: number; // in USD
-  probability: number; // 0-100
-  protectionAvailable: boolean;
-  protectionMethod?: string;
-}
-
-export interface MEVProtectionStrategy {
-  strategy: 'private_mempool' | 'flashbots' | 'cowswap' | '1inch_fusion' | 'limit_order';
-  name: string;
-  description: string;
-  effectiveness: number; // 0-100
-  cost: number; // in USD or percentage
-  supportedChains: number[];
-  implementation: string;
-}
-
-export interface TransactionMEVAnalysis {
+export interface MEVAnalysis {
   transactionHash: string;
-  risks: MEVRisk[];
-  riskScore: number; // 0-100
-  recommendedProtection: MEVProtectionStrategy[];
-  estimatedSavings: number; // USD
+  timestamp: number;
+  chainId: number;
+  hasMEVProtection: boolean;
+  protectionType?: 'private_mempool' | 'flashbots' | 'cowswap' | '1inch_fusion' | 'other';
+  riskLevel: 'low' | 'medium' | 'high';
+  risks: Array<{
+    type: 'front_running' | 'sandwich_attack' | 'back_running' | 'arbitrage' | 'none';
+    severity: 'high' | 'medium' | 'low';
+    description: string;
+    probability?: number; // 0-100
+  }>;
+  recommendations: string[];
+  estimatedMEVLoss?: {
+    amount: string;
+    amountUSD?: number;
+    percentage: number;
+  };
 }
 
-export interface WalletMEVProfile {
-  walletAddress: string;
-  totalMEVRisk: number; // USD
-  riskLevel: 'low' | 'medium' | 'high';
-  vulnerableTransactions: number;
+export interface MEVProtectionStats {
+  totalTransactions: number;
   protectedTransactions: number;
-  protectionRate: number; // percentage
-  recommendations: string[];
+  unprotectedTransactions: number;
+  protectionRate: number;
+  estimatedTotalMEVLoss: string;
+  estimatedTotalMEVLossUSD?: number;
+  protectionBreakdown: Record<string, number>;
+  riskDistribution: {
+    low: number;
+    medium: number;
+    high: number;
+  };
 }
 
 export class MEVProtectionAnalyzer {
-  private protectionStrategies: MEVProtectionStrategy[] = [];
-
-  constructor() {
-    this.initializeProtectionStrategies();
-  }
-
   /**
-   * Analyze transaction for MEV risks
+   * Analyze transaction for MEV protection
    */
   analyzeTransaction(
     transaction: {
       hash: string;
-      type: 'swap' | 'liquidity' | 'transfer' | 'contract_call';
-      value: string;
-      gasPrice: number;
+      timestamp: number;
       chainId: number;
-      isPending?: boolean;
+      from: string;
+      to: string;
+      value: string;
+      data?: string;
+      gasPrice?: string;
+      maxFeePerGas?: string;
+      maxPriorityFeePerGas?: string;
+      metadata?: Record<string, any>;
     }
-  ): TransactionMEVAnalysis {
-    const risks: MEVRisk[] = [];
-    let riskScore = 0;
+  ): MEVAnalysis {
+    const risks: MEVAnalysis['risks'] = [];
+    const recommendations: string[] = [];
+    let hasMEVProtection = false;
+    let protectionType: MEVAnalysis['protectionType'];
+    let riskLevel: 'low' | 'medium' | 'high' = 'medium';
 
-    // Analyze based on transaction type
-    if (transaction.type === 'swap') {
-      const swapRisk = this.analyzeSwapRisk(transaction);
-      risks.push(...swapRisk);
-      riskScore += swapRisk.reduce((sum, r) => {
-        const severityWeight = { critical: 30, high: 20, medium: 10, low: 5 };
-        return sum + severityWeight[r.severity] * (r.probability / 100);
-      }, 0);
-    }
-
-    if (transaction.type === 'liquidity') {
-      const liquidityRisk = this.analyzeLiquidityRisk(transaction);
-      risks.push(...liquidityRisk);
-      riskScore += liquidityRisk.reduce((sum, r) => {
-        const severityWeight = { critical: 30, high: 20, medium: 10, low: 5 };
-        return sum + severityWeight[r.severity] * (r.probability / 100);
-      }, 0);
+    // Check for known MEV protection services
+    if (transaction.metadata?.privateMempool) {
+      hasMEVProtection = true;
+      protectionType = 'private_mempool';
     }
 
-    // High gas price increases MEV risk
-    if (transaction.gasPrice > 100e9) {
-      risks.push({
-        type: 'frontrun',
-        severity: 'medium',
-        description: 'High gas price increases front-running risk',
-        potentialLoss: parseFloat(transaction.value) * 0.01, // Estimate 1% loss
-        probability: 40,
-        protectionAvailable: true,
-        protectionMethod: 'private_mempool',
-      });
-      riskScore += 15;
+    if (transaction.metadata?.flashbots) {
+      hasMEVProtection = true;
+      protectionType = 'flashbots';
     }
 
-    // Pending transactions are more vulnerable
-    if (transaction.isPending) {
-      risks.push({
-        type: 'sandwich',
-        severity: 'high',
-        description: 'Pending transaction vulnerable to sandwich attacks',
-        potentialLoss: parseFloat(transaction.value) * 0.02,
-        probability: 60,
-        protectionAvailable: true,
-        protectionMethod: 'flashbots',
-      });
-      riskScore += 25;
+    if (transaction.to && this.isCowSwap(transaction.to)) {
+      hasMEVProtection = true;
+      protectionType = 'cowswap';
     }
 
-    // Get recommended protection strategies
-    const recommendedProtection = this.getRecommendedProtection(risks, transaction.chainId);
-    
-    // Estimate potential savings
-    const estimatedSavings = risks.reduce((sum, risk) => {
-      if (risk.protectionAvailable) {
-        return sum + risk.potentialLoss * (risk.probability / 100);
+    if (transaction.to && this.is1inchFusion(transaction.to)) {
+      hasMEVProtection = true;
+      protectionType = '1inch_fusion';
+    }
+
+    // Analyze for MEV risks
+    if (!hasMEVProtection) {
+      // Check for swap-like transactions
+      if (this.isSwapTransaction(transaction.data || '')) {
+        risks.push({
+          type: 'sandwich_attack',
+          severity: 'high',
+          description: 'Swap transaction without MEV protection - vulnerable to sandwich attacks',
+          probability: 60,
+        });
+
+        risks.push({
+          type: 'front_running',
+          severity: 'medium',
+          description: 'Transaction visible in public mempool - vulnerable to front-running',
+          probability: 40,
+        });
+
+        riskLevel = 'high';
+        recommendations.push('Use a private mempool or MEV-protected DEX for swaps');
+        recommendations.push('Consider using Flashbots or CowSwap for better protection');
       }
-      return sum;
-    }, 0);
+
+      // Check for large value transactions
+      const valueEth = parseFloat(transaction.value) / 1e18;
+      if (valueEth > 10) {
+        risks.push({
+          type: 'front_running',
+          severity: 'high',
+          description: 'Large value transaction without protection - high MEV risk',
+          probability: 70,
+        });
+
+        if (riskLevel !== 'high') riskLevel = 'high';
+        recommendations.push('Use private mempool for large transactions');
+      }
+
+      // Check gas price (low gas = more vulnerable)
+      if (transaction.gasPrice) {
+        const gasGwei = parseFloat(transaction.gasPrice) / 1e9;
+        if (gasGwei < 20) {
+          risks.push({
+            type: 'back_running',
+            severity: 'medium',
+            description: 'Low gas price - transaction may be back-run',
+            probability: 30,
+          });
+        }
+      }
+    } else {
+      risks.push({
+        type: 'none',
+        severity: 'low',
+        description: 'Transaction uses MEV protection',
+      });
+      riskLevel = 'low';
+    }
+
+    // Estimate MEV loss for unprotected swaps
+    let estimatedMEVLoss: MEVAnalysis['estimatedMEVLoss'] | undefined;
+    if (!hasMEVProtection && this.isSwapTransaction(transaction.data || '')) {
+      // Simplified estimation (would need actual swap data)
+      const estimatedLossPercentage = 0.5; // 0.5% average MEV loss
+      estimatedMEVLoss = {
+        amount: (BigInt(transaction.value) * BigInt(50)) / BigInt(10000).toString(),
+        percentage: estimatedLossPercentage,
+      };
+    }
 
     return {
       transactionHash: transaction.hash,
+      timestamp: transaction.timestamp,
+      chainId: transaction.chainId,
+      hasMEVProtection,
+      protectionType,
+      riskLevel,
       risks,
-      riskScore: Math.min(100, Math.round(riskScore)),
-      recommendedProtection,
-      estimatedSavings,
+      recommendations,
+      estimatedMEVLoss,
     };
   }
 
   /**
-   * Analyze swap transaction risks
+   * Analyze multiple transactions
    */
-  private analyzeSwapRisk(transaction: any): MEVRisk[] {
-    const risks: MEVRisk[] = [];
+  analyzeTransactions(
+    transactions: Array<{
+      hash: string;
+      timestamp: number;
+      chainId: number;
+      from: string;
+      to: string;
+      value: string;
+      data?: string;
+      gasPrice?: string;
+      metadata?: Record<string, any>;
+    }>
+  ): {
+    analyses: MEVAnalysis[];
+    stats: MEVProtectionStats;
+  } {
+    const analyses = transactions.map(tx => this.analyzeTransaction(tx));
 
-    // Large swaps are more vulnerable
-    const valueEth = parseFloat(transaction.value) / 1e18;
-    if (valueEth > 10) {
-      risks.push({
-        type: 'sandwich',
-        severity: 'high',
-        description: 'Large swap vulnerable to sandwich attacks',
-        potentialLoss: valueEth * 0.03 * 2000, // Estimate 3% slippage
-        probability: 70,
-        protectionAvailable: true,
-        protectionMethod: 'cowswap',
-      });
-    }
+    const protected = analyses.filter(a => a.hasMEVProtection).length;
+    const unprotected = analyses.length - protected;
+    const protectionRate = analyses.length > 0 ? (protected / analyses.length) * 100 : 0;
 
-    // All swaps have some MEV risk
-    risks.push({
-      type: 'frontrun',
-      severity: 'medium',
-      description: 'Swap transaction can be front-run',
-      potentialLoss: valueEth * 0.01 * 2000,
-      probability: 30,
-      protectionAvailable: true,
-      protectionMethod: 'private_mempool',
-    });
-
-    return risks;
-  }
-
-  /**
-   * Analyze liquidity transaction risks
-   */
-  private analyzeLiquidityRisk(transaction: any): MEVRisk[] {
-    return [
-      {
-        type: 'arbitrage',
-        severity: 'low',
-        description: 'Liquidity operations can be arbitraged',
-        potentialLoss: parseFloat(transaction.value) * 0.005,
-        probability: 20,
-        protectionAvailable: false,
-      },
-    ];
-  }
-
-  /**
-   * Get recommended protection strategies
-   */
-  private getRecommendedProtection(
-    risks: MEVRisk[],
-    chainId: number
-  ): MEVProtectionStrategy[] {
-    const recommended: MEVProtectionStrategy[] = [];
-
-    // Check if any risk has protection available
-    const hasProtection = risks.some(r => r.protectionAvailable);
-    if (!hasProtection) {
-      return recommended;
-    }
-
-    // Recommend strategies based on chain support
-    this.protectionStrategies.forEach(strategy => {
-      if (strategy.supportedChains.includes(chainId)) {
-        recommended.push(strategy);
+    // Calculate protection breakdown
+    const protectionBreakdown: Record<string, number> = {};
+    analyses.forEach(analysis => {
+      if (analysis.protectionType) {
+        protectionBreakdown[analysis.protectionType] =
+          (protectionBreakdown[analysis.protectionType] || 0) + 1;
       }
     });
 
-    // Sort by effectiveness
-    recommended.sort((a, b) => b.effectiveness - a.effectiveness);
+    // Risk distribution
+    const riskDistribution = {
+      low: analyses.filter(a => a.riskLevel === 'low').length,
+      medium: analyses.filter(a => a.riskLevel === 'medium').length,
+      high: analyses.filter(a => a.riskLevel === 'high').length,
+    };
 
-    return recommended.slice(0, 3); // Top 3 recommendations
-  }
+    // Estimate total MEV loss
+    const totalMEVLoss = analyses.reduce((sum, a) => {
+      if (a.estimatedMEVLoss) {
+        return sum + BigInt(a.estimatedMEVLoss.amount);
+      }
+      return sum;
+    }, BigInt(0));
 
-  /**
-   * Analyze wallet MEV profile
-   */
-  analyzeWalletProfile(
-    transactions: Array<{
-      hash: string;
-      type: string;
-      value: string;
-      gasPrice: number;
-      chainId: number;
-      isProtected?: boolean;
-    }>
-  ): WalletMEVProfile {
-    const analyses = transactions.map(tx => this.analyzeTransaction(tx));
-    
-    const totalMEVRisk = analyses.reduce((sum, a) => sum + a.estimatedSavings, 0);
-    const vulnerableTransactions = analyses.filter(a => a.riskScore > 50).length;
-    const protectedTransactions = transactions.filter(tx => tx.isProtected).length;
-    const protectionRate = transactions.length > 0
-      ? (protectedTransactions / transactions.length) * 100
-      : 0;
-
-    // Determine risk level
-    let riskLevel: 'low' | 'medium' | 'high' = 'low';
-    if (totalMEVRisk > 1000 || vulnerableTransactions > 10) {
-      riskLevel = 'high';
-    } else if (totalMEVRisk > 100 || vulnerableTransactions > 5) {
-      riskLevel = 'medium';
-    }
-
-    // Generate recommendations
-    const recommendations: string[] = [];
-    if (protectionRate < 50) {
-      recommendations.push('Consider using MEV protection for more transactions');
-    }
-    if (vulnerableTransactions > 0) {
-      recommendations.push(`Review ${vulnerableTransactions} high-risk transactions`);
-    }
-    if (totalMEVRisk > 500) {
-      recommendations.push('Significant MEV risk detected - implement protection strategies');
-    }
+    const stats: MEVProtectionStats = {
+      totalTransactions: analyses.length,
+      protectedTransactions: protected,
+      unprotectedTransactions: unprotected,
+      protectionRate: Math.round(protectionRate * 100) / 100,
+      estimatedTotalMEVLoss: totalMEVLoss.toString(),
+      protectionBreakdown,
+      riskDistribution,
+    };
 
     return {
-      walletAddress: '', // Would be passed in
-      totalMEVRisk,
-      riskLevel,
-      vulnerableTransactions,
-      protectedTransactions,
-      protectionRate: Math.round(protectionRate * 100) / 100,
-      recommendations,
+      analyses,
+      stats,
     };
   }
 
   /**
-   * Initialize protection strategies
+   * Get recommendations for MEV protection
    */
-  private initializeProtectionStrategies(): void {
-    this.protectionStrategies = [
-      {
-        strategy: 'flashbots',
-        name: 'Flashbots Protect',
-        description: 'Private mempool via Flashbots to prevent front-running',
-        effectiveness: 95,
-        cost: 0,
-        supportedChains: [1], // Ethereum mainnet
-        implementation: 'Use Flashbots RPC endpoint',
-      },
-      {
-        strategy: 'cowswap',
-        name: 'CoW Swap',
-        description: 'MEV-protected DEX aggregator using batch auctions',
-        effectiveness: 90,
-        cost: 0.001, // Small fee
-        supportedChains: [1, 100], // Ethereum, Gnosis
-        implementation: 'Trade via CoW Swap interface',
-      },
-      {
-        strategy: '1inch_fusion',
-        name: '1inch Fusion',
-        description: 'Intent-based trading with MEV protection',
-        effectiveness: 85,
-        cost: 0.0005,
-        supportedChains: [1, 137, 56],
-        implementation: 'Use 1inch Fusion mode',
-      },
-      {
-        strategy: 'private_mempool',
-        name: 'Private Mempool',
-        description: 'Submit transactions to private mempool',
-        effectiveness: 80,
-        cost: 0,
-        supportedChains: [1],
-        implementation: 'Use private RPC endpoint',
-      },
-    ];
+  getProtectionRecommendations(
+    stats: MEVProtectionStats
+  ): string[] {
+    const recommendations: string[] = [];
+
+    if (stats.protectionRate < 50) {
+      recommendations.push(
+        `Only ${stats.protectionRate.toFixed(1)}% of transactions use MEV protection - consider increasing`
+      );
+    }
+
+    if (stats.riskDistribution.high > stats.totalTransactions * 0.2) {
+      recommendations.push(
+        `${stats.riskDistribution.high} high-risk transactions detected - use MEV protection`
+      );
+    }
+
+    if (stats.estimatedTotalMEVLoss) {
+      const lossEth = parseFloat(stats.estimatedTotalMEVLoss) / 1e18;
+      if (lossEth > 0.1) {
+        recommendations.push(
+          `Estimated MEV loss: ${lossEth.toFixed(4)} ETH - use protection to reduce losses`
+        );
+      }
+    }
+
+    recommendations.push('Use private mempools (Flashbots) for sensitive transactions');
+    recommendations.push('Consider using MEV-protected DEXs like CowSwap or 1inch Fusion');
+    recommendations.push('Batch transactions when possible to reduce MEV exposure');
+
+    return recommendations;
   }
 
   /**
-   * Get all available protection strategies
+   * Private helper methods
    */
-  getProtectionStrategies(chainId?: number): MEVProtectionStrategy[] {
-    if (chainId) {
-      return this.protectionStrategies.filter(s => s.supportedChains.includes(chainId));
-    }
-    return [...this.protectionStrategies];
+
+  private isSwapTransaction(data: string): boolean {
+    // Common swap function signatures
+    const swapSignatures = [
+      '0x7ff36ab5', // swapExactETHForTokens
+      '0x18cbafe5', // swapExactETHForTokensSupportingFeeOnTransferTokens
+      '0x38ed1739', // swapExactTokensForTokens
+      '0x8803dbee', // swapTokensForExactTokens
+      '0x5c11d795', // swapExactTokensForTokensSupportingFeeOnTransferTokens
+      '0x4a25d94a', // swapETHForExactTokens
+      '0xb6f9de95', // swapExactETHForTokens (Uniswap V2)
+      '0x02751cec', // swapExactTokensForETH
+    ];
+
+    return swapSignatures.some(sig => data.toLowerCase().startsWith(sig.toLowerCase()));
+  }
+
+  private isCowSwap(address: string): boolean {
+    // Known CowSwap addresses (simplified)
+    const cowSwapAddresses = [
+      '0x9008d19f58aabd9ed0d60971565aa8510560ab41', // Mainnet
+      '0xc92e8bdf79f0507f65a392b0ab4667716bfe0110', // Gnosis Chain
+    ];
+
+    return cowSwapAddresses.includes(address.toLowerCase());
+  }
+
+  private is1inchFusion(address: string): boolean {
+    // Known 1inch Fusion addresses (simplified)
+    const fusionAddresses = [
+      '0x1111111254fb6c44bac0bed2854e76f90643097d', // 1inch Router
+    ];
+
+    return fusionAddresses.includes(address.toLowerCase());
   }
 }
 
 // Singleton instance
 export const mevProtectionAnalyzer = new MEVProtectionAnalyzer();
-
