@@ -253,6 +253,20 @@ The security score is calculated based on multiple risk factors:
 - **🔐 Multi-sig Support** - Analyze multi-signature wallet configurations
 - **🌐 ENS Integration** - Resolve ENS domains and verify ownership
 
+### Portfolio & Performance Features
+
+- ✅ **📈 Portfolio Performance Tracker** - Track portfolio value, returns, and performance metrics over time
+- ✅ **📊 Activity Heatmap** - Visualize wallet activity patterns by day and hour
+- ✅ **📉 Risk Trend Analyzer** - Analyze risk score trends and predict future risk levels
+- ✅ **💰 Token Price Alerts** - Set and manage price alerts for tokens
+- ✅ **📜 Contract Interaction History** - Track all smart contract interactions with detailed statistics
+
+### Optimization Features
+
+- ✅ **⚡ Approval Optimizer** - Get recommendations for optimal token approval amounts
+- ✅ **🌉 Cross-chain Bridge Tracker** - Track assets bridged across different chains
+- ✅ **⏱️ Gas Optimization** - Smart gas estimation and batch transaction optimization
+
 ## 📡 API Routes
 
 ### Scan Endpoints
