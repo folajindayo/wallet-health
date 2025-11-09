@@ -108,11 +108,6 @@ wallet-health/
 │   │       ├── transaction-fee-optimizer.ts # Transaction fee optimization
 │   │       ├── wallet-security-audit.ts  # Comprehensive security audit
 │   │       └── cross-chain-portfolio-aggregator.ts # Cross-chain portfolio aggregation
-│   │       ├── wallet-health-report.ts   # Wallet health report generator
-│   │       ├── token-price-tracker.ts    # Token price tracking & portfolio value
-│   │       ├── portfolio-performance.ts  # Portfolio performance metrics
-│   │       ├── contract-interaction-tracker.ts # Smart contract interaction tracking
-│   │       ├── gas-optimizer.ts          # Gas price optimization recommendations
 │   │       ├── token-unlock-tracker.ts  # Token vesting & unlock tracking
 │   │       ├── cross-chain-bridge-tracker.ts # Cross-chain bridge tracking
 │   │       ├── staking-tracker.ts       # Staking positions & rewards tracking
