@@ -24,7 +24,6 @@ import {
   XCircle,
   Edit,
   Trash2,
-  Toggle,
   Settings,
   Filter,
   Calendar,
