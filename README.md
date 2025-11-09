@@ -458,9 +458,61 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## 🧪 Testing
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests for specific app
+cd apps/wallet-health
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
+```
+
+## 📦 Deployment
+
+### Vercel (Recommended)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Deploy production
+vercel --prod
+```
+
+### Docker
+
+```bash
+# Build Docker image
+docker build -t wallet-health .
+
+# Run container
+docker run -p 3000:3000 wallet-health
+```
+
+### Environment Variables
+
+Make sure to set the following environment variables in your deployment:
+
+```bash
+NEXT_PUBLIC_REOWN_PROJECT_ID=your_project_id
+GOLDRUSH_API_KEY=your_api_key
+MONGODB_URI=your_mongodb_uri
+```
+
 ## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🔗 Key Integrations
 
