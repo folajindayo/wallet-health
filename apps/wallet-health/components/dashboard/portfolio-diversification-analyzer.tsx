@@ -486,7 +486,7 @@ export function PortfolioDiversificationAnalyzer({ walletAddress }: PortfolioDiv
               Best Practices
             </h4>
             <ul className="text-xs text-muted-foreground space-y-1">
-              <li>• Rebalance quarterly or when deviation >10%</li>
+              <li>• Rebalance quarterly or when deviation {'>'}10%</li>
               <li>• Maintain emergency fund in stablecoins</li>
               <li>• Adjust allocation based on risk tolerance</li>
               <li>• Consider tax implications when rebalancing</li>
