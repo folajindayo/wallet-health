@@ -300,12 +300,41 @@ Contributions are welcome! Please follow these steps:
 
 This project is licensed under the MIT License.
 
+## 🔗 Key Integrations
+
+### Reown (WalletConnect)
+- **SDK**: Latest Reown SDK for wallet connections
+- **Features**: Session management, deep linking, push notifications
+- **Documentation**: [Reown Docs](https://docs.reown.com/)
+- **Cloud Console**: [cloud.reown.com](https://cloud.reown.com/)
+
+### AppKit (Web3Modal)
+- **Components**: Pre-built wallet connection UI components
+- **Features**: Custom themes, wallet filtering, chain selection
+- **Documentation**: [AppKit Docs](https://docs.reown.com/appkit/react/core/overview)
+- **GitHub**: [@reown/appkit](https://github.com/reown/appkit)
+
+### Base Network
+- **L2 Solution**: Coinbase's Layer 2 blockchain
+- **Features**: OP Stack, Superchain compatibility, low fees
+- **Documentation**: [Base Docs](https://docs.base.org/)
+- **Explorer**: [basescan.org](https://basescan.org/)
+
+### GoldRush API (Covalent)
+- **Data Provider**: Comprehensive blockchain data API
+- **Features**: Multi-chain support, token balances, transactions
+- **Documentation**: [GoldRush Docs](https://goldrush.dev/)
+- **Dashboard**: [goldrush.dev](https://goldrush.dev/)
+
 ## 🙏 Acknowledgments
 
 - [GoldRush (Covalent)](https://goldrush.dev/) for blockchain data API
-- [Reown (WalletConnect)](https://reown.com/) for wallet connection
+- [Reown (WalletConnect)](https://reown.com/) for wallet connection infrastructure
+- [AppKit](https://docs.reown.com/appkit) for beautiful wallet UI components
+- [Base](https://base.org/) for L2 network support and optimization
 - [Shadcn UI](https://ui.shadcn.com/) for beautiful components
 - [Vercel](https://vercel.com/) for Next.js and deployment
+- [Wagmi](https://wagmi.sh/) and [Viem](https://viem.sh/) for Web3 interactions
 
 ## 📞 Support
 
