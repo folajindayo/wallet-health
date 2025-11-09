@@ -279,10 +279,13 @@ Theme variables are defined in `apps/wallet-health/app/globals.css`.
 
 ## 🔒 Security & Privacy
 
-- ✅ **Non-custodial**: Read-only access via WalletConnect
-- ✅ **No private keys**: Never asks for or stores private keys
-- ✅ **Open source**: All code is publicly auditable
-- ✅ **No tracking**: Privacy-first approach
+- ✅ **Non-custodial**: Read-only access via WalletConnect - your funds never leave your wallet
+- ✅ **No private keys**: Never asks for or stores private keys or seed phrases
+- ✅ **Open source**: All code is publicly auditable on GitHub
+- ✅ **No tracking**: Privacy-first approach with no analytics or user tracking
+- ✅ **Local processing**: Sensitive data processing happens client-side when possible
+- ✅ **Encrypted storage**: All stored data is encrypted at rest
+- ✅ **API security**: All API calls use HTTPS and proper authentication
 
 ## 🚧 Development
 
