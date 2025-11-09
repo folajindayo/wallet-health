@@ -1521,6 +1521,84 @@ analysis.relationships.forEach(rel => {
 });
 ```
 
+### Transaction Fee Optimizer
+
+```typescript
+import { transactionFeeOptimizer } from '@/lib/transaction-fee-optimizer';
+
+// Optimize fee for a transaction
+const optimization = transactionFeeOptimizer.optimizeFee(
+  1, // Ethereum
+  21000, // gas limit
+  50, // current gas price (gwei)
+  { slow: 20, standard: 30, fast: 40 },
+  'medium'
+);
+
+console.log(`Savings: ${optimization.savings} ETH (${optimization.savingsPercentage}%)`);
+
+// Compare fees across chains
+const comparison = transactionFeeOptimizer.compareFeesAcrossChains(
+  21000,
+  gasPriceDataMap
+);
+
+console.log(`Cheapest: ${comparison.chains[0].chainName}`);
+```
+
+### Wallet Security Audit
+
+```typescript
+import { walletSecurityAudit } from '@/lib/wallet-security-audit';
+
+// Perform comprehensive audit
+const audit = walletSecurityAudit.performAudit('0x...', {
+  approvals,
+  tokens,
+  contracts,
+  transactions,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+});
+
+console.log(`Overall Score: ${audit.overallScore}/100`);
+console.log(`Risk Level: ${audit.riskLevel}`);
+console.log(`Critical Issues: ${audit.criticalIssues.length}`);
+
+// Get compliance results
+audit.compliance.forEach(compliance => {
+  console.log(`${compliance.standard}: ${compliance.passed ? 'PASS' : 'FAIL'}`);
+});
+```
+
+### Cross-chain Portfolio Aggregator
+
+```typescript
+import { crossChainPortfolioAggregator } from '@/lib/cross-chain-portfolio-aggregator';
+
+// Aggregate portfolio across chains
+const portfolio = crossChainPortfolioAggregator.aggregatePortfolio(
+  '0x...',
+  chainPortfolios
+);
+
+console.log(`Total Value: $${portfolio.totalValueUSD}`);
+console.log(`Chains: ${portfolio.summary.chainsWithAssets}`);
+console.log(`Diversification: ${portfolio.summary.diversification}%`);
+
+// Get top tokens
+const topTokens = crossChainPortfolioAggregator.getTopTokens(portfolio, 10);
+topTokens.forEach(token => {
+  console.log(`${token.symbol}: $${token.valueUSD}`);
+});
+
+// Calculate portfolio health
+const health = crossChainPortfolioAggregator.calculatePortfolioHealth(portfolio);
+console.log(`Portfolio Health Score: ${health.score}/100`);
+```
+
 ## 📊 Performance Metrics
 
 - **Scan Speed**: < 5 seconds for multi-chain wallet scan
