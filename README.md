@@ -54,7 +54,11 @@ wallet-health/
 │   │       ├── transaction-simulator.ts    # Transaction simulation & preview
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
-│   │       └── yield-optimizer.ts          # Yield optimization
+│   │       ├── yield-optimizer.ts          # Yield farming optimization
+│   │       ├── alert-manager.ts           # Alert system & notifications
+│   │       ├── activity-timeline.ts       # Activity timeline generator
+│   │       ├── ens-resolver.ts            # ENS domain resolution
+│   │       └── multisig-analyzer.ts       # Multi-signature wallet analyzer
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
