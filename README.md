@@ -672,6 +672,42 @@ The security score is calculated based on multiple risk factors:
   - `action: export` - Export score history
 - `GET /api/security/score-tracker` - Get security score history
 
+### Token Approval Management
+
+- `POST /api/approvals/manage` - Manage token approvals
+  - `action: add_approvals` - Add or update approvals
+  - `action: get_approvals` - Get approvals for wallet
+  - `action: get_risky` - Get risky approvals
+  - `action: generate_batch_revoke` - Generate batch revoke operations
+  - `action: get_recommendations` - Get approval recommendations
+  - `action: get_health_score` - Get approval health score
+  - `action: get_statistics` - Get approval statistics
+  - `action: remove_approval` - Remove specific approval
+
+### Activity Timeline
+
+- `POST /api/timeline/generate` - Generate activity timeline with risk annotations
+
+### Risk Alerts
+
+- `POST /api/alerts/risk` - Manage risk alerts
+  - `action: create` - Create new alert
+  - `action: get_alerts` - Get alerts for wallet
+  - `action: acknowledge` - Acknowledge alert
+  - `action: resolve` - Resolve alert
+  - `action: bulk_acknowledge` - Bulk acknowledge alerts
+  - `action: bulk_resolve` - Bulk resolve alerts
+  - `action: get_summary` - Get alert summary
+  - `action: create_rule` - Create alert rule
+  - `action: evaluate_rules` - Evaluate rules and create alerts
+- `GET /api/alerts/risk` - Get alerts with filtering options
+
+### Portfolio Rebalancing
+
+- `POST /api/portfolio/rebalance` - Portfolio rebalancing assistance
+  - `action: generate_plan` - Generate rebalancing plan
+  - `action: generate_target_allocation` - Generate target allocation based on risk profile
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
