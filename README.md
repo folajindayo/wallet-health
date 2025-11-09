@@ -52,6 +52,13 @@ wallet-health/
 │   │       ├── nft-security-scanner.ts      # NFT security analysis
 │   │       ├── defi-exposure-analyzer.ts   # DeFi protocol exposure analysis
 │   │       ├── transaction-simulator.ts    # Transaction simulation & preview
+│   │       ├── portfolio-performance-tracker.ts  # Portfolio performance tracking
+│   │       ├── contract-interaction-tracker.ts   # Smart contract interaction history
+│   │       ├── price-alert-manager.ts      # Token price alerts system
+│   │       ├── activity-heatmap-generator.ts      # Activity heatmap visualization
+│   │       ├── risk-trend-analyzer.ts      # Risk trend analysis over time
+│   │       ├── approval-optimizer.ts       # Token approval optimization
+│   │       ├── cross-chain-bridge-tracker.ts      # Cross-chain bridge tracking
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield farming optimization
