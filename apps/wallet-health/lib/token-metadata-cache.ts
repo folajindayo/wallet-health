@@ -1,6 +1,6 @@
 /**
- * Token Metadata Cache Utility
- * Cache token metadata to reduce API calls
+ * Token Metadata Cache
+ * Caches token metadata to reduce API calls and improve performance
  */
 
 export interface TokenMetadata {
@@ -10,222 +10,171 @@ export interface TokenMetadata {
   name: string;
   decimals: number;
   logoURI?: string;
+  verified: boolean;
+  tags?: string[];
   priceUSD?: number;
-  priceChange24h?: number;
-  marketCap?: number;
-  volume24h?: number;
   lastUpdated: number;
 }
 
-export interface CacheOptions {
-  ttl?: number; // Time to live in milliseconds (default: 1 hour)
-  maxSize?: number; // Maximum cache size (default: 1000)
+export interface CacheStats {
+  totalEntries: number;
+  hits: number;
+  misses: number;
+  hitRate: number;
+  oldestEntry: number;
+  newestEntry: number;
 }
 
 export class TokenMetadataCache {
-  private cache: Map<string, TokenMetadata> = new Map();
-  private readonly defaultTTL = 60 * 60 * 1000; // 1 hour
-  private readonly defaultMaxSize = 1000;
-  private options: Required<CacheOptions>;
-
-  constructor(options: CacheOptions = {}) {
-    this.options = {
-      ttl: options.ttl || this.defaultTTL,
-      maxSize: options.maxSize || this.defaultMaxSize,
-    };
-  }
+  private cache: Map<string, TokenMetadata> = new Map(); // address-chain -> metadata
+  private stats = {
+    hits: 0,
+    misses: 0,
+  };
+  private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
   /**
-   * Generate cache key
+   * Get token metadata
    */
-  private getCacheKey(address: string, chainId: number): string {
-    return `${chainId}:${address.toLowerCase()}`;
-  }
+  async getMetadata(
+    tokenAddress: string,
+    chainId: number,
+    forceRefresh: boolean = false
+  ): Promise<TokenMetadata | null> {
+    const key = `${tokenAddress.toLowerCase()}-${chainId}`;
+    const cached = this.cache.get(key);
 
-  /**
-   * Check if metadata is expired
-   */
-  private isExpired(metadata: TokenMetadata): boolean {
-    const age = Date.now() - metadata.lastUpdated;
-    return age > this.options.ttl;
-  }
-
-  /**
-   * Get token metadata from cache
-   */
-  get(address: string, chainId: number): TokenMetadata | null {
-    const key = this.getCacheKey(address, chainId);
-    const metadata = this.cache.get(key);
-
-    if (!metadata) {
-      return null;
+    // Check if cached and still valid
+    if (!forceRefresh && cached) {
+      const age = Date.now() - cached.lastUpdated;
+      if (age < this.CACHE_TTL) {
+        this.stats.hits++;
+        return cached;
+      }
     }
 
-    if (this.isExpired(metadata)) {
-      this.cache.delete(key);
-      return null;
+    // Fetch from API
+    this.stats.misses++;
+    try {
+      const metadata = await this.fetchMetadata(tokenAddress, chainId);
+      if (metadata) {
+        this.cache.set(key, metadata);
+      }
+      return metadata;
+    } catch (error) {
+      console.error(`Error fetching metadata for ${tokenAddress}:`, error);
+      // Return cached even if expired as fallback
+      return cached || null;
     }
-
-    return metadata;
   }
 
   /**
-   * Set token metadata in cache
+   * Batch get metadata
    */
-  set(metadata: TokenMetadata): void {
-    // Check cache size and evict oldest if needed
-    if (this.cache.size >= this.options.maxSize) {
-      this.evictOldest();
-    }
+  async batchGetMetadata(
+    tokens: Array<{ address: string; chainId: number }>,
+    forceRefresh: boolean = false
+  ): Promise<Map<string, TokenMetadata>> {
+    const results = new Map<string, TokenMetadata>();
 
-    const key = this.getCacheKey(metadata.address, metadata.chainId);
-    const cachedMetadata: TokenMetadata = {
+    await Promise.all(
+      tokens.map(async ({ address, chainId }) => {
+        const metadata = await this.getMetadata(address, chainId, forceRefresh);
+        if (metadata) {
+          results.set(`${address.toLowerCase()}-${chainId}`, metadata);
+        }
+      })
+    );
+
+    return results;
+  }
+
+  /**
+   * Set metadata manually
+   */
+  setMetadata(metadata: TokenMetadata): void {
+    const key = `${metadata.address.toLowerCase()}-${metadata.chainId}`;
+    this.cache.set(key, {
       ...metadata,
       lastUpdated: Date.now(),
-    };
-
-    this.cache.set(key, cachedMetadata);
-    this.saveToStorage();
+    });
   }
 
   /**
-   * Batch set multiple metadata entries
+   * Batch set metadata
    */
-  setBatch(metadataList: TokenMetadata[]): void {
-    metadataList.forEach(metadata => this.set(metadata));
+  batchSetMetadata(metadataList: TokenMetadata[]): void {
+    metadataList.forEach(metadata => this.setMetadata(metadata));
   }
 
   /**
-   * Check if token exists in cache and is valid
+   * Invalidate cache for token
    */
-  has(address: string, chainId: number): boolean {
-    const metadata = this.get(address, chainId);
-    return metadata !== null;
+  invalidate(tokenAddress: string, chainId: number): boolean {
+    const key = `${tokenAddress.toLowerCase()}-${chainId}`;
+    return this.cache.delete(key);
   }
 
   /**
-   * Remove token from cache
+   * Clear expired entries
    */
-  delete(address: string, chainId: number): boolean {
-    const key = this.getCacheKey(address, chainId);
-    const deleted = this.cache.delete(key);
-    if (deleted) {
-      this.saveToStorage();
-    }
-    return deleted;
+  clearExpired(): number {
+    const now = Date.now();
+    let cleared = 0;
+
+    this.cache.forEach((metadata, key) => {
+      const age = now - metadata.lastUpdated;
+      if (age >= this.CACHE_TTL) {
+        this.cache.delete(key);
+        cleared++;
+      }
+    });
+
+    return cleared;
   }
 
   /**
    * Clear all cache
    */
-  clear(): void {
+  clearAll(): void {
     this.cache.clear();
-    this.saveToStorage();
+    this.stats.hits = 0;
+    this.stats.misses = 0;
   }
 
   /**
    * Get cache statistics
    */
-  getStats(): {
-    size: number;
-    maxSize: number;
-    hitRate?: number;
-    expired: number;
-  } {
-    let expired = 0;
-    this.cache.forEach(metadata => {
-      if (this.isExpired(metadata)) {
-        expired++;
-      }
-    });
+  getStats(): CacheStats {
+    const entries = Array.from(this.cache.values());
+    const timestamps = entries.map(e => e.lastUpdated);
 
     return {
-      size: this.cache.size,
-      maxSize: this.options.maxSize,
-      expired,
+      totalEntries: this.cache.size,
+      hits: this.stats.hits,
+      misses: this.stats.misses,
+      hitRate:
+        this.stats.hits + this.stats.misses > 0
+          ? (this.stats.hits / (this.stats.hits + this.stats.misses)) * 100
+          : 0,
+      oldestEntry: timestamps.length > 0 ? Math.min(...timestamps) : 0,
+      newestEntry: timestamps.length > 0 ? Math.max(...timestamps) : 0,
     };
-  }
-
-  /**
-   * Clean expired entries
-   */
-  cleanExpired(): number {
-    let cleaned = 0;
-    const keysToDelete: string[] = [];
-
-    this.cache.forEach((metadata, key) => {
-      if (this.isExpired(metadata)) {
-        keysToDelete.push(key);
-      }
-    });
-
-    keysToDelete.forEach(key => {
-      this.cache.delete(key);
-      cleaned++;
-    });
-
-    if (cleaned > 0) {
-      this.saveToStorage();
-    }
-
-    return cleaned;
-  }
-
-  /**
-   * Evict oldest entry
-   */
-  private evictOldest(): void {
-    let oldestKey: string | null = null;
-    let oldestTime = Date.now();
-
-    this.cache.forEach((metadata, key) => {
-      if (metadata.lastUpdated < oldestTime) {
-        oldestTime = metadata.lastUpdated;
-        oldestKey = key;
-      }
-    });
-
-    if (oldestKey) {
-      this.cache.delete(oldestKey);
-    }
-  }
-
-  /**
-   * Get all cached tokens for a chain
-   */
-  getChainTokens(chainId: number): TokenMetadata[] {
-    const tokens: TokenMetadata[] = [];
-    const prefix = `${chainId}:`;
-
-    this.cache.forEach((metadata, key) => {
-      if (key.startsWith(prefix) && !this.isExpired(metadata)) {
-        tokens.push(metadata);
-      }
-    });
-
-    return tokens;
   }
 
   /**
    * Search tokens by symbol or name
    */
-  search(query: string, chainId?: number): TokenMetadata[] {
-    const lowerQuery = query.toLowerCase();
+  searchTokens(query: string, chainId?: number): TokenMetadata[] {
+    const queryLower = query.toLowerCase();
     const results: TokenMetadata[] = [];
 
-    this.cache.forEach((metadata, key) => {
-      if (this.isExpired(metadata)) {
-        return;
-      }
-
-      if (chainId && metadata.chainId !== chainId) {
-        return;
-      }
+    this.cache.forEach(metadata => {
+      if (chainId && metadata.chainId !== chainId) return;
 
       if (
-        metadata.symbol.toLowerCase().includes(lowerQuery) ||
-        metadata.name.toLowerCase().includes(lowerQuery) ||
-        metadata.address.toLowerCase().includes(lowerQuery)
+        metadata.symbol.toLowerCase().includes(queryLower) ||
+        metadata.name.toLowerCase().includes(queryLower)
       ) {
         results.push(metadata);
       }
@@ -235,59 +184,55 @@ export class TokenMetadataCache {
   }
 
   /**
-   * Save to localStorage
+   * Get verified tokens
    */
-  private saveToStorage(): void {
-    if (typeof window !== 'undefined') {
-      try {
-        const cacheData = Array.from(this.cache.entries());
-        localStorage.setItem(
-          'wallet-health-token-cache',
-          JSON.stringify({
-            cache: cacheData,
-            options: this.options,
-            version: '1.0.0',
-          })
-        );
-      } catch (error) {
-        console.error('Failed to save token cache to storage:', error);
+  getVerifiedTokens(chainId?: number): TokenMetadata[] {
+    const results: TokenMetadata[] = [];
+
+    this.cache.forEach(metadata => {
+      if (chainId && metadata.chainId !== chainId) return;
+      if (metadata.verified) {
+        results.push(metadata);
       }
-    }
+    });
+
+    return results;
   }
 
   /**
-   * Load from localStorage
+   * Export cache
    */
-  loadFromStorage(): void {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('wallet-health-token-cache');
-        if (stored) {
-          const data = JSON.parse(stored);
-          if (data.cache && Array.isArray(data.cache)) {
-            data.cache.forEach(([key, metadata]: [string, TokenMetadata]) => {
-              // Only load non-expired entries
-              if (!this.isExpired(metadata)) {
-                this.cache.set(key, metadata);
-              }
-            });
-          }
-          if (data.options) {
-            this.options = { ...this.options, ...data.options };
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load token cache from storage:', error);
-      }
-    }
+  exportCache(): TokenMetadata[] {
+    return Array.from(this.cache.values());
+  }
+
+  /**
+   * Import cache
+   */
+  importCache(metadataList: TokenMetadata[]): void {
+    metadataList.forEach(metadata => this.setMetadata(metadata));
+  }
+
+  /**
+   * Private method to fetch metadata from API
+   */
+  private async fetchMetadata(
+    tokenAddress: string,
+    chainId: number
+  ): Promise<TokenMetadata | null> {
+    // Placeholder - would integrate with token list API or GoldRush API
+    // For now, return mock structure
+    return {
+      address: tokenAddress,
+      chainId,
+      symbol: 'TOKEN',
+      name: 'Token Name',
+      decimals: 18,
+      verified: false,
+      lastUpdated: Date.now(),
+    };
   }
 }
 
 // Singleton instance
 export const tokenMetadataCache = new TokenMetadataCache();
-
-// Initialize from storage if available
-if (typeof window !== 'undefined') {
-  tokenMetadataCache.loadFromStorage();
-}
-
