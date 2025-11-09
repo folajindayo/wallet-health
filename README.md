@@ -59,25 +59,24 @@ wallet-health/
 │   │       ├── risk-trend-analyzer.ts      # Risk trend analysis over time
 │   │       ├── approval-optimizer.ts       # Token approval optimization
 │   │       ├── cross-chain-bridge-tracker.ts      # Cross-chain bridge tracking
-│   │       ├── mev-protection-analyzer.ts         # MEV protection analysis
-│   │       ├── token-unlock-tracker.ts            # Token unlock/vesting tracking
-│   │       ├── governance-tracker.ts               # DAO governance participation
-│   │       ├── tax-report-generator.ts             # Tax report generation
-│   │       ├── liquidity-pool-analyzer.ts         # LP position analysis
-│   │       ├── staking-tracker.ts                  # Staking positions & rewards
-│   │       ├── wallet-backup-manager.ts           # Wallet backup management
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
-│   │       ├── yield-optimizer.ts          # Yield farming optimization
+│   │       ├── yield-optimizer.ts          # Yield optimization
 │   │       ├── alert-manager.ts           # Alert system & notifications
 │   │       ├── activity-timeline.ts       # Activity timeline generator
 │   │       ├── ens-resolver.ts            # ENS domain resolution
 │   │       ├── multisig-analyzer.ts       # Multi-signature wallet analyzer
 │   │       ├── approval-revoker.ts        # Token approval revocation helper
-│   │       ├── health-trends.ts           # Wallet health trends tracker
-│   │       ├── address-book.ts            # Address book manager
+│   │       ├── wallet-backup.ts          # Wallet backup & export utility
+│   │       ├── watchlist-manager.ts      # Watchlist manager for multiple wallets
+│   │       ├── token-metadata-cache.ts    # Token metadata caching system
 │   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
-│   │       └── recovery-checker.ts       # Recovery phrase security checker
+│   │       ├── wallet-tagging.ts         # Wallet tagging & categorization
+│   │       ├── security-recommendations.ts # Security recommendations engine
+│   │       ├── approval-history-tracker.ts # Approval history tracking
+│   │       ├── address-book.ts           # Address book manager
+│   │       ├── gas-optimization-calculator.ts # Gas optimization calculator
+│   │       └── wallet-health-report.ts   # Wallet health report generator
 │   └── dashboard/              # Legacy dashboard (preserved)
 ├── packages/
 │   ├── ui/                    # Shared UI components
