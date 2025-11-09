@@ -337,9 +337,6 @@ The security score is calculated based on multiple risk factors:
 - ✅ **📜 Approval History Tracker** - Track token approval changes over time
 - ✅ **🔍 Token Metadata Cache** - Cache token metadata to reduce API calls
 - ✅ **📈 Risk Trend Analysis** - Analyze risk score trends and predict future risk levels
-- ✅ **🔐 Wallet Recovery Checker** - Check recovery phrase security and best practices
-- ✅ **👁️ Token Allowance Monitor** - Real-time monitoring of token allowances
-- ✅ **🔮 Risk Prediction Engine** - Predict future risks based on historical patterns
 
 ### Advanced DeFi Features
 
@@ -1088,6 +1085,51 @@ crossChainBridgeTracker.addBridge({
 const stats = crossChainBridgeTracker.getStats();
 console.log(`Total Bridges: ${stats.totalBridges}`);
 console.log(`Success Rate: ${stats.successRate}%`);
+
+// Analyze bridges
+const analysis = crossChainBridgeTracker.analyzeBridges('0x...', {
+  chainId: 1,
+});
+console.log(`Risks detected: ${analysis.risks.length}`);
+```
+
+### Staking Tracker
+
+```typescript
+import { stakingTracker } from '@/lib/staking-tracker';
+
+// Add staking position
+const position = stakingTracker.addPosition('0x...', {
+  chainId: 1,
+  protocol: 'Lido',
+  tokenAddress: '0x...',
+  tokenSymbol: 'ETH',
+  stakedAmount: '1000000000000000000',
+  stakedAmountUSD: 2000,
+  apy: 4.5,
+  startDate: Date.now(),
+  status: 'active',
+});
+
+// Record reward
+stakingTracker.recordReward('0x...', {
+  positionId: position.id,
+  timestamp: Date.now(),
+  amount: '10000000000000000',
+  amountUSD: 20,
+  tokenAddress: '0x...',
+  tokenSymbol: 'stETH',
+  type: 'reward',
+});
+
+// Get summary
+const summary = stakingTracker.getSummary('0x...');
+console.log(`Total staked: $${summary.totalStakedUSD}`);
+console.log(`Average APY: ${summary.averageAPY}%`);
+
+// Calculate estimated rewards
+const estimates = stakingTracker.calculateEstimatedRewards('0x...');
+console.log(`Estimated annual: ${estimates.totalEstimatedAnnual}`);
 ```
 
 ### Approval Revoker
