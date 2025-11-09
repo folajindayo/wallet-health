@@ -12,7 +12,7 @@ if (!projectId) {
 }
 
 // Define supported chains
-export const chains = [mainnet, bsc, polygon, base, arbitrum] as const;
+export const chains = [mainnet, bsc, polygon, base, arbitrum];
 
 // Chain metadata for display
 export const chainMetadata = {
