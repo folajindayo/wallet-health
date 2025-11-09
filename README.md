@@ -560,31 +560,36 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## ✨ Features
 
-### Current Features
+### Core Security Features
 
-- ✅ **Multi-chain wallet scanning** - Support for 5+ major chains
-- ✅ **Risk scoring algorithm** - Comprehensive security assessment
-- ✅ **Token approval detection** - Identify risky and unlimited approvals
-- ✅ **Spam token detection** - Flag malicious airdrops
-- ✅ **Contract verification** - Check contract safety and verification status
-- ✅ **Reown AppKit integration** - Modern wallet connection UI
-- ✅ **WalletConnect v2 support** - Latest protocol implementation
-- ✅ **Base L2 optimization** - Enhanced Base network support
-- ✅ **Dark mode UI** - Beautiful, modern interface
-- ✅ **Scan history** - Track wallet health over time
-- ✅ **MongoDB integration** - Persistent data storage
-- ✅ **Responsive design** - Works on desktop and mobile
+- ✅ **🔍 Approval Scanner** - Comprehensive token approval analysis across all supported chains
+- ✅ **🛡️ Risk Detection** - Multi-factor risk assessment with detailed scoring
+- ✅ **🚨 Real-time Alerts** - Continuous monitoring with instant notifications for suspicious activity
+- ✅ **📊 Security Score** - 0-100 health score with actionable recommendations
 
-### Advanced Features
+### Advanced Analytics
 
-- 🔄 **Session persistence** - Remember wallet connections
-- 🔄 **Multi-account support** - Manage multiple wallet accounts
-- 🔄 **Transaction simulation** - Preview transactions before signing
-- 🔄 **Gas optimization** - Smart gas estimation and batching
-- 🔄 **Custom RPC endpoints** - Configure your own RPC providers
-- 🔄 **Network switching** - Seamless chain switching in UI
-- 🔄 **Wallet filtering** - Filter wallets by features and capabilities
-- 🔄 **Analytics dashboard** - Track connection metrics and usage
+- ✅ **💼 DeFi Exposure Analyzer** - Track and analyze DeFi protocol positions and risks
+- ✅ **🎨 NFT Security Scanner** - Detect suspicious NFTs, phishing attempts, and unverified collections
+- ✅ **⛽ Gas Tracker** - Real-time gas price tracking with optimization recommendations
+- ✅ **🔄 Transaction Simulator** - Preview transaction outcomes before execution
+- ✅ **📈 Portfolio Analytics** - Comprehensive portfolio performance and risk analysis
+- ✅ **🔗 Cross-chain Tracking** - Unified view across multiple blockchains
+
+### Monitoring & Alerts
+
+- ✅ **👁️ Real-time Monitoring** - Continuous wallet activity tracking
+- ✅ **🔔 Smart Alerts** - Configurable alerts for large transfers, new approvals, and suspicious contracts
+- ✅ **📜 Activity Timeline** - Complete transaction history with risk annotations
+- ✅ **📊 Historical Trends** - Track security score changes over time
+
+### Utility Features
+
+- ✅ **🔀 Wallet Comparison** - Compare multiple wallets side-by-side
+- ✅ **💾 Export Reports** - Export scan results as JSON, CSV, or PDF
+- ✅ **🔐 Multi-sig Support** - Analyze multi-signature wallet configurations
+- ✅ **🌐 ENS Integration** - Resolve ENS domains and verify ownership
+- ✅ **📱 Responsive Design** - Works seamlessly on desktop and mobile devices
 
 ## 🗺️ Roadmap
 
