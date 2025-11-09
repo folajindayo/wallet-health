@@ -411,6 +411,14 @@ The security score is calculated based on multiple risk factors:
 
 - `POST /api/tokens/unlocks` - Track token vesting schedules and unlock events
 
+### Cross-Chain Bridges
+
+- `POST /api/bridges/track` - Track cross-chain bridge transactions
+
+### Staking
+
+- `POST /api/staking/track` - Track staking positions and rewards
+
 ## 🎨 Dark Mode Theme
 
 The app uses a custom dark theme by default with:
