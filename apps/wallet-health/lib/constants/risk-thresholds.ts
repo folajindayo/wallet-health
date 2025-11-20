@@ -1,0 +1,19 @@
+/**
+ * Risk Thresholds
+ */
+
+export const RISK_THRESHOLDS = {
+  APPROVAL_COUNT_WARNING: 10,
+  APPROVAL_COUNT_CRITICAL: 20,
+  UNLIMITED_APPROVAL_WARNING: 1,
+  UNVERIFIED_CONTRACT_WARNING: 1,
+  NEW_CONTRACT_DAYS: 30,
+  HIGH_VALUE_THRESHOLD: 10000, // USD
+};
+
+export const SCORE_RANGES = {
+  SAFE: { min: 80, max: 100 },
+  MODERATE: { min: 50, max: 79 },
+  CRITICAL: { min: 0, max: 49 },
+};
+
