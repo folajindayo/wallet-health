@@ -1,43 +1,25 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+/**
+ * Badge Component
+ */
 
-import { cn } from "@/lib/utils"
+'use client';
 
-const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
-        success:
-          "border-transparent bg-green-500/20 text-green-500 hover:bg-green-500/30",
-        warning:
-          "border-transparent bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30",
-        info:
-          "border-transparent bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-)
-
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  )
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: 'success' | 'warning' | 'error' | 'info';
 }
 
-export { Badge, badgeVariants }
+export function Badge({ children, variant = 'info' }: BadgeProps) {
+  const variants = {
+    success: 'bg-green-100 text-green-800',
+    warning: 'bg-yellow-100 text-yellow-800',
+    error: 'bg-red-100 text-red-800',
+    info: 'bg-blue-100 text-blue-800',
+  };
 
+  return (
+    <span className={`px-2 py-1 rounded text-xs font-medium ${variants[variant]}`}>
+      {children}
+    </span>
+  );
+}
