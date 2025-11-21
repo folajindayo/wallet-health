@@ -2,27 +2,31 @@
  * Security Scan Mapper
  */
 
-import { SecurityScanEntity } from '../../domain/entities/security-scan.entity';
+import { SecurityScan } from '../../domain/entities/security-scan.entity';
 import { SecurityScanDTO } from '../dtos/security-scan.dto';
 
 export class SecurityScanMapper {
-  static toDTO(entity: SecurityScanEntity): SecurityScanDTO {
+  static toDTO(entity: SecurityScan): SecurityScanDTO {
     return {
       id: entity.id,
       walletAddress: entity.walletAddress,
-      chainId: entity.chainId,
-      score: entity.score,
-      riskLevel: entity.riskLevel,
       threats: entity.threats,
-      scanDate: entity.scanDate.toISOString(),
-      recommendations: [],
-      isSafe: entity.isSafe(),
-      hasCriticalThreats: entity.hasCriticalThreats(),
+      riskScore: entity.riskScore,
+      timestamp: entity.timestamp,
     };
   }
 
-  static toDTOList(entities: SecurityScanEntity[]): SecurityScanDTO[] {
-    return entities.map((entity) => this.toDTO(entity));
+  static toDTOList(entities: SecurityScan[]): SecurityScanDTO[] {
+    return entities.map(entity => this.toDTO(entity));
+  }
+
+  static toEntity(dto: SecurityScanDTO): SecurityScan {
+    return new SecurityScan(
+      dto.id,
+      dto.walletAddress,
+      dto.threats,
+      dto.riskScore,
+      dto.timestamp
+    );
   }
 }
-
