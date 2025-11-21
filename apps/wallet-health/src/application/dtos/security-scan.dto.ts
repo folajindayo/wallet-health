@@ -5,25 +5,26 @@
 export interface SecurityScanDTO {
   id: string;
   walletAddress: string;
-  chainId: number;
-  score: number;
-  riskLevel: string;
   threats: ThreatDTO[];
-  scanDate: string;
-  recommendations: string[];
-  isSafe: boolean;
-  hasCriticalThreats: boolean;
+  riskScore: number;
+  timestamp: Date;
 }
 
 export interface ThreatDTO {
+  id: string;
   type: string;
   severity: string;
   description: string;
-  affectedAddresses?: string[];
+  detected: Date;
 }
 
-export interface ScanWalletRequestDTO {
+export interface CreateScanDTO {
   walletAddress: string;
   chainId: number;
 }
 
+export interface ScanResultDTO {
+  scan: SecurityScanDTO;
+  recommendations: string[];
+  comparisonScore: number;
+}
