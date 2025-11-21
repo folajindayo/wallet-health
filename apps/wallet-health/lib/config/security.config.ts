@@ -1,0 +1,22 @@
+/**
+ * Security Configuration
+ */
+
+export const SECURITY_CONFIG = {
+  APPROVAL_AGE_WARNING_DAYS: 90,
+  HIGH_VALUE_THRESHOLD: 10000,
+  MAX_APPROVALS_PER_SPENDER: 5,
+  RISK_SCORE_THRESHOLD: {
+    LOW: 80,
+    MEDIUM: 60,
+    HIGH: 40,
+    CRITICAL: 0,
+  },
+} as const;
+
+export const TRUSTED_SPENDERS = [
+  '0x1111111254EEB25477B68fb85Ed929f73A960582', // 1inch
+  '0xE592427A0AEce92De3Edee1F18E0157C05861564', // Uniswap V3 Router
+  '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45', // Uniswap V3 Router 2
+] as const;
+
