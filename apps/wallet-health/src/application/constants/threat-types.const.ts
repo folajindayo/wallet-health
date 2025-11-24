@@ -20,3 +20,4 @@ export const THREAT_TYPE_DESCRIPTIONS: Record<string, string> = {
   outdated_approval: 'Outdated token approval',
 };
 
+

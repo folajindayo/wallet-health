@@ -22,3 +22,4 @@ export function generateChecksum(data: string): string {
   return hashData(data).slice(0, 8);
 }
 
+

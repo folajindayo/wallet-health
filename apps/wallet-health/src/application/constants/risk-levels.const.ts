@@ -25,3 +25,4 @@ export const RISK_LEVEL_LABELS: Record<string, string> = {
   critical: 'Critical Risk',
 };
 
+

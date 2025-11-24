@@ -41,3 +41,4 @@ export function getPriorityLevel(severity: string): number {
   return priorities[severity] || 5;
 }
 
+

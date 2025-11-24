@@ -4,3 +4,4 @@
 
 export { SecurityScanMapper } from './security-scan.mapper';
 
+

@@ -29,3 +29,4 @@ export type ScanWalletInput = z.infer<typeof ScanWalletSchema>;
 export type ThreatReportInput = z.infer<typeof ThreatReportSchema>;
 export type ThreatInput = z.infer<typeof ThreatSchema>;
 
+

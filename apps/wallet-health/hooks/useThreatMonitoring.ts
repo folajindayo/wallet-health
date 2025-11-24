@@ -29,3 +29,4 @@ export function useThreatMonitoring(walletAddress: string, interval: number = 60
   return { threats, lastCheck };
 }
 
+

@@ -22,3 +22,4 @@ export interface ISecurityScanRepository {
   getLatestScan(address: string, chainId: number): Promise<SecurityScanEntity | null>;
 }
 
+

@@ -54,3 +54,4 @@ export const SecurityScore: React.FC<SecurityScoreProps> = ({ score, riskLevel }
   );
 };
 
+

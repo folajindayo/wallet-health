@@ -43,3 +43,4 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({ score }) => {
   );
 };
 
+

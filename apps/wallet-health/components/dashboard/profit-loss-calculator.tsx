@@ -241,7 +241,7 @@ export function ProfitLossCalculator({ walletAddress }: ProfitLossCalculatorProp
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: any) => formatCurrency(value)}
+                  formatter={(value: number) => [formatCurrency(value), 'P&L']}
                 />
                 <Area
                   type="monotone"

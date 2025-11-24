@@ -116,3 +116,4 @@ export class MongoSecurityScanRepository implements ISecurityScanRepository {
   }
 }
 
+

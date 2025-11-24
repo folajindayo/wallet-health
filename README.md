@@ -1719,6 +1719,85 @@ console.log(`Portfolio Health Score: ${health.score}/100`);
 - [ ] API for third-party integrations
 - [ ] White-label solution for enterprises
 
+## 🎮 Smart Contracts
+
+### GaslessAchievements Contract
+
+**Contract Address (Base):** `0x2c366F0a2c9CB85ef7e1f6Af7b264640840faA89`
+
+NFT contract for game achievements with gasless claiming via EIP-2771 meta-transactions on Base network.
+
+#### Features
+- **Gasless NFT minting** using EIP-2771 meta-transactions
+- **Achievement tracking** for game milestones
+- **View functions** to check eligibility (no gas required)
+- **Score-based achievement** unlocking
+- **Rarity tiers** (Common, Rare, Epic, Legendary)
+- **Integration** with GameToken and GameRewards contracts
+
+#### Achievement Types
+- First Jump - Complete first jump
+- Score Milestones - 100, 500, 1000, 5000 points
+- Consecutive Jumps - 10, 50 successful jumps in a row
+- Power-Up Master - Collect 100 power-ups
+- Obstacle Dodger - Dodge 1000 obstacles
+- Daily Player - Play 7 days in a row
+- Multiplayer Winner - Win 10 multiplayer matches
+- Token Earner - Earn 1000 game tokens
+
+#### How Gasless Transactions Work
+1. Player signs a message off-chain (no gas)
+2. Relayer submits transaction on-chain (relayer pays gas)
+3. Player receives NFT without spending any gas
+
+#### Key Functions
+- `claimAchievement()` - Claim a single achievement NFT (gasless)
+- `batchClaimAchievements()` - Claim multiple achievements at once
+- `isEligible()` - Check if player is eligible (view function)
+- `getEligibleAchievements()` - Get all eligible achievements for a player
+- `getPlayerAchievements()` - Get all achievements owned by a player
+- `getAchievementDetails()` - Get details of a specific achievement
+
+#### Contract ABI
+The complete ABI is available in [`apps/wallet-health/abi.ts`](./apps/wallet-health/abi.ts).
+
+#### Usage Example
+
+```typescript
+import { GASLESS_ACHIEVEMENTS_ABI, GASLESS_ACHIEVEMENTS_ADDRESS } from './abi';
+
+// Check eligibility (no gas required)
+const checkEligibility = async (playerAddress: string) => {
+  const eligible = await contract.getEligibleAchievements(playerAddress);
+  return eligible;
+};
+
+// Claim achievement (gasless via meta-transaction)
+const claimAchievement = async (achievementType: number) => {
+  // Sign message off-chain
+  const signature = await signer.signMessage(messageToSign);
+  
+  // Send to relayer who pays gas
+  const tx = await contract.claimAchievement(achievementType);
+  await tx.wait();
+};
+```
+
+#### Integration Documentation
+
+**📚 Complete Integration Guide**: See [`ACHIEVEMENTS_INTEGRATION.md`](./ACHIEVEMENTS_INTEGRATION.md) for:
+- React hook usage (`useGaslessAchievements`)
+- API route documentation  
+- Complete code examples
+- Player stats tracking
+- Gasless transaction setup
+- Event handling
+
+**Integration Files**:
+- `/apps/wallet-health/lib/contracts/gasless-achievements.ts` - Contract function implementations
+- `/apps/wallet-health/hooks/useGaslessAchievements.ts` - React hook for UI integration
+- `/apps/wallet-health/app/api/achievements/route.ts` - Server-side API endpoint
+
 ---
 
 **Built with ❤️ by the Wallet Health Team**

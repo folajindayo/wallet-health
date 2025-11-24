@@ -15,3 +15,4 @@ export const RISK_THRESHOLDS = {
 export const SCAN_INTERVAL = 3600000; // 1 hour
 export const ALERT_COOLDOWN = 86400000; // 24 hours
 
+

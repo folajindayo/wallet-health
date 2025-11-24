@@ -37,3 +37,4 @@ export function useSecurityScan() {
   return { scan, loading, error, scanWallet };
 }
 
+

@@ -4,3 +4,4 @@
 
 export { SecurityScan } from './security-scan.entity';
 
+

@@ -60,3 +60,4 @@ export class PrismaSecurityScanRepository implements ISecurityScanRepository {
   }
 }
 
+
