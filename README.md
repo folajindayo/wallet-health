@@ -90,6 +90,49 @@ wallet-health/
 │   │       ├── social-recovery-manager.ts           # Social recovery wallet management
 │   │       ├── on-chain-reputation-system.ts        # On-chain reputation scoring
 │   │       ├── options-derivatives-dashboard.ts     # Options & derivatives tracking
+│   │       ├── token-launchpad-platform.ts           # Token launch tracking
+│   │       ├── profit-loss-calculator.ts             # P&L calculation
+│   │       ├── network-status-monitor.ts            # Network status monitoring
+│   │       ├── quick-actions-manager.ts              # Quick actions management
+│   │       ├── security-badge-generator.ts          # Security badge generation
+│   │       ├── smart-alert-automation.ts            # Automated alert rules
+│   │       ├── dao-treasury-manager.ts              # DAO treasury management
+│   │       ├── token-vesting-scheduler.ts           # Token vesting scheduling
+│   │       ├── token-snapshot-manager.ts            # Token balance snapshots
+│   │       ├── wallet-comparison-tool.ts             # Wallet comparison utility
+│   │       ├── transaction-fee-optimizer.ts         # Transaction fee optimization
+│   │       ├── token-price-tracker.ts               # Token price tracking
+│   │       ├── wallet-activity-exporter.ts          # Activity data export
+│   │       ├── multi-chain-portfolio-aggregator.ts  # Multi-chain portfolio aggregation
+│   │       ├── token-distribution-analyzer.ts       # Token distribution analysis
+│   │       ├── wallet-clustering-tool.ts            # Wallet behavior clustering
+│   │       ├── transaction-simulator.ts             # Transaction simulation
+│   │       ├── gas-price-history-tracker.ts         # Gas price history tracking
+│   │       ├── wallet-health-score-calculator.ts    # Wallet health score calculation
+│   │       ├── token-approval-risk-analyzer.ts      # Token approval risk analysis
+│   │       ├── smart-contract-interaction-history.ts # Contract interaction tracking
+│   │       ├── portfolio-rebalancing-suggestions.ts # Rebalancing suggestions
+│   │       ├── yield-farming-opportunity-finder.ts # Yield farming opportunities
+│   │       ├── wallet-activity-patterns-analyzer.ts # Activity pattern analysis
+│   │       ├── transaction-batch-optimizer.ts        # Batch transaction optimization
+│   │       ├── wallet-reputation-builder.ts          # Wallet reputation building
+│   │       ├── token-sniper-alert-system.ts         # Token sniper alerts
+│   │       ├── defi-protocol-risk-analyzer.ts        # DeFi protocol risk analysis
+│   │       ├── nft-collection-tracker.ts            # NFT collection tracking
+│   │       ├── cross-chain-asset-tracker.ts          # Cross-chain asset tracking
+│   │       ├── wallet-recovery-assistant.ts          # Wallet recovery assistance
+│   │       ├── gas-war-monitor.ts                    # Gas war monitoring
+│   │       ├── token-price-alert-manager.ts         # Advanced price alert management
+│   │       ├── wallet-activity-heatmap-generator.ts # Activity heatmap generation
+│   │       ├── smart-contract-security-scanner.ts    # Contract security scanning
+│   │       ├── token-unlock-tracker.ts               # Token unlock/vesting tracking
+│   │       ├── governance-proposal-tracker.ts       # DAO proposal tracking
+│   │       ├── liquidity-pool-position-analyzer.ts  # LP position analysis
+│   │       ├── staking-rewards-calculator.ts         # Staking rewards calculation
+│   │       ├── wallet-backup-validator.ts           # Backup validation
+│   │       ├── token-approval-simulator.ts # Approval change simulation
+│   │       ├── wallet-risk-calculator.ts  # Comprehensive risk calculation
+│   │       ├── security-checklist-generator.ts # Security checklist generation
 │   │       ├── portfolio-optimizer.ts      # Portfolio optimization algorithms
 │   │       ├── risk-model-engine.ts        # Advanced risk modeling
 │   │       ├── yield-optimizer.ts          # Yield optimization
@@ -100,6 +143,14 @@ wallet-health/
 │   │       ├── approval-revoker.ts        # Token approval revocation helper
 │   │       ├── wallet-backup.ts          # Wallet backup & export utility
 │   │       ├── watchlist-manager.ts      # Watchlist manager for multiple wallets
+│   │       ├── mev-protection-analyzer.ts # MEV protection analysis
+│   │       ├── governance-tracker.ts    # DAO governance participation tracking
+│   │       ├── activity-heatmap-generator.ts # Activity heatmap visualization
+│   │       ├── security-recommendations.ts # Security recommendations engine
+│   │       ├── approval-history-tracker.ts # Approval history tracking
+│   │       ├── wallet-tagging.ts        # Wallet tagging & categorization
+│   │       ├── token-metadata-cache.ts  # Token metadata caching system
+│   │       └── risk-trend-analyzer.ts   # Risk trend analysis over time
 │   │       ├── token-metadata-cache.ts    # Token metadata caching system
 │   │       ├── transaction-batch-analyzer.ts # Transaction batch analyzer
 │   │       ├── wallet-tagging.ts         # Wallet tagging & categorization
@@ -377,6 +428,46 @@ The security score is calculated based on multiple risk factors:
 - ✅ **👥 Social Recovery Manager** - Manage social recovery wallets and guardians
 - ✅ **⭐ On-chain Reputation System** - Build reputation based on on-chain activity
 - ✅ **📊 Options & Derivatives Dashboard** - Track options and derivatives positions
+- ✅ **🚀 Token Launchpad Platform** - Track token launches and ICOs
+- ✅ **💰 Profit/Loss Calculator** - Calculate P&L for positions and transactions
+- ✅ **🌐 Network Status Monitor** - Monitor blockchain network status and health
+- ✅ **⚡ Quick Actions Manager** - Quick action shortcuts for common operations
+- ✅ **🏆 Security Badge Generator** - Generate security badges for wallets
+- ✅ **🔔 Smart Alert Automation** - Automated alert rules and notifications
+- ✅ **🏛️ DAO Treasury Manager** - Manage DAO treasury analysis and tracking
+- ✅ **📅 Token Vesting Scheduler** - Schedule and track token vesting
+- ✅ **📸 Token Snapshot Manager** - Take snapshots of token balances at specific times
+- ✅ **🔍 Wallet Comparison Tool** - Compare multiple wallets side by side
+- ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across different networks
+- ✅ **📈 Token Price Tracker** - Track token prices over time with alerts
+- ✅ **📤 Wallet Activity Exporter** - Export wallet activity data in various formats
+- ✅ **🌐 Multi-chain Portfolio Aggregator** - Aggregate portfolios across multiple chains
+- ✅ **📊 Token Distribution Analyzer** - Analyze token distribution and holder patterns
+- ✅ **🔗 Wallet Clustering Tool** - Cluster wallets by behavior patterns
+- ✅ **🎮 Transaction Simulator** - Simulate transactions before executing them
+- ✅ **📈 Gas Price History Tracker** - Track gas price history over time
+- ✅ **💚 Wallet Health Score Calculator** - Calculate overall wallet health score
+- ✅ **⚠️ Token Approval Risk Analyzer** - Analyze risks of token approvals
+- ✅ **📝 Smart Contract Interaction History** - Track all smart contract interactions
+- ✅ **⚖️ Portfolio Rebalancing Suggestions** - Suggest portfolio rebalancing strategies
+- ✅ **🌾 Yield Farming Opportunity Finder** - Find yield farming opportunities
+- ✅ **📊 Wallet Activity Patterns Analyzer** - Analyze wallet activity patterns
+- ✅ **📦 Transaction Batch Optimizer** - Optimize batch transactions for gas efficiency
+- ✅ **⭐ Wallet Reputation Builder** - Build reputation based on on-chain activity
+- ✅ **🎯 Token Sniper Alert System** - Alert for new token launches and opportunities
+- ✅ **🛡️ DeFi Protocol Risk Analyzer** - Analyze DeFi protocol risks
+- ✅ **🖼️ NFT Collection Tracker** - Track NFT collections and their values
+- ✅ **🌉 Cross-chain Asset Tracker** - Track assets across multiple chains
+- ✅ **🔐 Wallet Recovery Assistant** - Help with wallet recovery processes
+- ✅ **⚔️ Gas War Monitor** - Monitor gas wars and high competition transactions
+- ✅ **🔔 Token Price Alert Manager** - Advanced token price alert management
+- ✅ **🔥 Wallet Activity Heatmap Generator** - Generate visual heatmap of wallet activity
+- ✅ **🔒 Smart Contract Security Scanner** - Deep security analysis of smart contracts
+- ✅ **🔓 Token Unlock Tracker** - Track token vesting and unlock schedules
+- ✅ **🗳️ Governance Proposal Tracker** - Track DAO governance proposals and voting
+- ✅ **💧 Liquidity Pool Position Analyzer** - Analyze LP positions and impermanent loss
+- ✅ **💰 Staking Rewards Calculator** - Calculate staking rewards and APY
+- ✅ **✅ Wallet Backup Validator** - Validate wallet backups and recovery phrases
 
 ### Security & Recommendations
 
@@ -390,6 +481,9 @@ The security score is calculated based on multiple risk factors:
 - ✅ **💰 Transaction Fee Optimizer** - Optimize transaction fees across chains
 - ✅ **🔍 Security Audit** - Comprehensive security audit and compliance checking
 - ✅ **🌐 Cross-chain Portfolio Aggregator** - Aggregate portfolio across multiple chains
+- ✅ **🎯 Token Approval Simulator** - Simulate approval changes before executing
+- ✅ **⚠️ Wallet Risk Calculator** - Calculate comprehensive risk scores
+- ✅ **✅ Security Checklist Generator** - Generate comprehensive security checklists
 
 ### Advanced DeFi Features
 
@@ -474,7 +568,50 @@ The security score is calculated based on multiple risk factors:
 
 ### MEV Protection
 
-- `POST /api/mev/analyze` - Analyze transactions for MEV protection
+- `POST /api/mev/analyze` - Analyze transactions for MEV risks and protection
+
+### Governance
+
+- `POST /api/governance/track` - Track DAO governance participation and voting
+
+### Watchlist
+
+- `GET /api/watchlist` - Get, search, and manage watchlists
+- `POST /api/watchlist` - Create, update watchlists and manage alerts
+
+### Security Recommendations
+
+- `POST /api/security/recommendations` - Generate personalized security recommendations
+
+### Approval History
+
+- `POST /api/approvals/history` - Track approval history and detect patterns
+
+### Wallet Tagging
+
+- `GET /api/wallet/tags` - Get, search, and manage wallet tags
+- `POST /api/wallet/tags` - Create tags and assign to wallets
+
+### Token Metadata
+
+- `GET /api/tokens/metadata` - Get cached token metadata
+- `POST /api/tokens/metadata` - Set, batch get, or manage token metadata cache
+
+### Risk Trends
+
+- `POST /api/risk/trend` - Analyze risk trends and predict future risks
+
+### Token Distribution
+
+- `POST /api/tokens/distribution` - Analyze token distribution and concentration
+
+### Wallet Reputation
+
+- `POST /api/wallet/reputation` - Calculate and compare wallet reputation scores
+
+### Gas Price Prediction
+
+- `POST /api/gas/predict` - Predict optimal gas prices based on historical data
 
 ### Governance
 
@@ -483,6 +620,99 @@ The security score is calculated based on multiple risk factors:
 ### Activity Heatmap
 
 - `POST /api/activity/heatmap` - Generate activity heatmaps and statistics
+
+### Analytics & Detection
+
+- `POST /api/analytics/connection` - Track wallet connection sessions and get analytics
+- `GET /api/analytics/connection` - Get connection analytics for a wallet
+- `POST /api/analytics/patterns` - Detect unusual transaction patterns
+- `POST /api/analytics/anomalies` - Detect anomalies in wallet activity
+- `GET /api/analytics/anomalies` - Get behavior profile for a wallet
+
+### Health Trends
+
+- `POST /api/health/trends` - Add health snapshot or get trend analysis
+- `GET /api/health/trends` - Get wallet health trend analysis
+
+### Contract Risk Analysis
+
+- `POST /api/contracts/risk` - Analyze contract risk or interaction risk
+  - `action: analyze` - Analyze contract risk
+  - `action: analyze_interaction` - Analyze specific contract interaction risk
+  - `action: mark_vulnerable` - Mark contract as vulnerable
+  - `action: mark_safe` - Mark contract as safe
+
+### Activity Prediction
+
+- `POST /api/analytics/predict` - Predict wallet activity patterns
+  - `action: add_history` - Add activity history
+  - `action: predict` - Get activity predictions
+  - `action: get_history` - Get activity history
+
+### Multi-Wallet Portfolio
+
+- `POST /api/portfolio/multi-wallet` - Manage multi-wallet portfolios
+  - `action: add_wallet` - Add wallet to portfolio
+  - `action: remove_wallet` - Remove wallet from portfolio
+  - `action: get_summary` - Get portfolio summary
+  - `action: compare` - Compare multiple wallets
+  - `action: create_group` - Create wallet group
+  - `action: get_groups` - Get wallet groups
+  - `action: export` - Export portfolio data
+- `GET /api/portfolio/multi-wallet` - Get wallet(s) or portfolio summary
+
+### Cost Optimization
+
+- `POST /api/gas/optimize-cost` - Optimize transaction costs
+  - `action: optimize` - Optimize single transaction cost
+  - `action: optimize_batch` - Optimize batch transaction costs
+  - `action: compare_chains` - Compare costs across chains
+  - `action: add_gas_data` - Add gas price data point
+
+### Security Score Tracking
+
+- `POST /api/security/score-tracker` - Track security score history
+  - `action: add_snapshot` - Add security score snapshot
+  - `action: get_history` - Get security score history
+  - `action: get_statistics` - Get score statistics
+  - `action: export` - Export score history
+- `GET /api/security/score-tracker` - Get security score history
+
+### Token Approval Management
+
+- `POST /api/approvals/manage` - Manage token approvals
+  - `action: add_approvals` - Add or update approvals
+  - `action: get_approvals` - Get approvals for wallet
+  - `action: get_risky` - Get risky approvals
+  - `action: generate_batch_revoke` - Generate batch revoke operations
+  - `action: get_recommendations` - Get approval recommendations
+  - `action: get_health_score` - Get approval health score
+  - `action: get_statistics` - Get approval statistics
+  - `action: remove_approval` - Remove specific approval
+
+### Activity Timeline
+
+- `POST /api/timeline/generate` - Generate activity timeline with risk annotations
+
+### Risk Alerts
+
+- `POST /api/alerts/risk` - Manage risk alerts
+  - `action: create` - Create new alert
+  - `action: get_alerts` - Get alerts for wallet
+  - `action: acknowledge` - Acknowledge alert
+  - `action: resolve` - Resolve alert
+  - `action: bulk_acknowledge` - Bulk acknowledge alerts
+  - `action: bulk_resolve` - Bulk resolve alerts
+  - `action: get_summary` - Get alert summary
+  - `action: create_rule` - Create alert rule
+  - `action: evaluate_rules` - Evaluate rules and create alerts
+- `GET /api/alerts/risk` - Get alerts with filtering options
+
+### Portfolio Rebalancing
+
+- `POST /api/portfolio/rebalance` - Portfolio rebalancing assistance
+  - `action: generate_plan` - Generate rebalancing plan
+  - `action: generate_target_allocation` - Generate target allocation based on risk profile
 
 ## 🎨 Dark Mode Theme
 
@@ -791,6 +1021,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🔄 Transaction Simulator** - Preview transaction outcomes before execution
 - ✅ **📈 Portfolio Analytics** - Comprehensive portfolio performance and risk analysis
 - ✅ **🔗 Cross-chain Tracking** - Unified view across multiple blockchains
+- ✅ **📊 Token Distribution Analyzer** - Analyze token distribution and concentration risks
+- ✅ **⭐ Wallet Reputation System** - Comprehensive wallet reputation scoring
+- ✅ **🔮 Gas Price Predictor** - Predict optimal gas prices with ML-based forecasting
 
 ### Monitoring & Alerts
 
@@ -816,6 +1049,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **🔓 Token Unlock Tracker** - Track vesting schedules and upcoming unlocks
 - ✅ **🌉 Cross-Chain Bridges** - Track and analyze cross-chain bridge transactions
 - ✅ **💰 Staking Tracker** - Monitor staking positions, rewards, and performance
+- ✅ **🛡️ MEV Protection** - Analyze and protect against MEV attacks
+- ✅ **🗳️ Governance Tracker** - Track DAO participation and voting history
+- ✅ **📊 Activity Heatmap** - Visualize wallet activity patterns over time
+- ✅ **👀 Watchlist Manager** - Monitor multiple wallets with groups and alerts
 
 ## 💻 Usage Examples
 
@@ -1219,10 +1456,111 @@ const group = watchlistManager.createGroup({
   color: '#10b981',
 });
 
-// Get watchlist statistics
-const stats = watchlistManager.getStats();
-console.log(`Total Wallets: ${stats.totalWallets}`);
-console.log(`Average Score: ${stats.averageScore}`);
+// Create watchlist
+const watchlist = watchlistManager.createWatchlist({
+  name: 'My DeFi Wallets',
+  wallets: ['0x...', '0x...'],
+  tags: ['defi', 'active'],
+  alertsEnabled: true,
+});
+
+// Add alert
+watchlistManager.addAlert(watchlist.id, {
+  watchlistId: watchlist.id,
+  walletAddress: '0x...',
+  type: 'score_change',
+  severity: 'medium',
+  message: 'Wallet health score dropped',
+});
+
+// Get statistics
+const stats = watchlistManager.getWatchlistStats(watchlist.id);
+console.log(`Total wallets: ${stats?.totalWallets}`);
+```
+
+### MEV Protection Analysis
+
+```typescript
+import { mevProtectionAnalyzer } from '@/lib/mev-protection-analyzer';
+
+// Analyze transaction for MEV risks
+const analysis = mevProtectionAnalyzer.analyzeTransaction({
+  hash: '0x...',
+  timestamp: Date.now(),
+  from: '0x...',
+  to: '0x...',
+  type: 'swap',
+  chainId: 1,
+});
+
+console.log(`Protection Score: ${analysis.protectionScore}`);
+console.log(`Protection Level: ${analysis.protectionLevel}`);
+
+// Get protection strategies
+const strategies = mevProtectionAnalyzer.getProtectionStrategies(1);
+console.log(`Available strategies: ${strategies.length}`);
+
+// Get recommendation
+const recommendation = mevProtectionAnalyzer.recommendProtection(1, 'swap', 5000);
+console.log(`Recommended: ${recommendation?.name}`);
+```
+
+### Governance Tracking
+
+```typescript
+import { governanceTracker } from '@/lib/governance-tracker';
+
+// Add proposal
+governanceTracker.addProposal('0x...', {
+  id: 'prop-1',
+  dao: '0x...',
+  daoName: 'Uniswap DAO',
+  chainId: 1,
+  title: 'Proposal Title',
+  status: 'active',
+  startTime: Date.now(),
+  endTime: Date.now() + 7 * 24 * 60 * 60 * 1000,
+  votesFor: '0',
+  votesAgainst: '0',
+});
+
+// Record vote
+governanceTracker.recordVote('0x...', {
+  proposalId: 'prop-1',
+  voter: '0x...',
+  timestamp: Date.now(),
+  support: true,
+  votingPower: '1000000000000000000',
+  transactionHash: '0x...',
+});
+
+// Get summary
+const summary = governanceTracker.getSummary('0x...');
+console.log(`Participation Rate: ${summary.participationRate}%`);
+
+// Get active proposals
+const active = governanceTracker.getActiveProposals('0x...');
+console.log(`Active proposals: ${active.length}`);
+```
+
+### Activity Heatmap
+
+```typescript
+import { activityHeatmapGenerator } from '@/lib/activity-heatmap-generator';
+
+const activities = [
+  { timestamp: Date.now(), type: 'transfer', chainId: 1 },
+  // ... more activities
+];
+
+// Generate heatmap
+const heatmap = activityHeatmapGenerator.generateHeatmap(activities, 30);
+console.log(`Busiest day: ${heatmap.summary.busiestDay}`);
+console.log(`Busiest hour: ${heatmap.summary.busiestHour}`);
+
+// Generate statistics
+const stats = activityHeatmapGenerator.generateStats(activities);
+console.log(`Peak activity: ${stats.peakActivity.count}`);
 ```
 
 ### Token Metadata Cache
@@ -1266,6 +1604,197 @@ console.log(`Risks: ${analysis.risks.length}`);
 // Get patterns
 console.log(`Most Active Hour: ${analysis.patterns.timePatterns.mostActiveHour}`);
 console.log(`Frequent Recipients: ${analysis.patterns.frequentRecipients.length}`);
+```
+
+### Token Snapshots
+
+```typescript
+import { tokenSnapshotManager } from '@/lib/token-snapshot-manager';
+
+// Create snapshot
+tokenSnapshotManager.createSnapshot({
+  timestamp: Date.now(),
+  walletAddress: '0x...',
+  chainId: 1,
+  tokens: [/* ... */],
+  totalValueUSD: 10000,
+});
+
+// Get latest snapshot
+const latest = tokenSnapshotManager.getLatestSnapshot('0x...', 1);
+
+// Compare snapshots
+const comparison = tokenSnapshotManager.compareSnapshots(snapshot1, snapshot2);
+console.log(`New tokens: ${comparison.differences.newTokens.length}`);
+
+// Calculate growth
+const growth = tokenSnapshotManager.calculateGrowth('0x...', 1, '30d');
+console.log(`Growth: ${growth?.growthPercentage}%`);
+```
+
+### Advanced Wallet Comparison
+
+```typescript
+import { walletComparisonTool } from '@/lib/wallet-comparison-tool';
+
+// Compare two wallets
+const comparison = walletComparisonTool.compareWallets(wallet1, wallet2);
+console.log(`Similarity: ${comparison.comparison.overallSimilarity}%`);
+console.log(`Common approvals: ${comparison.comparison.commonApprovals.length}`);
+
+// Compare multiple wallets
+const multiComparison = walletComparisonTool.compareMultipleWallets([wallet1, wallet2, wallet3]);
+console.log(`Average score: ${multiComparison.statistics.averageScore}`);
+console.log(`Best wallet: ${multiComparison.rankings[0].address}`);
+```
+
+### Transaction Fee Optimization
+
+```typescript
+import { transactionFeeOptimizer } from '@/lib/transaction-fee-optimizer';
+
+// Optimize fee
+const optimization = transactionFeeOptimizer.optimizeFee(1, 21000, 'low');
+console.log(`Savings: ${optimization.savings.savingsPercentage}%`);
+
+// Compare across chains
+const comparison = transactionFeeOptimizer.compareCrossChainFees('swap', 150000);
+console.log(`Best chain: ${comparison.bestOption.chainName}`);
+
+// Estimate batch savings
+const batchSavings = transactionFeeOptimizer.estimateBatchSavings(1, 5, 46000);
+console.log(`Batch savings: ${batchSavings.savingsPercentage}%`);
+
+// Get recommendation
+const recommendation = transactionFeeOptimizer.recommendOptimalChain('transfer', 'medium', 5000);
+console.log(`Recommended: ${recommendation.chainName}`);
+```
+
+### Activity Export
+
+```typescript
+import { walletActivityExporter } from '@/lib/wallet-activity-exporter';
+
+// Export as JSON
+const jsonExport = await walletActivityExporter.exportWalletData('0x...', data, {
+  format: 'json',
+  includeApprovals: true,
+  includeTokens: true,
+  includeTransactions: true,
+});
+
+// Export as CSV
+const csvExport = await walletActivityExporter.exportWalletData('0x...', data, {
+  format: 'csv',
+  includeApprovals: true,
+  dateRange: { start: Date.now() - 30 * 24 * 60 * 60 * 1000, end: Date.now() },
+});
+
+// Generate summary
+const summary = walletActivityExporter.generateSummary(data, options);
+console.log(`Total items: ${summary.totalItems}`);
+```
+
+### Multi-Chain Portfolio Aggregation
+
+```typescript
+import { multiChainPortfolioAggregator } from '@/lib/multi-chain-portfolio-aggregator';
+
+// Aggregate portfolio
+const aggregated = multiChainPortfolioAggregator.aggregatePortfolio('0x...', chainPortfolios);
+console.log(`Total value: $${aggregated.totalValueUSD}`);
+console.log(`Top chain: ${aggregated.summary.topChains[0].chainName}`);
+
+// Calculate cross-chain token totals
+const tokenTotals = multiChainPortfolioAggregator.calculateCrossChainTokenTotals(chainPortfolios);
+console.log(`USDC total: ${tokenTotals.get('0x...')?.totalBalance}`);
+
+// Get recommendations
+const recommendations = multiChainPortfolioAggregator.getChainAllocationRecommendations(aggregated);
+recommendations.forEach(rec => {
+  console.log(`${rec.chainName}: ${rec.reason}`);
+});
+```
+
+### Token Distribution Analysis
+
+```typescript
+import { tokenDistributionAnalyzer } from '@/lib/token-distribution-analyzer';
+
+// Analyze distribution
+const distribution = tokenDistributionAnalyzer.analyzeDistribution(
+  '0x...',
+  'TOKEN',
+  '1000000000000000000000',
+  holders
+);
+
+console.log(`Gini Coefficient: ${distribution.statistics.giniCoefficient}`);
+console.log(`Top 10%: ${distribution.statistics.top10Percentage}%`);
+console.log(`Risk: ${distribution.riskAssessment.concentrationRisk}`);
+
+// Compare distributions
+const comparison = tokenDistributionAnalyzer.compareDistributions(dist1, dist2);
+console.log(`More decentralized: ${comparison.comparison.moreDecentralized}`);
+
+// Get health score
+const healthScore = tokenDistributionAnalyzer.getDistributionHealthScore(distribution);
+console.log(`Health Score: ${healthScore}/100`);
+```
+
+### Wallet Reputation System
+
+```typescript
+import { walletReputationSystem } from '@/lib/wallet-reputation-system';
+
+// Calculate reputation
+const score = walletReputationSystem.calculateScore('0x...', {
+  age: 365,
+  totalTransactions: 500,
+  verifiedContracts: 10,
+  unverifiedContracts: 2,
+  hasENS: true,
+  chains: [1, 8453, 137],
+});
+
+console.log(`Overall Score: ${score.overallScore}/1000`);
+console.log(`Badges: ${score.badges.join(', ')}`);
+
+// Get history
+const history = walletReputationSystem.getHistory('0x...');
+console.log(`Trend: ${history?.trend}`);
+
+// Compare wallets
+const comparison = walletReputationSystem.compareWallets('0x...', '0x...');
+console.log(`Better wallet: ${comparison?.comparison.betterWallet}`);
+
+// Get top wallets
+const top = walletReputationSystem.getTopWallets(10);
+console.log(`Top wallet: ${top[0].walletAddress}`);
+```
+
+### Gas Price Prediction
+
+```typescript
+import { gasPricePredictor } from '@/lib/gas-price-predictor';
+
+// Add data point
+gasPricePredictor.addDataPoint(1, {
+  low: 20,
+  standard: 30,
+  fast: 40,
+  instant: 50,
+});
+
+// Predict prices
+const prediction = gasPricePredictor.predict(1, 'medium', '1h');
+console.log(`Recommended: ${prediction?.recommendedPrice} gwei`);
+console.log(`Trend: ${prediction?.trend}`);
+
+// Get optimal price
+const optimal = gasPricePredictor.getOptimalPrice(1, 'low', 15);
+console.log(`Savings: ${optimal?.savingsPercentage}%`);
+console.log(`Wait time: ${optimal?.estimatedWait}`);
 ```
 
 ### Wallet Tagging
@@ -1616,6 +2145,367 @@ const health = crossChainPortfolioAggregator.calculatePortfolioHealth(portfolio)
 console.log(`Portfolio Health Score: ${health.score}/100`);
 ```
 
+### Wallet Health Score Calculator
+
+```typescript
+import { walletHealthScoreCalculator } from '@/lib/wallet-health-score-calculator';
+
+// Calculate comprehensive health score
+const healthScore = walletHealthScoreCalculator.calculateHealthScore({
+  approvals,
+  tokens,
+  contracts,
+  transactions,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+  previousScore: 75,
+});
+
+console.log(`Overall Score: ${healthScore.overallScore}/100`);
+console.log(`Risk Level: ${healthScore.riskLevel}`);
+
+// View breakdown
+healthScore.breakdown.forEach(category => {
+  console.log(`${category.category}: ${category.score} (contribution: ${category.contribution})`);
+});
+
+// Calculate potential improvement
+const improvement = walletHealthScoreCalculator.calculatePotentialImprovement(
+  healthScore.overallScore,
+  healthScore.recommendations
+);
+console.log(`Potential Score: ${improvement.potentialScore} (+${improvement.improvement})`);
+```
+
+### Enhanced Transaction Simulator
+
+```typescript
+import { transactionSimulatorEnhanced } from '@/lib/transaction-simulator-enhanced';
+
+// Simulate transaction
+const simulation = await transactionSimulatorEnhanced.simulateTransaction({
+  from: '0x...',
+  to: '0x...',
+  value: '1000000000000000000', // 1 ETH
+  chainId: 1,
+  gasPrice: 30,
+  ethPriceUSD: 2000,
+});
+
+console.log(`Success: ${simulation.success}`);
+console.log(`Gas Cost: ${simulation.gasCost} ETH ($${simulation.gasCostUSD})`);
+console.log(`Risk Level: ${simulation.riskAssessment.riskLevel}`);
+
+// View state changes
+simulation.stateChanges.forEach(change => {
+  console.log(`${change.type}: ${change.description}`);
+});
+
+// View warnings
+simulation.warnings.forEach(warning => {
+  console.log(`${warning.severity}: ${warning.message}`);
+});
+```
+
+### Wallet Backup Validator
+
+```typescript
+import { walletBackupValidator } from '@/lib/wallet-backup-validator';
+
+// Validate backup
+const validation = walletBackupValidator.validateBackup(backupData);
+
+console.log(`Valid: ${validation.valid}`);
+console.log(`Score: ${validation.score}/100`);
+
+// Check integrity
+console.log(`Integrity: ${validation.integrity.checksumValid}`);
+console.log(`Security: ${validation.security.isEncrypted}`);
+
+// View issues
+validation.issues.forEach(issue => {
+  console.log(`${issue.severity}: ${issue.message}`);
+});
+
+// Verify restore capability
+const restoreCheck = walletBackupValidator.verifyRestoreCapability(backupData);
+console.log(`Can Restore: ${restoreCheck.canRestore}`);
+```
+
+### Token Approval Simulator
+
+```typescript
+import { tokenApprovalSimulator } from '@/lib/token-approval-simulator';
+
+// Simulate single approval change
+const simulation = tokenApprovalSimulator.simulateApproval(
+  '0x...', // token address
+  'USDC',
+  '0x...', // spender address
+  '1000000000', // current allowance
+  '0', // proposed (revoke)
+  30, // gas price (gwei)
+  2000 // ETH price USD
+);
+
+console.log(`Action: ${simulation.action}`);
+console.log(`Gas Cost: ${simulation.gasCost} ETH`);
+console.log(`Security Impact: ${simulation.impact.securityImpact}`);
+console.log(`Risk Change: ${simulation.impact.riskChange}`);
+
+// Simulate batch approvals
+const batchSimulation = tokenApprovalSimulator.simulateBatch(
+  approvals,
+  30,
+  2000
+);
+
+console.log(`Total Gas: ${batchSimulation.totalGasEstimate}`);
+console.log(`Overall Impact: ${batchSimulation.overallImpact.securityImpact}`);
+```
+
+### Wallet Risk Calculator
+
+```typescript
+import { walletRiskCalculator } from '@/lib/wallet-risk-calculator';
+
+// Calculate comprehensive risk score
+const riskScore = walletRiskCalculator.calculateRiskScore({
+  approvals,
+  tokens,
+  contracts,
+  transactions,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+});
+
+console.log(`Risk Score: ${riskScore.overallScore}/100`);
+console.log(`Risk Level: ${riskScore.riskLevel}`);
+
+// View category scores
+Object.entries(riskScore.categoryScores).forEach(([category, score]) => {
+  console.log(`${category}: ${score}/100`);
+});
+
+// View critical risks
+riskScore.criticalRisks.forEach(risk => {
+  console.log(`${risk.severity}: ${risk.issue}`);
+});
+
+// Compare risk scores
+const comparison = walletRiskCalculator.compareRiskScores(riskScore1, riskScore2);
+console.log(`Risk Change: ${comparison.difference}`);
+console.log(`Overall: ${comparison.overallChange}`);
+```
+
+### Security Checklist Generator
+
+```typescript
+import { securityChecklistGenerator } from '@/lib/security-checklist-generator';
+
+// Generate security checklist
+const checklist = securityChecklistGenerator.generateChecklist('0x...', {
+  approvals,
+  tokens,
+  contracts,
+  practices: {
+    hasBackup: true,
+    usesHardwareWallet: false,
+  },
+});
+
+console.log(`Overall Score: ${checklist.overallScore}/100`);
+console.log(`Priority: ${checklist.priority}`);
+
+// View categories
+checklist.categories.forEach(category => {
+  console.log(`${category.name}: ${category.completed}/${category.total} (${category.score}%)`);
+  category.items.forEach(item => {
+    console.log(`  ${item.checked ? '✓' : '✗'} ${item.title}`);
+  });
+});
+
+// Export as markdown
+const markdown = securityChecklistGenerator.exportAsMarkdown(checklist);
+```
+
+### DCA Automation
+
+```typescript
+import { dcaAutomation } from '@/lib/dca-automation';
+
+// Create DCA strategy
+const strategy = dcaAutomation.createStrategy({
+  name: 'ETH DCA',
+  tokenIn: '0x...', // USDC
+  tokenOut: '0x...', // ETH
+  tokenInSymbol: 'USDC',
+  tokenOutSymbol: 'ETH',
+  amountPerPeriod: 100, // $100 per period
+  frequency: 'weekly',
+  startDate: Date.now(),
+  chainId: 1,
+  isActive: true,
+});
+
+// Get statistics
+const stats = dcaAutomation.getStats();
+console.log(`Total Invested: $${stats.totalInvested}`);
+console.log(`Average ROI: ${stats.averageROI}%`);
+```
+
+### Limit Order Management
+
+```typescript
+import { limitOrderManager } from '@/lib/limit-order-manager';
+
+// Create limit order
+const order = limitOrderManager.createOrder({
+  tokenIn: '0x...',
+  tokenInSymbol: 'USDC',
+  tokenOut: '0x...',
+  tokenOutSymbol: 'ETH',
+  amountIn: '1000000000', // 1000 USDC
+  limitPrice: 2000, // Buy ETH at $2000 or lower
+  chainId: 1,
+  protocol: 'Uniswap V3',
+});
+
+// Check orders
+const pending = limitOrderManager.getPendingOrders();
+console.log(`Pending Orders: ${pending.length}`);
+```
+
+### Recurring Payments
+
+```typescript
+import { recurringPaymentsManager } from '@/lib/recurring-payments-manager';
+
+// Create recurring payment
+const payment = recurringPaymentsManager.createPayment({
+  name: 'Monthly Subscription',
+  from: '0x...',
+  to: '0x...',
+  token: '0x...',
+  tokenSymbol: 'USDC',
+  amount: '100000000', // 100 USDC
+  frequency: 'monthly',
+  startDate: Date.now(),
+  chainId: 1,
+  isActive: true,
+});
+
+// Get upcoming payments
+const upcoming = recurringPaymentsManager.getUpcomingPayments(30);
+console.log(`Upcoming Payments: ${upcoming.length}`);
+```
+
+### Token Swap Aggregation
+
+```typescript
+import { tokenSwapAggregator } from '@/lib/token-swap-aggregator';
+
+// Get swap quote
+const quote = await tokenSwapAggregator.getQuote(
+  '0x...', // USDC
+  '0x...', // ETH
+  '1000000000', // 1000 USDC
+  1
+);
+
+console.log(`Best Route: ${quote.bestRoute?.protocol}`);
+console.log(`Amount Out: ${quote.bestRoute?.amountOut}`);
+```
+
+### Carbon Footprint Tracking
+
+```typescript
+import { carbonFootprintTracker } from '@/lib/carbon-footprint-tracker';
+
+// Calculate emission
+const emission = carbonFootprintTracker.calculateEmission(1, 21000, 'transfer');
+
+// Calculate footprint
+const footprint = carbonFootprintTracker.calculateFootprint('0x...');
+console.log(`Total Emissions: ${footprint.totalEmissions} kg CO2`);
+console.log(`Offset Needed: $${footprint.offsetNeeded}`);
+```
+
+### Social Recovery Management
+
+```typescript
+import { socialRecoveryManager } from '@/lib/social-recovery-manager';
+
+// Add social recovery wallet
+socialRecoveryManager.addWallet({
+  address: '0x...',
+  chainId: 1,
+  guardians: [
+    { address: '0x...', addedAt: Date.now(), isActive: true, type: 'wallet', verified: true },
+  ],
+  threshold: 2,
+  recoveryDelay: 86400 * 7, // 7 days
+  isActive: true,
+});
+
+// Create recovery request
+const request = socialRecoveryManager.createRecoveryRequest(
+  '0x...',
+  1,
+  '0x...', // new owner
+  '0x...' // requester
+);
+```
+
+### On-chain Reputation
+
+```typescript
+import { onChainReputationSystem } from '@/lib/on-chain-reputation-system';
+
+// Calculate reputation
+const reputation = await onChainReputationSystem.calculateReputation('0x...', {
+  totalTrades: 100,
+  totalVolumeUSD: 50000,
+  defiInteractions: 50,
+  governanceVotes: 10,
+});
+
+console.log(`Reputation Score: ${reputation.overallScore}`);
+console.log(`Level: ${reputation.level}`);
+console.log(`Badges: ${reputation.badges.length}`);
+```
+
+### Options & Derivatives Dashboard
+
+```typescript
+import { optionsDerivativesDashboard } from '@/lib/options-derivatives-dashboard';
+
+// Add options position
+optionsDerivativesDashboard.addOptionsPosition({
+  id: 'opt1',
+  type: 'call',
+  underlying: '0x...',
+  underlyingSymbol: 'ETH',
+  strikePrice: 2000,
+  expiration: Date.now() + 30 * 24 * 60 * 60 * 1000,
+  premium: 100,
+  quantity: 1,
+  chainId: 1,
+  protocol: 'Opyn',
+  openedAt: Date.now(),
+  status: 'open',
+});
+
+// Get dashboard
+const dashboard = optionsDerivativesDashboard.getDashboard();
+console.log(`Total P&L: $${dashboard.totalProfitLoss}`);
+console.log(`Liquidation Risk: ${dashboard.riskMetrics.liquidationRisk}%`);
+```
+
 ## 📊 Performance Metrics
 
 - **Scan Speed**: < 5 seconds for multi-chain wallet scan
@@ -1673,6 +2563,46 @@ console.log(`Portfolio Health Score: ${health.score}/100`);
 - ✅ Social recovery management
 - ✅ On-chain reputation system
 - ✅ Options & derivatives dashboard
+- ✅ Token launchpad platform
+- ✅ Profit/loss calculator
+- ✅ Network status monitor
+- ✅ Quick actions manager
+- ✅ Security badge generator
+- ✅ Smart alert automation
+- ✅ DAO treasury manager
+- ✅ Token vesting scheduler
+- ✅ Token snapshot manager
+- ✅ Wallet comparison tool
+- ✅ Transaction fee optimizer
+- ✅ Token price tracker
+- ✅ Wallet activity exporter
+- ✅ Multi-chain portfolio aggregator
+- ✅ Token distribution analyzer
+- ✅ Wallet clustering tool
+- ✅ Transaction simulator
+- ✅ Gas price history tracker
+- ✅ Wallet health score calculator
+- ✅ Token approval risk analyzer
+- ✅ Smart contract interaction history
+- ✅ Portfolio rebalancing suggestions
+- ✅ Yield farming opportunity finder
+- ✅ Wallet activity patterns analyzer
+- ✅ Transaction batch optimizer
+- ✅ Wallet reputation builder
+- ✅ Token sniper alert system
+- ✅ DeFi protocol risk analyzer
+- ✅ NFT collection tracker
+- ✅ Cross-chain asset tracker
+- ✅ Wallet recovery assistant
+- ✅ Gas war monitor
+- ✅ Token price alert manager
+- ✅ Wallet activity heatmap generator
+- ✅ Smart contract security scanner
+- ✅ Token unlock tracker
+- ✅ Governance proposal tracker
+- ✅ Liquidity pool position analyzer
+- ✅ Staking rewards calculator
+- ✅ Wallet backup validator
 - ✅ Approval revoker with batch support
 - ✅ Wallet backup & export with encryption
 - ✅ Watchlist manager for multiple wallets
@@ -1684,6 +2614,12 @@ console.log(`Portfolio Health Score: ${health.score}/100`);
 - ✅ Address book manager
 - ✅ Gas optimization calculator
 - ✅ Wallet health report generator
+- ✅ Wallet health score calculator
+- ✅ Enhanced transaction simulator
+- ✅ Wallet backup validator
+- ✅ Token approval simulator
+- ✅ Wallet risk calculator
+- ✅ Security checklist generator
 - ✅ Wallet recovery phrase checker
 - ✅ Token allowance real-time monitor
 - ✅ Wallet activity pattern analyzer

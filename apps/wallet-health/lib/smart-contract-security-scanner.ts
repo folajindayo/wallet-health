@@ -3,291 +3,262 @@
  * Deep security analysis of smart contracts
  */
 
-export interface SecurityVulnerability {
-  id: string;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
-  title: string;
-  description: string;
-  impact: string;
-  recommendation: string;
-  codeLocation?: string;
-  cwe?: string; // Common Weakness Enumeration
-}
-
-export interface ContractSecurityReport {
+export interface SecurityScanResult {
   contractAddress: string;
   chainId: number;
-  isVerified: boolean;
-  compilerVersion?: string;
-  license?: string;
-  vulnerabilities: SecurityVulnerability[];
-  riskScore: number; // 0-100, higher = riskier
-  riskLevel: 'safe' | 'low' | 'medium' | 'high' | 'critical';
-  auditStatus: 'audited' | 'unaudited' | 'in-progress' | 'unknown';
-  auditReports?: string[];
+  contractName?: string;
+  scanDate: number;
+  overallScore: number; // 0-100
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  issues: SecurityIssue[];
   recommendations: string[];
-  lastScanned: number;
+  verified: boolean;
+  sourceCode?: string;
 }
 
-export interface ContractMetadata {
-  name?: string;
-  symbol?: string;
-  decimals?: number;
-  totalSupply?: string;
-  owner?: string;
-  paused?: boolean;
-  upgradeable?: boolean;
-  proxy?: string;
+export interface SecurityIssue {
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  category: 'access_control' | 'reentrancy' | 'overflow' | 'logic_error' | 'gas_optimization' | 'other';
+  title: string;
+  description: string;
+  location?: string; // File and line number
+  recommendation: string;
 }
 
 export class SmartContractSecurityScanner {
-  private scanCache: Map<string, ContractSecurityReport> = new Map();
-  private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-
   /**
-   * Scan contract for security vulnerabilities
+   * Scan contract
    */
   async scanContract(
     contractAddress: string,
-    chainId: number
-  ): Promise<ContractSecurityReport> {
-    const cacheKey = `${contractAddress.toLowerCase()}-${chainId}`;
-    const cached = this.scanCache.get(cacheKey);
+    chainId: number,
+    sourceCode?: string
+  ): Promise<SecurityScanResult> {
+    const issues: SecurityIssue[] = [];
+    let overallScore = 100;
 
-    // Return cached if still valid
-    if (cached && Date.now() - cached.lastScanned < this.CACHE_TTL) {
-      return cached;
+    // Check if contract is verified
+    const verified = !!sourceCode;
+
+    if (!verified) {
+      issues.push({
+        severity: 'high',
+        category: 'other',
+        title: 'Unverified Contract',
+        description: 'Contract source code is not verified on block explorer',
+        recommendation: 'Avoid interacting with unverified contracts or request verification',
+      });
+      overallScore -= 20;
     }
 
-    // Perform security scan
-    const vulnerabilities = await this.detectVulnerabilities(contractAddress, chainId);
-    const metadata = await this.fetchContractMetadata(contractAddress, chainId);
-    
-    // Calculate risk score
-    const riskScore = this.calculateRiskScore(vulnerabilities, metadata);
-    const riskLevel = this.determineRiskLevel(riskScore);
+    if (sourceCode) {
+      // Check for common vulnerabilities
+      const reentrancyIssues = this.checkReentrancy(sourceCode);
+      issues.push(...reentrancyIssues);
+      overallScore -= reentrancyIssues.length * 15;
 
-    // Check audit status
-    const auditStatus = await this.checkAuditStatus(contractAddress, chainId);
+      const accessControlIssues = this.checkAccessControl(sourceCode);
+      issues.push(...accessControlIssues);
+      overallScore -= accessControlIssues.length * 10;
+
+      const overflowIssues = this.checkOverflow(sourceCode);
+      issues.push(...overflowIssues);
+      overallScore -= overflowIssues.length * 5;
+
+      const logicIssues = this.checkLogicErrors(sourceCode);
+      issues.push(...logicIssues);
+      overallScore -= logicIssues.length * 10;
+
+      const gasIssues = this.checkGasOptimization(sourceCode);
+      issues.push(...gasIssues);
+      overallScore -= gasIssues.length * 2;
+    }
+
+    // Determine risk level
+    let riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
+    const criticalCount = issues.filter(i => i.severity === 'critical').length;
+    const highCount = issues.filter(i => i.severity === 'high').length;
+
+    if (criticalCount > 0 || overallScore < 40) {
+      riskLevel = 'critical';
+    } else if (highCount > 2 || overallScore < 60) {
+      riskLevel = 'high';
+    } else if (issues.length > 3 || overallScore < 80) {
+      riskLevel = 'medium';
+    }
 
     // Generate recommendations
-    const recommendations = this.generateRecommendations(vulnerabilities, riskLevel, auditStatus);
+    const recommendations = this.generateRecommendations(issues);
 
-    const report: ContractSecurityReport = {
+    return {
       contractAddress,
       chainId,
-      isVerified: false, // Would check block explorer
-      vulnerabilities,
-      riskScore,
+      scanDate: Date.now(),
+      overallScore: Math.max(0, Math.min(100, overallScore)),
       riskLevel,
-      auditStatus,
+      issues,
       recommendations,
-      lastScanned: Date.now(),
-    };
-
-    // Cache result
-    this.scanCache.set(cacheKey, report);
-
-    return report;
-  }
-
-  /**
-   * Detect security vulnerabilities
-   */
-  private async detectVulnerabilities(
-    contractAddress: string,
-    chainId: number
-  ): Promise<SecurityVulnerability[]> {
-    const vulnerabilities: SecurityVulnerability[] = [];
-
-    // Check for common vulnerabilities
-    // In production, this would use static analysis tools like Slither, Mythril, etc.
-
-    // Example checks:
-    // 1. Reentrancy vulnerability
-    vulnerabilities.push({
-      id: 'reentrancy-check',
-      severity: 'high',
-      title: 'Potential Reentrancy Vulnerability',
-      description: 'Contract may be vulnerable to reentrancy attacks',
-      impact: 'Attackers could drain contract funds',
-      recommendation: 'Use checks-effects-interactions pattern and ReentrancyGuard',
-      cwe: 'CWE-841',
-    });
-
-    // 2. Integer overflow/underflow
-    vulnerabilities.push({
-      id: 'integer-overflow-check',
-      severity: 'medium',
-      title: 'Integer Overflow/Underflow Risk',
-      description: 'Contract uses arithmetic operations without SafeMath',
-      impact: 'Unexpected behavior in calculations',
-      recommendation: 'Use SafeMath library or Solidity 0.8+',
-      cwe: 'CWE-190',
-    });
-
-    // 3. Access control
-    vulnerabilities.push({
-      id: 'access-control-check',
-      severity: 'high',
-      title: 'Weak Access Control',
-      description: 'Critical functions may lack proper access control',
-      impact: 'Unauthorized users could execute privileged functions',
-      recommendation: 'Implement proper access control with modifiers',
-      cwe: 'CWE-284',
-    });
-
-    // 4. Front-running vulnerability
-    vulnerabilities.push({
-      id: 'front-running-check',
-      severity: 'medium',
-      title: 'Front-running Vulnerability',
-      description: 'Transactions may be front-run by MEV bots',
-      impact: 'Users may get worse prices',
-      recommendation: 'Use commit-reveal scheme or private mempool',
-    });
-
-    return vulnerabilities;
-  }
-
-  /**
-   * Fetch contract metadata
-   */
-  private async fetchContractMetadata(
-    contractAddress: string,
-    chainId: number
-  ): Promise<ContractMetadata> {
-    // In production, would fetch from blockchain or block explorer API
-    return {
-      name: undefined,
-      symbol: undefined,
-      decimals: undefined,
-      totalSupply: undefined,
-      owner: undefined,
-      paused: false,
-      upgradeable: false,
+      verified,
+      sourceCode,
     };
   }
 
   /**
-   * Calculate risk score
+   * Check for reentrancy vulnerabilities
    */
-  private calculateRiskScore(
-    vulnerabilities: SecurityVulnerability[],
-    metadata: ContractMetadata
-  ): number {
-    let score = 0;
+  private checkReentrancy(sourceCode: string): SecurityIssue[] {
+    const issues: SecurityIssue[] = [];
 
-    // Add points for vulnerabilities
-    vulnerabilities.forEach(vuln => {
-      const severityPoints = {
-        critical: 30,
-        high: 20,
-        medium: 10,
-        low: 5,
-        info: 1,
-      };
-      score += severityPoints[vuln.severity];
-    });
-
-    // Add points for unverified contracts
-    if (!metadata.name) {
-      score += 15;
+    // Check for external calls before state changes
+    if (sourceCode.includes('call(') || sourceCode.includes('send(') || sourceCode.includes('transfer(')) {
+      // Simplified check - would need more sophisticated analysis
+      if (!sourceCode.includes('ReentrancyGuard') && !sourceCode.includes('nonReentrant')) {
+        issues.push({
+          severity: 'high',
+          category: 'reentrancy',
+          title: 'Potential Reentrancy Vulnerability',
+          description: 'Contract makes external calls without reentrancy protection',
+          recommendation: 'Use ReentrancyGuard or checks-effects-interactions pattern',
+        });
+      }
     }
 
-    // Add points for upgradeable contracts (potential risk)
-    if (metadata.upgradeable) {
-      score += 10;
-    }
-
-    // Add points for paused contracts (may indicate issues)
-    if (metadata.paused) {
-      score += 5;
-    }
-
-    return Math.min(100, score);
+    return issues;
   }
 
   /**
-   * Determine risk level
+   * Check access control
    */
-  private determineRiskLevel(riskScore: number): ContractSecurityReport['riskLevel'] {
-    if (riskScore >= 80) return 'critical';
-    if (riskScore >= 60) return 'high';
-    if (riskScore >= 40) return 'medium';
-    if (riskScore >= 20) return 'low';
-    return 'safe';
+  private checkAccessControl(sourceCode: string): SecurityIssue[] {
+    const issues: SecurityIssue[] = [];
+
+    // Check for owner-only functions
+    const publicFunctions = (sourceCode.match(/function\s+\w+\s*\([^)]*\)\s*public/g) || []).length;
+    const onlyOwnerFunctions = (sourceCode.match(/onlyOwner/g) || []).length;
+
+    if (publicFunctions > onlyOwnerFunctions * 2) {
+      issues.push({
+        severity: 'medium',
+        category: 'access_control',
+        title: 'Weak Access Control',
+        description: 'Many public functions without proper access control',
+        recommendation: 'Implement proper access control modifiers for sensitive functions',
+      });
+    }
+
+    return issues;
   }
 
   /**
-   * Check audit status
+   * Check for overflow issues
    */
-  private async checkAuditStatus(
-    contractAddress: string,
-    chainId: number
-  ): Promise<ContractSecurityReport['auditStatus']> {
-    // In production, would check audit databases or block explorer
-    return 'unknown';
+  private checkOverflow(sourceCode: string): SecurityIssue[] {
+    const issues: SecurityIssue[] = [];
+
+    // Check if using SafeMath or Solidity 0.8+
+    if (sourceCode.includes('pragma solidity') && !sourceCode.includes('^0.8')) {
+      if (!sourceCode.includes('SafeMath') && !sourceCode.includes('using SafeMath')) {
+        issues.push({
+          severity: 'medium',
+          category: 'overflow',
+          title: 'Potential Integer Overflow',
+          description: 'Contract may be vulnerable to integer overflow',
+          recommendation: 'Use SafeMath library or upgrade to Solidity 0.8+',
+        });
+      }
+    }
+
+    return issues;
+  }
+
+  /**
+   * Check for logic errors
+   */
+  private checkLogicErrors(sourceCode: string): SecurityIssue[] {
+    const issues: SecurityIssue[] = [];
+
+    // Check for common patterns that might indicate logic errors
+    if (sourceCode.includes('== true') || sourceCode.includes('== false')) {
+      issues.push({
+        severity: 'low',
+        category: 'logic_error',
+        title: 'Redundant Boolean Comparison',
+        description: 'Unnecessary boolean comparison detected',
+        recommendation: 'Simplify boolean expressions',
+      });
+    }
+
+    return issues;
+  }
+
+  /**
+   * Check gas optimization
+   */
+  private checkGasOptimization(sourceCode: string): SecurityIssue[] {
+    const issues: SecurityIssue[] = [];
+
+    // Check for storage reads in loops
+    if (sourceCode.includes('for') && sourceCode.includes('storage')) {
+      issues.push({
+        severity: 'low',
+        category: 'gas_optimization',
+        title: 'Potential Gas Optimization',
+        description: 'Storage reads in loops can be optimized',
+        recommendation: 'Cache storage variables before loops',
+      });
+    }
+
+    return issues;
   }
 
   /**
    * Generate recommendations
    */
-  private generateRecommendations(
-    vulnerabilities: SecurityVulnerability[],
-    riskLevel: ContractSecurityReport['riskLevel'],
-    auditStatus: ContractSecurityReport['auditStatus']
-  ): string[] {
+  private generateRecommendations(issues: SecurityIssue[]): string[] {
     const recommendations: string[] = [];
+    const categories = new Set(issues.map(i => i.category));
 
-    if (riskLevel === 'critical' || riskLevel === 'high') {
-      recommendations.push('CRITICAL: Do not interact with this contract until vulnerabilities are fixed.');
+    if (categories.has('reentrancy')) {
+      recommendations.push('Implement reentrancy guards for all external calls');
     }
 
-    if (auditStatus === 'unaudited' || auditStatus === 'unknown') {
-      recommendations.push('Contract has not been audited. Exercise extreme caution.');
+    if (categories.has('access_control')) {
+      recommendations.push('Review and strengthen access control mechanisms');
     }
 
-    const criticalVulns = vulnerabilities.filter(v => v.severity === 'critical');
-    if (criticalVulns.length > 0) {
-      recommendations.push(`${criticalVulns.length} critical vulnerability(ies) detected.`);
+    if (categories.has('overflow')) {
+      recommendations.push('Use SafeMath or upgrade to Solidity 0.8+');
     }
 
-    if (vulnerabilities.length > 5) {
-      recommendations.push('Multiple security issues detected. Consider using alternative contracts.');
+    if (issues.some(i => i.severity === 'critical' || i.severity === 'high')) {
+      recommendations.push('Conduct professional security audit before deployment');
     }
 
     return recommendations;
   }
 
   /**
-   * Compare multiple contracts
+   * Compare scan results
    */
-  async compareContracts(
-    contracts: Array<{ address: string; chainId: number }>
-  ): Promise<Array<ContractSecurityReport & { rank: number }>> {
-    const reports = await Promise.all(
-      contracts.map(c => this.scanContract(c.address, c.chainId))
-    );
+  compareScans(scan1: SecurityScanResult, scan2: SecurityScanResult): {
+    scoreChange: number;
+    newIssues: number;
+    resolvedIssues: number;
+    improvement: boolean;
+  } {
+    const scoreChange = scan2.overallScore - scan1.overallScore;
+    const newIssues = scan2.issues.length - scan1.issues.length;
+    const resolvedIssues = scan1.issues.length - scan2.issues.length;
+    const improvement = scoreChange > 0;
 
-    // Sort by risk score (lowest risk first)
-    reports.sort((a, b) => a.riskScore - b.riskScore);
-
-    // Add ranks
-    return reports.map((report, index) => ({
-      ...report,
-      rank: index + 1,
-    }));
-  }
-
-  /**
-   * Clear cache
-   */
-  clearCache(): void {
-    this.scanCache.clear();
+    return {
+      scoreChange,
+      newIssues,
+      resolvedIssues,
+      improvement,
+    };
   }
 }
 
 // Singleton instance
 export const smartContractSecurityScanner = new SmartContractSecurityScanner();
-

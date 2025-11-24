@@ -1,353 +1,316 @@
 /**
- * Wallet Reputation System Utility
- * Builds reputation scores based on wallet activity
+ * Wallet Reputation System
+ * Tracks and scores wallet reputation based on activity and behavior
  */
 
-export interface ReputationFactor {
-  type: 'age' | 'volume' | 'diversity' | 'security' | 'governance' | 'defi' | 'nft';
-  score: number; // 0-100
-  weight: number; // 0-1
-  description: string;
-}
-
-export interface WalletReputation {
+export interface ReputationScore {
   walletAddress: string;
-  overallScore: number; // 0-100
-  reputationLevel: 'new' | 'established' | 'trusted' | 'veteran' | 'whale';
-  factors: ReputationFactor[];
+  overallScore: number; // 0-1000
+  categoryScores: {
+    security: number; // 0-200
+    activity: number; // 0-200
+    trustworthiness: number; // 0-200
+    longevity: number; // 0-200
+    diversity: number; // 0-200
+  };
   badges: string[];
-  metrics: {
-    accountAge: number; // days
-    totalVolumeUSD: number;
-    uniqueContracts: number;
-    chainsUsed: number;
-    transactions: number;
-  };
-  trends: {
-    scoreChange30d: number;
-    volumeChange30d: number;
-    trend: 'improving' | 'stable' | 'declining';
-  };
+  riskFlags: string[];
+  verified: boolean;
+  lastUpdated: number;
 }
 
-export interface ReputationBadge {
-  id: string;
-  name: string;
-  description: string;
-  requirement: string;
-  icon?: string;
+export interface ReputationHistory {
+  walletAddress: string;
+  history: Array<{
+    timestamp: number;
+    score: number;
+    reason: string;
+    change: number;
+  }>;
+  trend: 'improving' | 'declining' | 'stable';
+}
+
+export interface ReputationComparison {
+  wallet1: ReputationScore;
+  wallet2: ReputationScore;
+  comparison: {
+    scoreDifference: number;
+    betterWallet: string;
+    differences: Array<{
+      category: string;
+      difference: number;
+    }>;
+  };
 }
 
 export class WalletReputationSystem {
-  private reputationCache: Map<string, WalletReputation> = new Map();
-  private badges: ReputationBadge[] = [];
-
-  constructor() {
-    this.initializeBadges();
-  }
+  private scores: Map<string, ReputationScore> = new Map();
+  private history: Map<string, ReputationHistory['history']> = new Map();
 
   /**
-   * Calculate wallet reputation
+   * Calculate reputation score
    */
-  async calculateReputation(
+  calculateScore(
     walletAddress: string,
-    metrics: {
-      firstTransaction?: number;
-      totalVolumeUSD?: number;
-      uniqueContracts?: number;
-      chainsUsed?: number;
+    data: {
+      age?: number; // days
       totalTransactions?: number;
-      securityScore?: number;
-      governanceParticipation?: number;
-      defiPositions?: number;
-      nftCount?: number;
+      verifiedContracts?: number;
+      unverifiedContracts?: number;
+      spamTokens?: number;
+      hasENS?: boolean;
+      multiSig?: boolean;
+      chains?: number[];
+      tokens?: number;
+      riskScore?: number;
     }
-  ): Promise<WalletReputation> {
-    const cacheKey = walletAddress.toLowerCase();
-    const cached = this.reputationCache.get(cacheKey);
+  ): ReputationScore {
+    const walletKey = walletAddress.toLowerCase();
 
-    // Return cached if recent (within 1 hour)
-    if (cached && Date.now() - cached.metrics.accountAge < 60 * 60 * 1000) {
-      return cached;
+    // Security score (0-200)
+    let securityScore = 100; // Base score
+    if (data.hasENS) securityScore += 20;
+    if (data.multiSig) securityScore += 30;
+    if (data.verifiedContracts && data.verifiedContracts > 0) {
+      securityScore += Math.min(30, data.verifiedContracts * 2);
+    }
+    if (data.unverifiedContracts && data.unverifiedContracts > 0) {
+      securityScore -= Math.min(50, data.unverifiedContracts * 10);
+    }
+    if (data.spamTokens && data.spamTokens > 0) {
+      securityScore -= Math.min(30, data.spamTokens * 5);
+    }
+    if (data.riskScore !== undefined) {
+      securityScore += (data.riskScore - 50) * 0.4; // Scale risk score
+    }
+    securityScore = Math.max(0, Math.min(200, securityScore));
+
+    // Activity score (0-200)
+    let activityScore = 50; // Base score
+    if (data.totalTransactions) {
+      const txScore = Math.min(100, data.totalTransactions / 10);
+      activityScore += txScore;
+    }
+    if (data.chains && data.chains.length > 1) {
+      activityScore += Math.min(30, data.chains.length * 5);
+    }
+    activityScore = Math.max(0, Math.min(200, activityScore));
+
+    // Trustworthiness score (0-200)
+    let trustworthinessScore = 100; // Base score
+    if (data.verifiedContracts && data.unverifiedContracts) {
+      const verifiedRatio = data.verifiedContracts / (data.verifiedContracts + data.unverifiedContracts);
+      trustworthinessScore += verifiedRatio * 50;
+    }
+    if (data.spamTokens && data.spamTokens === 0) {
+      trustworthinessScore += 20;
+    }
+    if (data.hasENS) trustworthinessScore += 20;
+    trustworthinessScore = Math.max(0, Math.min(200, trustworthinessScore));
+
+    // Longevity score (0-200)
+    let longevityScore = 0;
+    if (data.age) {
+      if (data.age > 365) longevityScore = 200;
+      else if (data.age > 180) longevityScore = 150;
+      else if (data.age > 90) longevityScore = 100;
+      else if (data.age > 30) longevityScore = 50;
+      else longevityScore = 25;
     }
 
-    const factors: ReputationFactor[] = [];
+    // Diversity score (0-200)
+    let diversityScore = 50; // Base score
+    if (data.chains && data.chains.length > 1) {
+      diversityScore += Math.min(50, data.chains.length * 10);
+    }
+    if (data.tokens && data.tokens > 5) {
+      diversityScore += Math.min(50, (data.tokens - 5) * 5);
+    }
+    diversityScore = Math.max(0, Math.min(200, diversityScore));
 
-    // Account age factor
-    const accountAge = metrics.firstTransaction
-      ? Math.floor((Date.now() - metrics.firstTransaction) / (24 * 60 * 60 * 1000))
-      : 0;
-    const ageScore = Math.min(100, (accountAge / 365) * 100); // Max at 1 year
-    factors.push({
-      type: 'age',
-      score: ageScore,
-      weight: 0.15,
-      description: `Account age: ${accountAge} days`,
-    });
-
-    // Volume factor
-    const volumeScore = metrics.totalVolumeUSD
-      ? Math.min(100, Math.log10(metrics.totalVolumeUSD / 1000) * 20) // Logarithmic scale
-      : 0;
-    factors.push({
-      type: 'volume',
-      score: volumeScore,
-      weight: 0.20,
-      description: `Total volume: $${metrics.totalVolumeUSD?.toLocaleString() || 0}`,
-    });
-
-    // Diversity factor
-    const diversityScore = this.calculateDiversityScore(
-      metrics.uniqueContracts || 0,
-      metrics.chainsUsed || 0
-    );
-    factors.push({
-      type: 'diversity',
-      score: diversityScore,
-      weight: 0.15,
-      description: `${metrics.uniqueContracts || 0} contracts, ${metrics.chainsUsed || 0} chains`,
-    });
-
-    // Security factor
-    const securityScore = metrics.securityScore || 50;
-    factors.push({
-      type: 'security',
-      score: securityScore,
-      weight: 0.25,
-      description: `Security score: ${securityScore}/100`,
-    });
-
-    // Governance factor
-    const governanceScore = metrics.governanceParticipation
-      ? Math.min(100, metrics.governanceParticipation * 10)
-      : 0;
-    factors.push({
-      type: 'governance',
-      score: governanceScore,
-      weight: 0.10,
-      description: `Governance participation: ${metrics.governanceParticipation || 0}`,
-    });
-
-    // DeFi factor
-    const defiScore = metrics.defiPositions
-      ? Math.min(100, metrics.defiPositions * 20)
-      : 0;
-    factors.push({
-      type: 'defi',
-      score: defiScore,
-      weight: 0.10,
-      description: `DeFi positions: ${metrics.defiPositions || 0}`,
-    });
-
-    // NFT factor
-    const nftScore = metrics.nftCount
-      ? Math.min(100, Math.log10(metrics.nftCount + 1) * 25)
-      : 0;
-    factors.push({
-      type: 'nft',
-      score: nftScore,
-      weight: 0.05,
-      description: `NFTs owned: ${metrics.nftCount || 0}`,
-    });
-
-    // Calculate overall score
-    const overallScore = factors.reduce((sum, factor) => {
-      return sum + factor.score * factor.weight;
-    }, 0);
-
-    // Determine reputation level
-    const reputationLevel = this.determineReputationLevel(overallScore, accountAge);
-
-    // Get badges
-    const badges = this.calculateBadges(factors, metrics);
-
-    // Calculate trends (simplified - would need historical data)
-    const trends = {
-      scoreChange30d: 0,
-      volumeChange30d: 0,
-      trend: 'stable' as const,
-    };
-
-    const reputation: WalletReputation = {
-      walletAddress,
-      overallScore: Math.round(overallScore * 100) / 100,
-      reputationLevel,
-      factors,
-      badges,
-      metrics: {
-        accountAge,
-        totalVolumeUSD: metrics.totalVolumeUSD || 0,
-        uniqueContracts: metrics.uniqueContracts || 0,
-        chainsUsed: metrics.chainsUsed || 0,
-        transactions: metrics.totalTransactions || 0,
-      },
-      trends,
-    };
-
-    // Cache result
-    this.reputationCache.set(cacheKey, reputation);
-
-    return reputation;
-  }
-
-  /**
-   * Calculate diversity score
-   */
-  private calculateDiversityScore(uniqueContracts: number, chainsUsed: number): number {
-    const contractScore = Math.min(50, uniqueContracts * 2);
-    const chainScore = Math.min(50, chainsUsed * 10);
-    return contractScore + chainScore;
-  }
-
-  /**
-   * Determine reputation level
-   */
-  private determineReputationLevel(
-    score: number,
-    accountAge: number
-  ): WalletReputation['reputationLevel'] {
-    if (accountAge < 30) return 'new';
-    if (score < 30) return 'new';
-    if (score < 50) return 'established';
-    if (score < 75) return 'trusted';
-    if (accountAge > 365 && score >= 75) return 'veteran';
-    if (score >= 90) return 'whale';
-    return 'trusted';
-  }
-
-  /**
-   * Calculate badges
-   */
-  private calculateBadges(
-    factors: ReputationFactor[],
-    metrics: any
-  ): string[] {
+    // Calculate badges
     const badges: string[] = [];
+    if (securityScore > 150) badges.push('high-security');
+    if (activityScore > 150) badges.push('active-trader');
+    if (trustworthinessScore > 150) badges.push('trusted');
+    if (longevityScore > 150) badges.push('veteran');
+    if (diversityScore > 150) badges.push('diversified');
+    if (data.hasENS) badges.push('ens-verified');
+    if (data.multiSig) badges.push('multisig');
+    if (data.chains && data.chains.length >= 5) badges.push('multi-chain');
 
-    // Early adopter badge
-    if (metrics.firstTransaction && Date.now() - metrics.firstTransaction > 2 * 365 * 24 * 60 * 60 * 1000) {
-      badges.push('early-adopter');
+    // Risk flags
+    const riskFlags: string[] = [];
+    if (data.unverifiedContracts && data.unverifiedContracts > 5) {
+      riskFlags.push('high-unverified-contracts');
+    }
+    if (data.spamTokens && data.spamTokens > 10) {
+      riskFlags.push('many-spam-tokens');
+    }
+    if (data.riskScore !== undefined && data.riskScore < 50) {
+      riskFlags.push('low-risk-score');
     }
 
-    // High volume badge
-    if (metrics.totalVolumeUSD && metrics.totalVolumeUSD > 1000000) {
-      badges.push('high-volume');
+    const overallScore = Math.round(
+      securityScore + activityScore + trustworthinessScore + longevityScore + diversityScore
+    );
+
+    const score: ReputationScore = {
+      walletAddress,
+      overallScore: Math.max(0, Math.min(1000, overallScore)),
+      categoryScores: {
+        security: Math.round(securityScore),
+        activity: Math.round(activityScore),
+        trustworthiness: Math.round(trustworthinessScore),
+        longevity: Math.round(longevityScore),
+        diversity: Math.round(diversityScore),
+      },
+      badges,
+      riskFlags,
+      verified: badges.includes('ens-verified') || badges.includes('multisig'),
+      lastUpdated: Date.now(),
+    };
+
+    // Store score
+    this.scores.set(walletKey, score);
+
+    // Record history
+    const previousScore = this.scores.get(walletKey);
+    if (previousScore) {
+      const change = score.overallScore - previousScore.overallScore;
+      this.addHistoryEntry(walletKey, score.overallScore, 'Score updated', change);
     }
 
-    // Multi-chain badge
-    if (metrics.chainsUsed && metrics.chainsUsed >= 3) {
-      badges.push('multi-chain');
-    }
-
-    // Security champion badge
-    const securityFactor = factors.find(f => f.type === 'security');
-    if (securityFactor && securityFactor.score >= 80) {
-      badges.push('security-champion');
-    }
-
-    // Governance participant badge
-    if (metrics.governanceParticipation && metrics.governanceParticipation > 0) {
-      badges.push('governance-participant');
-    }
-
-    // DeFi degen badge
-    if (metrics.defiPositions && metrics.defiPositions >= 5) {
-      badges.push('defi-degen');
-    }
-
-    // NFT collector badge
-    if (metrics.nftCount && metrics.nftCount >= 10) {
-      badges.push('nft-collector');
-    }
-
-    return badges;
+    return score;
   }
 
   /**
-   * Initialize badges
+   * Get reputation score
    */
-  private initializeBadges(): void {
-    this.badges = [
+  getScore(walletAddress: string): ReputationScore | null {
+    return this.scores.get(walletAddress.toLowerCase()) || null;
+  }
+
+  /**
+   * Get reputation history
+   */
+  getHistory(walletAddress: string): ReputationHistory | null {
+    const walletKey = walletAddress.toLowerCase();
+    const history = this.history.get(walletKey) || [];
+
+    if (history.length === 0) return null;
+
+    // Determine trend
+    if (history.length < 2) {
+      return {
+        walletAddress,
+        history,
+        trend: 'stable',
+      };
+    }
+
+    const recent = history.slice(-10);
+    const first = recent[0].score;
+    const last = recent[recent.length - 1].score;
+    const change = last - first;
+
+    let trend: 'improving' | 'declining' | 'stable';
+    if (change > 50) trend = 'improving';
+    else if (change < -50) trend = 'declining';
+    else trend = 'stable';
+
+    return {
+      walletAddress,
+      history,
+      trend,
+    };
+  }
+
+  /**
+   * Compare two wallets
+   */
+  compareWallets(
+    wallet1: string,
+    wallet2: string
+  ): ReputationComparison | null {
+    const score1 = this.getScore(wallet1);
+    const score2 = this.getScore(wallet2);
+
+    if (!score1 || !score2) return null;
+
+    const scoreDifference = score2.overallScore - score1.overallScore;
+    const betterWallet = scoreDifference > 0 ? wallet2 : wallet1;
+
+    const differences = [
       {
-        id: 'early-adopter',
-        name: 'Early Adopter',
-        description: 'Wallet active for over 2 years',
-        requirement: 'Account age > 2 years',
+        category: 'security',
+        difference: score2.categoryScores.security - score1.categoryScores.security,
       },
       {
-        id: 'high-volume',
-        name: 'High Volume',
-        description: 'Total volume over $1M',
-        requirement: 'Total volume > $1M',
+        category: 'activity',
+        difference: score2.categoryScores.activity - score1.categoryScores.activity,
       },
       {
-        id: 'multi-chain',
-        name: 'Multi-Chain',
-        description: 'Active on 3+ chains',
-        requirement: 'Chains used >= 3',
+        category: 'trustworthiness',
+        difference: score2.categoryScores.trustworthiness - score1.categoryScores.trustworthiness,
       },
       {
-        id: 'security-champion',
-        name: 'Security Champion',
-        description: 'Security score above 80',
-        requirement: 'Security score >= 80',
+        category: 'longevity',
+        difference: score2.categoryScores.longevity - score1.categoryScores.longevity,
       },
       {
-        id: 'governance-participant',
-        name: 'Governance Participant',
-        description: 'Participated in DAO governance',
-        requirement: 'Governance participation > 0',
-      },
-      {
-        id: 'defi-degen',
-        name: 'DeFi Degen',
-        description: '5+ DeFi positions',
-        requirement: 'DeFi positions >= 5',
-      },
-      {
-        id: 'nft-collector',
-        name: 'NFT Collector',
-        description: 'Owns 10+ NFTs',
-        requirement: 'NFT count >= 10',
+        category: 'diversity',
+        difference: score2.categoryScores.diversity - score1.categoryScores.diversity,
       },
     ];
+
+    return {
+      wallet1: score1,
+      wallet2: score2,
+      comparison: {
+        scoreDifference,
+        betterWallet,
+        differences,
+      },
+    };
   }
 
   /**
-   * Get all badges
+   * Get top wallets by score
    */
-  getBadges(): ReputationBadge[] {
-    return [...this.badges];
+  getTopWallets(limit: number = 10): ReputationScore[] {
+    return Array.from(this.scores.values())
+      .sort((a, b) => b.overallScore - a.overallScore)
+      .slice(0, limit);
   }
 
   /**
-   * Compare wallets
+   * Add history entry
    */
-  async compareWallets(
-    wallets: Array<{ address: string; metrics: any }>
-  ): Promise<Array<WalletReputation & { rank: number }>> {
-    const reputations = await Promise.all(
-      wallets.map(w => this.calculateReputation(w.address, w.metrics))
-    );
+  private addHistoryEntry(
+    walletKey: string,
+    score: number,
+    reason: string,
+    change: number
+  ): void {
+    if (!this.history.has(walletKey)) {
+      this.history.set(walletKey, []);
+    }
 
-    // Sort by overall score
-    reputations.sort((a, b) => b.overallScore - a.overallScore);
+    this.history.get(walletKey)!.push({
+      timestamp: Date.now(),
+      score,
+      reason,
+      change,
+    });
 
-    // Add ranks
-    return reputations.map((rep, index) => ({
-      ...rep,
-      rank: index + 1,
-    }));
-  }
-
-  /**
-   * Clear cache
-   */
-  clearCache(): void {
-    this.reputationCache.clear();
+    // Keep last 1000 entries
+    const history = this.history.get(walletKey)!;
+    if (history.length > 1000) {
+      history.shift();
+    }
   }
 }
 
 // Singleton instance
 export const walletReputationSystem = new WalletReputationSystem();
-

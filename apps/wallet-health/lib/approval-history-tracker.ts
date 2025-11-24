@@ -1,373 +1,363 @@
 /**
- * Approval History Tracker Utility
- * Track token approval changes over time
+ * Approval History Tracker
+ * Tracks approval history over time to detect patterns and changes
  */
+
+import type { TokenApproval } from '@wallet-health/types';
 
 export interface ApprovalHistoryEntry {
   timestamp: number;
-  tokenAddress: string;
-  tokenSymbol: string;
-  spenderAddress: string;
-  spenderLabel?: string;
   action: 'granted' | 'revoked' | 'modified';
-  previousAllowance?: string;
-  newAllowance: string;
-  transactionHash?: string;
+  token: string;
+  tokenSymbol: string;
+  spender: string;
+  spenderName?: string;
+  allowance: string;
+  isUnlimited: boolean;
+  transactionHash: string;
   chainId: number;
+  previousAllowance?: string;
 }
 
-export interface ApprovalSnapshot {
+export interface ApprovalHistorySnapshot {
   timestamp: number;
-  approvals: Array<{
-    tokenAddress: string;
-    tokenSymbol: string;
-    spenderAddress: string;
-    allowance: string;
-    isUnlimited: boolean;
-  }>;
   totalApprovals: number;
+  uniqueTokens: number;
+  uniqueSpenders: number;
   unlimitedApprovals: number;
+  unverifiedContracts: number;
+  approvals: TokenApproval[];
 }
 
 export interface ApprovalTrend {
-  tokenAddress: string;
-  tokenSymbol: string;
-  spenderAddress: string;
-  history: ApprovalHistoryEntry[];
-  currentAllowance: string;
-  firstSeen: number;
-  lastModified: number;
-  changeCount: number;
-  trend: 'increasing' | 'decreasing' | 'stable' | 'revoked';
+  period: '7d' | '30d' | '90d' | '1y';
+  trend: 'increasing' | 'decreasing' | 'stable';
+  change: number; // percentage change
+  snapshots: ApprovalHistorySnapshot[];
+  insights: string[];
+}
+
+export interface ApprovalPattern {
+  type: 'frequent_grant' | 'frequent_revoke' | 'repeated_spender' | 'token_rotation';
+  description: string;
+  frequency: number;
+  affectedTokens: string[];
+  affectedSpenders: string[];
 }
 
 export class ApprovalHistoryTracker {
-  private history: ApprovalHistoryEntry[] = [];
-  private snapshots: ApprovalSnapshot[] = [];
+  private history: Map<string, ApprovalHistoryEntry[]> = new Map(); // wallet -> entries
+  private snapshots: Map<string, ApprovalHistorySnapshot[]> = new Map(); // wallet -> snapshots
 
   /**
-   * Add approval history entry
+   * Record approval history entry
    */
-  addHistoryEntry(entry: Omit<ApprovalHistoryEntry, 'timestamp'>): ApprovalHistoryEntry {
-    const historyEntry: ApprovalHistoryEntry = {
-      ...entry,
-      timestamp: Date.now(),
-    };
+  recordEntry(
+    walletAddress: string,
+    entry: ApprovalHistoryEntry
+  ): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.history.has(walletKey)) {
+      this.history.set(walletKey, []);
+    }
 
-    this.history.push(historyEntry);
-    this.saveToStorage();
-    return historyEntry;
+    this.history.get(walletKey)!.push(entry);
+
+    // Keep last 10000 entries
+    const entries = this.history.get(walletKey)!;
+    if (entries.length > 10000) {
+      entries.shift();
+    }
+
+    // Sort by timestamp
+    entries.sort((a, b) => a.timestamp - b.timestamp);
   }
 
   /**
-   * Create approval snapshot
+   * Record snapshot
    */
-  createSnapshot(approvals: ApprovalSnapshot['approvals']): ApprovalSnapshot {
-    const snapshot: ApprovalSnapshot = {
-      timestamp: Date.now(),
-      approvals,
-      totalApprovals: approvals.length,
-      unlimitedApprovals: approvals.filter(a => a.isUnlimited).length,
-    };
+  recordSnapshot(
+    walletAddress: string,
+    snapshot: ApprovalHistorySnapshot
+  ): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.snapshots.has(walletKey)) {
+      this.snapshots.set(walletKey, []);
+    }
 
-    this.snapshots.push(snapshot);
-    this.saveToStorage();
-    return snapshot;
+    this.snapshots.get(walletKey)!.push(snapshot);
+
+    // Keep last 1000 snapshots
+    const snapshots = this.snapshots.get(walletKey)!;
+    if (snapshots.length > 1000) {
+      snapshots.shift();
+    }
+
+    // Sort by timestamp
+    snapshots.sort((a, b) => a.timestamp - b.timestamp);
   }
 
   /**
-   * Get approval history for a specific token and spender
+   * Get approval trend
    */
-  getApprovalHistory(
-    tokenAddress: string,
-    spenderAddress: string
-  ): ApprovalHistoryEntry[] {
-    return this.history.filter(
-      entry =>
-        entry.tokenAddress.toLowerCase() === tokenAddress.toLowerCase() &&
-        entry.spenderAddress.toLowerCase() === spenderAddress.toLowerCase()
-    ).sort((a, b) => a.timestamp - b.timestamp);
-  }
+  getTrend(
+    walletAddress: string,
+    period: '7d' | '30d' | '90d' | '1y' = '30d'
+  ): ApprovalTrend {
+    const walletKey = walletAddress.toLowerCase();
+    const snapshots = this.snapshots.get(walletKey) || [];
 
-  /**
-   * Get all history entries
-   */
-  getAllHistory(): ApprovalHistoryEntry[] {
-    return [...this.history].sort((a, b) => b.timestamp - a.timestamp);
-  }
+    if (snapshots.length < 2) {
+      throw new Error('Insufficient snapshot data for trend analysis');
+    }
 
-  /**
-   * Get history for a specific token
-   */
-  getTokenHistory(tokenAddress: string): ApprovalHistoryEntry[] {
-    return this.history.filter(
-      entry => entry.tokenAddress.toLowerCase() === tokenAddress.toLowerCase()
-    ).sort((a, b) => b.timestamp - a.timestamp);
-  }
+    const now = Date.now();
+    let cutoff: number;
 
-  /**
-   * Get history for a specific spender
-   */
-  getSpenderHistory(spenderAddress: string): ApprovalHistoryEntry[] {
-    return this.history.filter(
-      entry => entry.spenderAddress.toLowerCase() === spenderAddress.toLowerCase()
-    ).sort((a, b) => b.timestamp - a.timestamp);
-  }
+    switch (period) {
+      case '7d':
+        cutoff = now - 7 * 24 * 60 * 60 * 1000;
+        break;
+      case '30d':
+        cutoff = now - 30 * 24 * 60 * 60 * 1000;
+        break;
+      case '90d':
+        cutoff = now - 90 * 24 * 60 * 60 * 1000;
+        break;
+      case '1y':
+        cutoff = now - 365 * 24 * 60 * 60 * 1000;
+        break;
+    }
 
-  /**
-   * Get approval trends
-   */
-  getApprovalTrends(): ApprovalTrend[] {
-    const trendsMap = new Map<string, ApprovalHistoryEntry[]>();
+    const periodSnapshots = snapshots.filter(s => s.timestamp >= cutoff);
 
-    // Group by token + spender
-    this.history.forEach(entry => {
-      const key = `${entry.tokenAddress.toLowerCase()}-${entry.spenderAddress.toLowerCase()}`;
-      if (!trendsMap.has(key)) {
-        trendsMap.set(key, []);
-      }
-      trendsMap.get(key)!.push(entry);
-    });
+    if (periodSnapshots.length < 2) {
+      throw new Error('Insufficient data for selected period');
+    }
 
-    const trends: ApprovalTrend[] = [];
-
-    trendsMap.forEach((history, key) => {
-      const sortedHistory = history.sort((a, b) => a.timestamp - b.timestamp);
-      const firstEntry = sortedHistory[0];
-      const lastEntry = sortedHistory[sortedHistory.length - 1];
-
-      // Determine trend
-      let trend: ApprovalTrend['trend'] = 'stable';
-      if (lastEntry.action === 'revoked') {
-        trend = 'revoked';
-      } else if (sortedHistory.length > 1) {
-        const firstAllowance = BigInt(firstEntry.newAllowance || '0');
-        const lastAllowance = BigInt(lastEntry.newAllowance || '0');
-        if (lastAllowance > firstAllowance) {
-          trend = 'increasing';
-        } else if (lastAllowance < firstAllowance) {
-          trend = 'decreasing';
-        }
-      }
-
-      trends.push({
-        tokenAddress: firstEntry.tokenAddress,
-        tokenSymbol: firstEntry.tokenSymbol,
-        spenderAddress: firstEntry.spenderAddress,
-        history: sortedHistory,
-        currentAllowance: lastEntry.newAllowance,
-        firstSeen: firstEntry.timestamp,
-        lastModified: lastEntry.timestamp,
-        changeCount: sortedHistory.length,
-        trend,
-      });
-    });
-
-    return trends;
-  }
-
-  /**
-   * Get approval statistics
-   */
-  getStatistics(): {
-    totalHistoryEntries: number;
-    totalSnapshots: number;
-    grants: number;
-    revokes: number;
-    modifications: number;
-    uniqueTokens: number;
-    uniqueSpenders: number;
-    averageLifetime: number; // days
-  } {
-    const grants = this.history.filter(e => e.action === 'granted').length;
-    const revokes = this.history.filter(e => e.action === 'revoked').length;
-    const modifications = this.history.filter(e => e.action === 'modified').length;
-
-    const uniqueTokens = new Set(
-      this.history.map(e => e.tokenAddress.toLowerCase())
-    ).size;
-
-    const uniqueSpenders = new Set(
-      this.history.map(e => e.spenderAddress.toLowerCase())
-    ).size;
-
-    // Calculate average lifetime (time between grant and revoke)
-    const lifetimes: number[] = [];
-    const grantsByKey = new Map<string, ApprovalHistoryEntry>();
-
-    this.history.forEach(entry => {
-      const key = `${entry.tokenAddress.toLowerCase()}-${entry.spenderAddress.toLowerCase()}`;
-      
-      if (entry.action === 'granted') {
-        grantsByKey.set(key, entry);
-      } else if (entry.action === 'revoked' && grantsByKey.has(key)) {
-        const grant = grantsByKey.get(key)!;
-        const lifetime = (entry.timestamp - grant.timestamp) / (24 * 60 * 60 * 1000); // days
-        lifetimes.push(lifetime);
-        grantsByKey.delete(key);
-      }
-    });
-
-    const averageLifetime = lifetimes.length > 0
-      ? lifetimes.reduce((sum, lt) => sum + lt, 0) / lifetimes.length
+    const first = periodSnapshots[0];
+    const last = periodSnapshots[periodSnapshots.length - 1];
+    const change = first.totalApprovals > 0
+      ? ((last.totalApprovals - first.totalApprovals) / first.totalApprovals) * 100
       : 0;
 
+    let trend: 'increasing' | 'decreasing' | 'stable';
+    if (change > 10) {
+      trend = 'increasing';
+    } else if (change < -10) {
+      trend = 'decreasing';
+    } else {
+      trend = 'stable';
+    }
+
+    // Generate insights
+    const insights: string[] = [];
+    if (trend === 'increasing') {
+      insights.push(`Approvals increased by ${Math.round(change)}% over ${period}`);
+    } else if (trend === 'decreasing') {
+      insights.push(`Approvals decreased by ${Math.abs(Math.round(change))}% over ${period}`);
+    } else {
+      insights.push(`Approval count remained relatively stable`);
+    }
+
+    if (last.unlimitedApprovals > first.unlimitedApprovals) {
+      insights.push('Number of unlimited approvals increased');
+    }
+
     return {
-      totalHistoryEntries: this.history.length,
-      totalSnapshots: this.snapshots.length,
-      grants,
-      revokes,
-      modifications,
-      uniqueTokens,
-      uniqueSpenders,
-      averageLifetime: Math.round(averageLifetime * 100) / 100,
+      period,
+      trend,
+      change: Math.round(change * 100) / 100,
+      snapshots: periodSnapshots,
+      insights,
     };
   }
 
   /**
-   * Get recent activity
+   * Detect approval patterns
    */
-  getRecentActivity(limit = 10): ApprovalHistoryEntry[] {
-    return [...this.history]
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit);
+  detectPatterns(walletAddress: string): ApprovalPattern[] {
+    const walletKey = walletAddress.toLowerCase();
+    const entries = this.history.get(walletKey) || [];
+    const patterns: ApprovalPattern[] = [];
+
+    // Frequent grant pattern
+    const grantFrequency = entries.filter(e => e.action === 'granted').length;
+    if (grantFrequency > 20) {
+      patterns.push({
+        type: 'frequent_grant',
+        description: `Frequent approval grants detected (${grantFrequency} grants)`,
+        frequency: grantFrequency,
+        affectedTokens: Array.from(new Set(entries.map(e => e.token))),
+        affectedSpenders: Array.from(new Set(entries.map(e => e.spender))),
+      });
+    }
+
+    // Frequent revoke pattern
+    const revokeFrequency = entries.filter(e => e.action === 'revoked').length;
+    if (revokeFrequency > 10) {
+      patterns.push({
+        type: 'frequent_revoke',
+        description: `Frequent approval revocations detected (${revokeFrequency} revokes)`,
+        frequency: revokeFrequency,
+        affectedTokens: Array.from(new Set(entries.filter(e => e.action === 'revoked').map(e => e.token))),
+        affectedSpenders: Array.from(new Set(entries.filter(e => e.action === 'revoked').map(e => e.spender))),
+      });
+    }
+
+    // Repeated spender pattern
+    const spenderCounts = new Map<string, number>();
+    entries.forEach(e => {
+      if (e.action === 'granted') {
+        spenderCounts.set(e.spender, (spenderCounts.get(e.spender) || 0) + 1);
+      }
+    });
+
+    spenderCounts.forEach((count, spender) => {
+      if (count > 5) {
+        patterns.push({
+          type: 'repeated_spender',
+          description: `Repeated approvals to same spender: ${spender.substring(0, 10)}... (${count} times)`,
+          frequency: count,
+          affectedTokens: Array.from(new Set(
+            entries.filter(e => e.spender === spender).map(e => e.token)
+          )),
+          affectedSpenders: [spender],
+        });
+      }
+    });
+
+    return patterns;
   }
 
   /**
-   * Compare snapshots
+   * Get approval history
+   */
+  getHistory(
+    walletAddress: string,
+    options: {
+      startDate?: number;
+      endDate?: number;
+      action?: ApprovalHistoryEntry['action'];
+      token?: string;
+      spender?: string;
+      limit?: number;
+    } = {}
+  ): ApprovalHistoryEntry[] {
+    const walletKey = walletAddress.toLowerCase();
+    let entries = this.history.get(walletKey) || [];
+
+    if (options.startDate) {
+      entries = entries.filter(e => e.timestamp >= options.startDate!);
+    }
+
+    if (options.endDate) {
+      entries = entries.filter(e => e.timestamp <= options.endDate!);
+    }
+
+    if (options.action) {
+      entries = entries.filter(e => e.action === options.action);
+    }
+
+    if (options.token) {
+      entries = entries.filter(e =>
+        e.token.toLowerCase() === options.token!.toLowerCase()
+      );
+    }
+
+    if (options.spender) {
+      entries = entries.filter(e =>
+        e.spender.toLowerCase() === options.spender!.toLowerCase()
+      );
+    }
+
+    // Sort by timestamp (newest first)
+    entries.sort((a, b) => b.timestamp - a.timestamp);
+
+    if (options.limit) {
+      entries = entries.slice(0, options.limit);
+    }
+
+    return entries;
+  }
+
+  /**
+   * Get snapshot history
+   */
+  getSnapshotHistory(
+    walletAddress: string,
+    limit?: number
+  ): ApprovalHistorySnapshot[] {
+    const walletKey = walletAddress.toLowerCase();
+    const snapshots = this.snapshots.get(walletKey) || [];
+    return limit ? snapshots.slice(-limit) : snapshots;
+  }
+
+  /**
+   * Compare two snapshots
    */
   compareSnapshots(
-    snapshot1: ApprovalSnapshot,
-    snapshot2: ApprovalSnapshot
+    snapshot1: ApprovalHistorySnapshot,
+    snapshot2: ApprovalHistorySnapshot
   ): {
-    added: ApprovalSnapshot['approvals'];
-    removed: ApprovalSnapshot['approvals'];
-    modified: Array<{
-      approval: ApprovalSnapshot['approvals'][0];
-      previousAllowance: string;
+    newApprovals: TokenApproval[];
+    revokedApprovals: TokenApproval[];
+    modifiedApprovals: Array<{
+      approval: TokenApproval;
+      oldAllowance: string;
       newAllowance: string;
     }>;
+    changes: {
+      totalChange: number;
+      unlimitedChange: number;
+      unverifiedChange: number;
+    };
   } {
-    const added: ApprovalSnapshot['approvals'] = [];
-    const removed: ApprovalSnapshot['approvals'] = [];
-    const modified: Array<{
-      approval: ApprovalSnapshot['approvals'][0];
-      previousAllowance: string;
+    const set1 = new Set(snapshot1.approvals.map(a => `${a.token}-${a.spender}`));
+    const set2 = new Set(snapshot2.approvals.map(a => `${a.token}-${a.spender}`));
+
+    const newApprovals = snapshot2.approvals.filter(
+      a => !set1.has(`${a.token}-${a.spender}`)
+    );
+
+    const revokedApprovals = snapshot1.approvals.filter(
+      a => !set2.has(`${a.token}-${a.spender}`)
+    );
+
+    const modifiedApprovals: Array<{
+      approval: TokenApproval;
+      oldAllowance: string;
       newAllowance: string;
     }> = [];
 
-    const map1 = new Map<string, ApprovalSnapshot['approvals'][0]>();
-    snapshot1.approvals.forEach(approval => {
-      const key = `${approval.tokenAddress.toLowerCase()}-${approval.spenderAddress.toLowerCase()}`;
-      map1.set(key, approval);
-    });
+    snapshot2.approvals.forEach(approval2 => {
+      const approval1 = snapshot1.approvals.find(
+        a => a.token === approval2.token && a.spender === approval2.spender
+      );
 
-    const map2 = new Map<string, ApprovalSnapshot['approvals'][0]>();
-    snapshot2.approvals.forEach(approval => {
-      const key = `${approval.tokenAddress.toLowerCase()}-${approval.spenderAddress.toLowerCase()}`;
-      map2.set(key, approval);
-    });
-
-    // Find added and modified
-    map2.forEach((approval2, key) => {
-      const approval1 = map1.get(key);
-      if (!approval1) {
-        added.push(approval2);
-      } else if (approval1.allowance !== approval2.allowance) {
-        modified.push({
+      if (approval1 && approval1.allowance !== approval2.allowance) {
+        modifiedApprovals.push({
           approval: approval2,
-          previousAllowance: approval1.allowance,
+          oldAllowance: approval1.allowance,
           newAllowance: approval2.allowance,
         });
       }
     });
 
-    // Find removed
-    map1.forEach((approval1, key) => {
-      if (!map2.has(key)) {
-        removed.push(approval1);
-      }
-    });
-
-    return { added, removed, modified };
-  }
-
-  /**
-   * Export history
-   */
-  exportHistory(): string {
-    return JSON.stringify({
-      history: this.history,
-      snapshots: this.snapshots,
-      exportDate: new Date().toISOString(),
-    }, null, 2);
-  }
-
-  /**
-   * Clear old history (older than specified days)
-   */
-  clearOldHistory(daysToKeep = 90): number {
-    const cutoff = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000);
-    const initialLength = this.history.length;
-    
-    this.history = this.history.filter(entry => entry.timestamp >= cutoff);
-    this.snapshots = this.snapshots.filter(snapshot => snapshot.timestamp >= cutoff);
-    
-    const removed = initialLength - this.history.length;
-    if (removed > 0) {
-      this.saveToStorage();
-    }
-    
-    return removed;
-  }
-
-  /**
-   * Save to localStorage
-   */
-  private saveToStorage(): void {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(
-          'wallet-health-approval-history',
-          JSON.stringify({
-            history: this.history,
-            snapshots: this.snapshots,
-          })
-        );
-      } catch (error) {
-        console.error('Failed to save approval history to storage:', error);
-      }
-    }
-  }
-
-  /**
-   * Load from localStorage
-   */
-  loadFromStorage(): void {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('wallet-health-approval-history');
-        if (stored) {
-          const data = JSON.parse(stored);
-          if (data.history) {
-            this.history = data.history;
-          }
-          if (data.snapshots) {
-            this.snapshots = data.snapshots;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load approval history from storage:', error);
-      }
-    }
+    return {
+      newApprovals,
+      revokedApprovals,
+      modifiedApprovals,
+      changes: {
+        totalChange: snapshot2.totalApprovals - snapshot1.totalApprovals,
+        unlimitedChange:
+          snapshot2.unlimitedApprovals - snapshot1.unlimitedApprovals,
+        unverifiedChange:
+          snapshot2.unverifiedContracts - snapshot1.unverifiedContracts,
+      },
+    };
   }
 }
 
 // Singleton instance
 export const approvalHistoryTracker = new ApprovalHistoryTracker();
-
-// Initialize from storage if available
-if (typeof window !== 'undefined') {
-  approvalHistoryTracker.loadFromStorage();
-}
-

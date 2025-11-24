@@ -1,191 +1,134 @@
 /**
- * Token Price Tracker
- * Tracks token prices and portfolio value over time
+ * Token Price Tracker Utility
+ * Track token prices over time
  */
 
-export interface TokenPrice {
-  tokenAddress: string;
-  symbol: string;
-  chainId: number;
+export interface PricePoint {
+  timestamp: number;
   price: number; // USD
-  priceChange24h: number; // percentage
-  priceChange7d: number; // percentage
-  marketCap?: number;
   volume24h?: number;
-  timestamp: number;
+  marketCap?: number;
+  change24h?: number; // Percentage
 }
 
-export interface PriceHistory {
+export interface TokenPriceData {
   tokenAddress: string;
+  tokenSymbol: string;
   chainId: number;
-  prices: Array<{
-    price: number;
-    timestamp: number;
-  }>;
-}
-
-export interface PortfolioValue {
-  walletAddress: string;
-  timestamp: number;
-  totalValueUSD: number;
-  tokens: Array<{
-    tokenAddress: string;
-    symbol: string;
-    balance: string;
-    price: number;
-    valueUSD: number;
-    allocation: number; // percentage
-  }>;
-  chains: Record<number, {
-    chainId: number;
-    valueUSD: number;
-    allocation: number;
-  }>;
-  historical?: {
-    value1hAgo?: number;
-    value24hAgo?: number;
-    value7dAgo?: number;
-    value30dAgo?: number;
-  };
+  prices: PricePoint[];
+  currentPrice: number;
+  priceChange24h: number; // Percentage
+  priceChange7d: number; // Percentage
+  priceChange30d: number; // Percentage
+  allTimeHigh?: number;
+  allTimeLow?: number;
+  lastUpdated: number;
 }
 
 export interface PriceAlert {
   id: string;
   tokenAddress: string;
+  tokenSymbol: string;
   chainId: number;
-  type: 'above' | 'below' | 'change';
-  threshold: number;
-  currentPrice: number;
+  condition: 'above' | 'below' | 'change';
+  targetPrice?: number;
+  changePercent?: number; // For change alerts
+  isActive: boolean;
   triggered: boolean;
   triggeredAt?: number;
 }
 
 export class TokenPriceTracker {
-  private priceCache: Map<string, TokenPrice> = new Map(); // token-chain -> price
-  private priceHistory: Map<string, PriceHistory> = new Map();
-  private alerts: Map<string, PriceAlert[]> = new Map(); // wallet -> alerts
-  private readonly CACHE_TTL = 60000; // 1 minute
+  private priceData: Map<string, TokenPriceData> = new Map();
+  private alerts: Map<string, PriceAlert> = new Map();
+  private readonly MAX_PRICE_POINTS = 10000;
 
   /**
-   * Get current price for a token
+   * Add price point
    */
-  async getPrice(tokenAddress: string, chainId: number): Promise<TokenPrice | null> {
+  addPricePoint(
+    tokenAddress: string,
+    tokenSymbol: string,
+    chainId: number,
+    price: number,
+    volume24h?: number,
+    marketCap?: number,
+    change24h?: number
+  ): void {
     const key = `${tokenAddress.toLowerCase()}-${chainId}`;
-    const cached = this.priceCache.get(key);
-
-    // Return cached if still valid
-    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-      return cached;
-    }
-
-    try {
-      const price = await this.fetchPrice(tokenAddress, chainId);
-      if (price) {
-        this.priceCache.set(key, price);
-        this.addToHistory(tokenAddress, chainId, price.price);
-      }
-      return price;
-    } catch (error) {
-      console.error(`Error fetching price for ${tokenAddress}:`, error);
-      return cached || null;
-    }
-  }
-
-  /**
-   * Get prices for multiple tokens
-   */
-  async getPrices(
-    tokens: Array<{ address: string; chainId: number }>
-  ): Promise<Map<string, TokenPrice>> {
-    const prices = new Map<string, TokenPrice>();
-
-    await Promise.all(
-      tokens.map(async ({ address, chainId }) => {
-        const price = await this.getPrice(address, chainId);
-        if (price) {
-          prices.set(`${address.toLowerCase()}-${chainId}`, price);
-        }
-      })
-    );
-
-    return prices;
-  }
-
-  /**
-   * Calculate portfolio value
-   */
-  async calculatePortfolioValue(
-    walletAddress: string,
-    tokens: Array<{
-      address: string;
-      symbol: string;
-      balance: string;
-      chainId: number;
-      decimals: number;
-    }>
-  ): Promise<PortfolioValue> {
-    const prices = await this.getPrices(
-      tokens.map(t => ({ address: t.address, chainId: t.chainId }))
-    );
-
-    const tokenValues: PortfolioValue['tokens'] = [];
-    let totalValueUSD = 0;
-
-    for (const token of tokens) {
-      const key = `${token.address.toLowerCase()}-${token.chainId}`;
-      const price = prices.get(key);
-
-      if (price) {
-        const balanceNum = parseFloat(token.balance) / Math.pow(10, token.decimals);
-        const valueUSD = balanceNum * price.price;
-        totalValueUSD += valueUSD;
-
-        tokenValues.push({
-          tokenAddress: token.address,
-          symbol: token.symbol,
-          balance: token.balance,
-          price: price.price,
-          valueUSD,
-          allocation: 0, // Will calculate after total is known
-        });
-      }
-    }
-
-    // Calculate allocations
-    tokenValues.forEach(token => {
-      token.allocation = totalValueUSD > 0 ? (token.valueUSD / totalValueUSD) * 100 : 0;
-    });
-
-    // Calculate chain breakdown
-    const chainValues: Record<number, { chainId: number; valueUSD: number }> = {};
-    tokenValues.forEach(token => {
-      const tokenData = tokens.find(t => t.address === token.tokenAddress);
-      if (tokenData) {
-        if (!chainValues[tokenData.chainId]) {
-          chainValues[tokenData.chainId] = {
-            chainId: tokenData.chainId,
-            valueUSD: 0,
-          };
-        }
-        chainValues[tokenData.chainId].valueUSD += token.valueUSD;
-      }
-    });
-
-    const chains: PortfolioValue['chains'] = {};
-    Object.values(chainValues).forEach(chain => {
-      chains[chain.chainId] = {
-        ...chain,
-        allocation: totalValueUSD > 0 ? (chain.valueUSD / totalValueUSD) * 100 : 0,
-      };
-    });
-
-    return {
-      walletAddress,
+    const pricePoint: PricePoint = {
       timestamp: Date.now(),
-      totalValueUSD,
-      tokens: tokenValues,
-      chains,
+      price,
+      volume24h,
+      marketCap,
+      change24h,
     };
+
+    if (!this.priceData.has(key)) {
+      this.priceData.set(key, {
+        tokenAddress,
+        tokenSymbol,
+        chainId,
+        prices: [],
+        currentPrice: price,
+        priceChange24h: change24h || 0,
+        priceChange7d: 0,
+        priceChange30d: 0,
+        lastUpdated: Date.now(),
+      });
+    }
+
+    const data = this.priceData.get(key)!;
+    data.prices.push(pricePoint);
+
+    // Keep only last MAX_PRICE_POINTS
+    if (data.prices.length > this.MAX_PRICE_POINTS) {
+      data.prices = data.prices.slice(-this.MAX_PRICE_POINTS);
+    }
+
+    // Update current price
+    data.currentPrice = price;
+    data.priceChange24h = change24h || 0;
+    data.lastUpdated = Date.now();
+
+    // Calculate 7d and 30d changes
+    const now = Date.now();
+    const price7dAgo = this.getPriceAt(data.prices, now - 7 * 24 * 60 * 60 * 1000);
+    const price30dAgo = this.getPriceAt(data.prices, now - 30 * 24 * 60 * 60 * 1000);
+
+    if (price7dAgo) {
+      data.priceChange7d = ((price - price7dAgo) / price7dAgo) * 100;
+    }
+    if (price30dAgo) {
+      data.priceChange30d = ((price - price30dAgo) / price30dAgo) * 100;
+    }
+
+    // Update all-time high/low
+    if (!data.allTimeHigh || price > data.allTimeHigh) {
+      data.allTimeHigh = price;
+    }
+    if (!data.allTimeLow || price < data.allTimeLow) {
+      data.allTimeLow = price;
+    }
+
+    // Check alerts
+    this.checkAlerts(key, price);
+  }
+
+  /**
+   * Get price at specific time
+   */
+  private getPriceAt(prices: PricePoint[], timestamp: number): number | null {
+    const point = prices.find(p => p.timestamp >= timestamp);
+    return point ? point.price : null;
+  }
+
+  /**
+   * Get price data
+   */
+  getPriceData(tokenAddress: string, chainId: number): TokenPriceData | null {
+    const key = `${tokenAddress.toLowerCase()}-${chainId}`;
+    return this.priceData.get(key) || null;
   }
 
   /**
@@ -194,171 +137,162 @@ export class TokenPriceTracker {
   getPriceHistory(
     tokenAddress: string,
     chainId: number,
-    hours: number = 24
-  ): PriceHistory['prices'] {
-    const key = `${tokenAddress.toLowerCase()}-${chainId}`;
-    const history = this.priceHistory.get(key);
+    startTime?: number,
+    endTime?: number
+  ): PricePoint[] {
+    const data = this.getPriceData(tokenAddress, chainId);
+    if (!data) {
+      return [];
+    }
 
-    if (!history) return [];
+    let prices = data.prices;
 
-    const cutoff = Date.now() - hours * 60 * 60 * 1000;
-    return history.prices.filter(p => p.timestamp >= cutoff);
+    if (startTime) {
+      prices = prices.filter(p => p.timestamp >= startTime);
+    }
+    if (endTime) {
+      prices = prices.filter(p => p.timestamp <= endTime);
+    }
+
+    return prices;
   }
 
   /**
    * Create price alert
    */
-  createAlert(
-    walletAddress: string,
-    alert: Omit<PriceAlert, 'id' | 'triggered'>
-  ): PriceAlert {
+  createAlert(alert: Omit<PriceAlert, 'id' | 'triggered'>): PriceAlert {
+    const id = `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const fullAlert: PriceAlert = {
       ...alert,
-      id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id,
       triggered: false,
     };
 
-    const walletKey = walletAddress.toLowerCase();
-    if (!this.alerts.has(walletKey)) {
-      this.alerts.set(walletKey, []);
-    }
-
-    this.alerts.get(walletKey)!.push(fullAlert);
+    this.alerts.set(id, fullAlert);
     return fullAlert;
   }
 
   /**
-   * Check and trigger alerts
+   * Check alerts
    */
-  async checkAlerts(walletAddress: string): Promise<PriceAlert[]> {
-    const walletKey = walletAddress.toLowerCase();
-    const alerts = this.alerts.get(walletKey) || [];
-    const triggered: PriceAlert[] = [];
+  private checkAlerts(key: string, currentPrice: number): void {
+    this.alerts.forEach(alert => {
+      if (!alert.isActive || alert.triggered) {
+        return;
+      }
 
-    for (const alert of alerts) {
-      if (alert.triggered) continue;
-
-      const price = await this.getPrice(alert.tokenAddress, alert.chainId);
-      if (!price) continue;
+      const alertKey = `${alert.tokenAddress.toLowerCase()}-${alert.chainId}`;
+      if (alertKey !== key) {
+        return;
+      }
 
       let shouldTrigger = false;
 
-      switch (alert.type) {
-        case 'above':
-          shouldTrigger = price.price >= alert.threshold;
-          break;
-        case 'below':
-          shouldTrigger = price.price <= alert.threshold;
-          break;
-        case 'change':
-          const change = Math.abs(price.priceChange24h);
-          shouldTrigger = change >= alert.threshold;
-          break;
+      if (alert.condition === 'above' && alert.targetPrice) {
+        shouldTrigger = currentPrice >= alert.targetPrice;
+      } else if (alert.condition === 'below' && alert.targetPrice) {
+        shouldTrigger = currentPrice <= alert.targetPrice;
+      } else if (alert.condition === 'change' && alert.changePercent) {
+        const data = this.priceData.get(key);
+        if (data && data.priceChange24h) {
+          shouldTrigger = Math.abs(data.priceChange24h) >= Math.abs(alert.changePercent);
+        }
       }
 
       if (shouldTrigger) {
         alert.triggered = true;
         alert.triggeredAt = Date.now();
-        alert.currentPrice = price.price;
-        triggered.push(alert);
       }
-    }
-
-    return triggered;
+    });
   }
 
   /**
-   * Get alerts for a wallet
+   * Get active alerts
    */
-  getAlerts(walletAddress: string, activeOnly: boolean = false): PriceAlert[] {
-    const walletKey = walletAddress.toLowerCase();
-    const alerts = this.alerts.get(walletKey) || [];
+  getActiveAlerts(tokenAddress?: string, chainId?: number): PriceAlert[] {
+    let alerts = Array.from(this.alerts.values()).filter(a => a.isActive && !a.triggered);
 
-    if (activeOnly) {
-      return alerts.filter(a => !a.triggered);
+    if (tokenAddress && chainId) {
+      alerts = alerts.filter(
+        a => a.tokenAddress.toLowerCase() === tokenAddress.toLowerCase() && a.chainId === chainId
+      );
     }
 
     return alerts;
   }
 
   /**
-   * Calculate price change percentage
+   * Delete alert
    */
-  calculatePriceChange(
-    currentPrice: number,
-    previousPrice: number
-  ): number {
-    if (previousPrice === 0) return 0;
-    return ((currentPrice - previousPrice) / previousPrice) * 100;
+  deleteAlert(id: string): boolean {
+    return this.alerts.delete(id);
   }
 
   /**
-   * Predict price (simple moving average)
+   * Get price statistics
    */
-  predictPrice(
-    tokenAddress: string,
-    chainId: number,
-    timeframe: '1h' | '24h' | '7d' = '24h'
-  ): number | null {
-    const hours = timeframe === '1h' ? 1 : timeframe === '24h' ? 24 : 168;
-    const history = this.getPriceHistory(tokenAddress, chainId, hours);
-
-    if (history.length < 2) return null;
-
-    const recentPrices = history.slice(-10).map(p => p.price);
-    const average = recentPrices.reduce((sum, p) => sum + p, 0) / recentPrices.length;
-
-    // Simple trend calculation
-    const firstPrice = history[0].price;
-    const lastPrice = history[history.length - 1].price;
-    const trend = (lastPrice - firstPrice) / history.length;
-
-    return average + trend;
-  }
-
-  /**
-   * Private methods
-   */
-
-  private async fetchPrice(
-    tokenAddress: string,
-    chainId: number
-  ): Promise<TokenPrice | null> {
-    // Placeholder - would integrate with price API (CoinGecko, CoinMarketCap, etc.)
-    // For now, return mock data structure
-    return {
-      tokenAddress,
-      symbol: 'TOKEN',
-      chainId,
-      price: Math.random() * 100,
-      priceChange24h: (Math.random() - 0.5) * 20,
-      priceChange7d: (Math.random() - 0.5) * 50,
-      timestamp: Date.now(),
-    };
-  }
-
-  private addToHistory(tokenAddress: string, chainId: number, price: number): void {
-    const key = `${tokenAddress.toLowerCase()}-${chainId}`;
-    const history = this.priceHistory.get(key) || {
-      tokenAddress,
-      chainId,
-      prices: [],
-    };
-
-    history.prices.push({
-      price,
-      timestamp: Date.now(),
-    });
-
-    // Keep last 1000 entries
-    if (history.prices.length > 1000) {
-      history.prices.shift();
+  getPriceStatistics(tokenAddress: string, chainId: number, days = 30): {
+    average: number;
+    min: number;
+    max: number;
+    volatility: number; // Standard deviation
+    trend: 'up' | 'down' | 'stable';
+  } | null {
+    const data = this.getPriceData(tokenAddress, chainId);
+    if (!data) {
+      return null;
     }
 
-    this.priceHistory.set(key, history);
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const prices = data.prices.filter(p => p.timestamp >= cutoff).map(p => p.price);
+
+    if (prices.length === 0) {
+      return null;
+    }
+
+    const average = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+
+    // Calculate volatility (standard deviation)
+    const variance = prices.reduce((sum, p) => sum + Math.pow(p - average, 2), 0) / prices.length;
+    const volatility = Math.sqrt(variance);
+
+    // Determine trend
+    const firstHalf = prices.slice(0, Math.floor(prices.length / 2));
+    const secondHalf = prices.slice(Math.floor(prices.length / 2));
+    const firstAvg = firstHalf.reduce((sum, p) => sum + p, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((sum, p) => sum + p, 0) / secondHalf.length;
+    
+    let trend: 'up' | 'down' | 'stable' = 'stable';
+    const changePercent = ((secondAvg - firstAvg) / firstAvg) * 100;
+    if (changePercent > 5) {
+      trend = 'up';
+    } else if (changePercent < -5) {
+      trend = 'down';
+    }
+
+    return {
+      average: Math.round(average * 100) / 100,
+      min: Math.round(min * 100) / 100,
+      max: Math.round(max * 100) / 100,
+      volatility: Math.round(volatility * 100) / 100,
+      trend,
+    };
+  }
+
+  /**
+   * Clear price data
+   */
+  clear(tokenAddress?: string, chainId?: number): void {
+    if (tokenAddress && chainId) {
+      const key = `${tokenAddress.toLowerCase()}-${chainId}`;
+      this.priceData.delete(key);
+    } else {
+      this.priceData.clear();
+    }
   }
 }
 
 // Singleton instance
 export const tokenPriceTracker = new TokenPriceTracker();
-

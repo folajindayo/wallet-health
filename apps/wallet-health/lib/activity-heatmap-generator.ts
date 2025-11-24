@@ -1,107 +1,190 @@
 /**
- * Wallet Activity Heatmap Generator Utility
+ * Activity Heatmap Generator
  * Generates activity heatmaps for wallet transactions
  */
 
 export interface ActivityData {
   timestamp: number;
-  type: 'transfer' | 'approval' | 'swap' | 'contract_call' | 'nft';
-  value?: number; // in USD
+  type: 'transfer' | 'swap' | 'approval' | 'contract_interaction' | 'other';
+  value?: string;
   chainId: number;
 }
 
 export interface HeatmapCell {
-  day: number; // 0-6 (Sunday-Saturday)
+  date: string; // YYYY-MM-DD
   hour: number; // 0-23
   count: number;
-  totalValue: number;
-  intensity: number; // 0-100
+  value: string; // Total value
+  valueUSD?: number;
+  intensity: number; // 0-100 for visualization
 }
 
 export interface HeatmapData {
-  cells: HeatmapCell[][];
-  maxCount: number;
-  maxValue: number;
-  totalActivities: number;
-  period: {
-    start: number;
-    end: number;
+  cells: HeatmapCell[][]; // [day][hour]
+  summary: {
+    totalActivities: number;
+    busiestDay: string;
+    busiestHour: number;
+    totalValue: string;
+    totalValueUSD?: number;
+    dateRange: {
+      start: string;
+      end: string;
+    };
   };
 }
 
 export interface ActivityStats {
-  totalActivities: number;
-  activitiesByDay: Record<string, number>;
-  activitiesByHour: Record<string, number>;
-  activitiesByType: Record<string, number>;
   busiestDay: string;
   busiestHour: number;
   averagePerDay: number;
   averagePerHour: number;
+  peakActivity: {
+    date: string;
+    hour: number;
+    count: number;
+  };
 }
 
 export class ActivityHeatmapGenerator {
   /**
-   * Generate heatmap data from activity data
+   * Generate heatmap data from activities
    */
-  generateHeatmap(activities: ActivityData[], days = 7): HeatmapData {
-    const now = Date.now();
-    const startTime = now - days * 24 * 60 * 60 * 1000;
-
-    // Filter activities within time range
-    const filteredActivities = activities.filter(
-      a => a.timestamp >= startTime && a.timestamp <= now
-    );
-
-    // Initialize 7x24 grid (7 days, 24 hours)
-    const cells: HeatmapCell[][] = [];
-    for (let day = 0; day < 7; day++) {
-      cells[day] = [];
-      for (let hour = 0; hour < 24; hour++) {
-        cells[day][hour] = {
-          day,
-          hour,
-          count: 0,
-          totalValue: 0,
-          intensity: 0,
-        };
-      }
+  generateHeatmap(
+    activities: ActivityData[],
+    days: number = 30
+  ): HeatmapData {
+    if (activities.length === 0) {
+      return {
+        cells: [],
+        summary: {
+          totalActivities: 0,
+          busiestDay: '',
+          busiestHour: 0,
+          totalValue: '0',
+          dateRange: {
+            start: '',
+            end: '',
+          },
+        },
+      };
     }
 
-    // Populate cells
-    let maxCount = 0;
-    let maxValue = 0;
+    const now = Date.now();
+    const startDate = now - days * 24 * 60 * 60 * 1000;
+
+    // Filter activities within date range
+    const filteredActivities = activities.filter(
+      a => a.timestamp >= startDate && a.timestamp <= now
+    );
+
+    // Initialize cells map
+    const cellsMap = new Map<string, {
+      count: number;
+      value: bigint;
+      valueUSD: number;
+    }>();
 
     filteredActivities.forEach(activity => {
       const date = new Date(activity.timestamp);
-      const day = date.getDay(); // 0-6
-      const hour = date.getHours(); // 0-23
+      const dateKey = date.toISOString().split('T')[0];
+      const hour = date.getHours();
+      const cellKey = `${dateKey}-${hour}`;
 
-      const cell = cells[day][hour];
+      if (!cellsMap.has(cellKey)) {
+        cellsMap.set(cellKey, {
+          count: 0,
+          value: BigInt(0),
+          valueUSD: 0,
+        });
+      }
+
+      const cell = cellsMap.get(cellKey)!;
       cell.count++;
-      cell.totalValue += activity.value || 0;
-
-      maxCount = Math.max(maxCount, cell.count);
-      maxValue = Math.max(maxValue, cell.totalValue);
+      if (activity.value) {
+        cell.value += BigInt(activity.value);
+      }
+      // Would calculate USD value from price data
     });
 
-    // Calculate intensity (0-100)
-    cells.forEach(dayRow => {
-      dayRow.forEach(cell => {
-        if (maxCount > 0) {
-          cell.intensity = Math.round((cell.count / maxCount) * 100);
+    // Build 2D array structure
+    const dateSet = new Set<string>();
+    filteredActivities.forEach(a => {
+      const date = new Date(a.timestamp).toISOString().split('T')[0];
+      dateSet.add(date);
+    });
+
+    const sortedDates = Array.from(dateSet).sort();
+    const cells: HeatmapCell[][] = [];
+
+    // Find max count for intensity calculation
+    let maxCount = 0;
+    cellsMap.forEach(cell => {
+      if (cell.count > maxCount) {
+        maxCount = cell.count;
+      }
+    });
+
+    sortedDates.forEach(date => {
+      const dayCells: HeatmapCell[] = [];
+      for (let hour = 0; hour < 24; hour++) {
+        const cellKey = `${date}-${hour}`;
+        const cellData = cellsMap.get(cellKey);
+
+        if (cellData) {
+          dayCells.push({
+            date,
+            hour,
+            count: cellData.count,
+            value: cellData.value.toString(),
+            valueUSD: cellData.valueUSD,
+            intensity: maxCount > 0 ? Math.round((cellData.count / maxCount) * 100) : 0,
+          });
+        } else {
+          dayCells.push({
+            date,
+            hour,
+            count: 0,
+            value: '0',
+            intensity: 0,
+          });
         }
-      });
+      }
+      cells.push(dayCells);
+    });
+
+    // Calculate summary
+    const totalActivities = filteredActivities.length;
+    const totalValue = filteredActivities.reduce(
+      (sum, a) => sum + BigInt(a.value || '0'),
+      BigInt(0)
+    ).toString();
+
+    // Find busiest day and hour
+    let busiestDay = '';
+    let busiestHour = 0;
+    let maxCellCount = 0;
+
+    cellsMap.forEach((cell, key) => {
+      if (cell.count > maxCellCount) {
+        maxCellCount = cell.count;
+        const [date, hour] = key.split('-');
+        busiestDay = date;
+        busiestHour = parseInt(hour);
+      }
     });
 
     return {
       cells,
-      maxCount,
-      maxValue,
-      totalActivities: filteredActivities.length,
-      period: {
-        start: startTime,
-        end: now,
+      summary: {
+        totalActivities,
+        busiestDay,
+        busiestHour,
+        totalValue,
+        dateRange: {
+          start: sortedDates[0] || '',
+          end: sortedDates[sortedDates.length - 1] || '',
+        },
       },
     };
   }
@@ -110,173 +193,113 @@ export class ActivityHeatmapGenerator {
    * Generate activity statistics
    */
   generateStats(activities: ActivityData[]): ActivityStats {
-    const activitiesByDay: Record<string, number> = {};
-    const activitiesByHour: Record<string, number> = {};
-    const activitiesByType: Record<string, number> = {};
+    if (activities.length === 0) {
+      return {
+        busiestDay: '',
+        busiestHour: 0,
+        averagePerDay: 0,
+        averagePerHour: 0,
+        peakActivity: {
+          date: '',
+          hour: 0,
+          count: 0,
+        },
+      };
+    }
 
-    let maxDayCount = 0;
-    let busiestDay = '';
-    let maxHourCount = 0;
-    let busiestHour = 0;
+    // Group by day and hour
+    const dayCounts = new Map<string, number>();
+    const hourCounts = new Map<number, number>();
+    const dayHourCounts = new Map<string, number>();
 
     activities.forEach(activity => {
       const date = new Date(activity.timestamp);
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+      const dateKey = date.toISOString().split('T')[0];
       const hour = date.getHours();
+      const dayHourKey = `${dateKey}-${hour}`;
 
-      // Count by day
-      activitiesByDay[dayName] = (activitiesByDay[dayName] || 0) + 1;
-      if (activitiesByDay[dayName] > maxDayCount) {
-        maxDayCount = activitiesByDay[dayName];
-        busiestDay = dayName;
-      }
-
-      // Count by hour
-      activitiesByHour[hour.toString()] = (activitiesByHour[hour.toString()] || 0) + 1;
-      if (activitiesByHour[hour.toString()] > maxHourCount) {
-        maxHourCount = activitiesByHour[hour.toString()];
-        busiestHour = hour;
-      }
-
-      // Count by type
-      activitiesByType[activity.type] = (activitiesByType[activity.type] || 0) + 1;
+      dayCounts.set(dateKey, (dayCounts.get(dateKey) || 0) + 1);
+      hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
+      dayHourCounts.set(dayHourKey, (dayHourCounts.get(dayHourKey) || 0) + 1);
     });
 
-    const totalDays = Object.keys(activitiesByDay).length || 1;
-    const averagePerDay = activities.length / totalDays;
+    // Find busiest day
+    let busiestDay = '';
+    let maxDayCount = 0;
+    dayCounts.forEach((count, day) => {
+      if (count > maxDayCount) {
+        maxDayCount = count;
+        busiestDay = day;
+      }
+    });
+
+    // Find busiest hour
+    let busiestHour = 0;
+    let maxHourCount = 0;
+    hourCounts.forEach((count, hour) => {
+      if (count > maxHourCount) {
+        maxHourCount = count;
+        busiestHour = hour;
+      }
+    });
+
+    // Find peak activity
+    let peakDate = '';
+    let peakHour = 0;
+    let peakCount = 0;
+    dayHourCounts.forEach((count, key) => {
+      if (count > peakCount) {
+        peakCount = count;
+        const [date, hour] = key.split('-');
+        peakDate = date;
+        peakHour = parseInt(hour);
+      }
+    });
+
+    // Calculate averages
+    const uniqueDays = dayCounts.size;
+    const averagePerDay = uniqueDays > 0 ? activities.length / uniqueDays : 0;
     const averagePerHour = activities.length / 24;
 
     return {
-      totalActivities: activities.length,
-      activitiesByDay,
-      activitiesByHour,
-      activitiesByType,
       busiestDay,
       busiestHour,
       averagePerDay: Math.round(averagePerDay * 100) / 100,
       averagePerHour: Math.round(averagePerHour * 100) / 100,
+      peakActivity: {
+        date: peakDate,
+        hour: peakHour,
+        count: peakCount,
+      },
     };
   }
 
   /**
-   * Generate heatmap for specific time range
+   * Get activity distribution by type
    */
-  generateHeatmapForRange(
-    activities: ActivityData[],
-    startTime: number,
-    endTime: number
-  ): HeatmapData {
-    const filtered = activities.filter(
-      a => a.timestamp >= startTime && a.timestamp <= endTime
-    );
-
-    // Calculate number of days
-    const days = Math.ceil((endTime - startTime) / (24 * 60 * 60 * 1000));
-    return this.generateHeatmap(filtered, days);
-  }
-
-  /**
-   * Get activity distribution by day of week
-   */
-  getDayDistribution(activities: ActivityData[]): Record<string, number> {
-    const distribution: Record<string, number> = {
-      Sunday: 0,
-      Monday: 0,
-      Tuesday: 0,
-      Wednesday: 0,
-      Thursday: 0,
-      Friday: 0,
-      Saturday: 0,
-    };
+  getActivityDistribution(activities: ActivityData[]): Record<string, number> {
+    const distribution: Record<string, number> = {};
 
     activities.forEach(activity => {
-      const date = new Date(activity.timestamp);
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-      distribution[dayName]++;
+      distribution[activity.type] = (distribution[activity.type] || 0) + 1;
     });
 
     return distribution;
   }
 
   /**
-   * Get activity distribution by hour
+   * Get activity distribution by chain
    */
-  getHourDistribution(activities: ActivityData[]): number[] {
-    const distribution = new Array(24).fill(0);
+  getChainDistribution(activities: ActivityData[]): Record<number, number> {
+    const distribution: Record<number, number> = {};
 
     activities.forEach(activity => {
-      const date = new Date(activity.timestamp);
-      const hour = date.getHours();
-      distribution[hour]++;
+      distribution[activity.chainId] = (distribution[activity.chainId] || 0) + 1;
     });
 
     return distribution;
-  }
-
-  /**
-   * Detect activity patterns
-   */
-  detectPatterns(activities: ActivityData[]): {
-    isRegular: boolean;
-    peakHours: number[];
-    quietHours: number[];
-    weekdayActivity: number;
-    weekendActivity: number;
-  } {
-    const hourDistribution = this.getHourDistribution(activities);
-    const dayDistribution = this.getDayDistribution(activities);
-
-    // Find peak hours (top 25%)
-    const sortedHours = hourDistribution
-      .map((count, hour) => ({ hour, count }))
-      .sort((a, b) => b.count - a.count);
-    const peakThreshold = sortedHours[Math.floor(sortedHours.length * 0.25)].count;
-    const peakHours = sortedHours
-      .filter(h => h.count >= peakThreshold)
-      .map(h => h.hour);
-
-    // Find quiet hours (bottom 25%)
-    const quietThreshold = sortedHours[Math.floor(sortedHours.length * 0.75)].count;
-    const quietHours = sortedHours
-      .filter(h => h.count <= quietThreshold)
-      .map(h => h.hour);
-
-    // Calculate weekday vs weekend activity
-    const weekdayActivity =
-      (dayDistribution.Monday || 0) +
-      (dayDistribution.Tuesday || 0) +
-      (dayDistribution.Wednesday || 0) +
-      (dayDistribution.Thursday || 0) +
-      (dayDistribution.Friday || 0);
-
-    const weekendActivity =
-      (dayDistribution.Saturday || 0) + (dayDistribution.Sunday || 0);
-
-    // Determine if activity is regular (consistent pattern)
-    const variance = this.calculateVariance(hourDistribution);
-    const isRegular = variance < 100; // Threshold for regularity
-
-    return {
-      isRegular,
-      peakHours,
-      quietHours,
-      weekdayActivity,
-      weekendActivity,
-    };
-  }
-
-  /**
-   * Calculate variance of distribution
-   */
-  private calculateVariance(distribution: number[]): number {
-    const mean = distribution.reduce((sum, val) => sum + val, 0) / distribution.length;
-    const variance =
-      distribution.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
-      distribution.length;
-    return variance;
   }
 }
 
 // Singleton instance
 export const activityHeatmapGenerator = new ActivityHeatmapGenerator();
-

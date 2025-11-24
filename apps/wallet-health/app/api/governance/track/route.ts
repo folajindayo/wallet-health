@@ -4,7 +4,14 @@ import { governanceTracker } from '@/lib/governance-tracker';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { proposal, vote, walletAddress, action, dao, chainId, options } = body;
+    const { walletAddress, proposal, vote, position, action, dao, status, proposalId, chainId } = body;
+
+    if (!walletAddress) {
+      return NextResponse.json(
+        { error: 'Wallet address is required' },
+        { status: 400 }
+      );
+    }
 
     if (action === 'add-proposal') {
       if (!proposal) {
@@ -14,7 +21,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      governanceTracker.addProposal(proposal);
+      governanceTracker.addProposal(walletAddress, proposal);
       return NextResponse.json({
         success: true,
         data: { message: 'Proposal added' },
@@ -22,9 +29,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'record-vote') {
-      if (!walletAddress || !vote) {
+      if (!vote) {
         return NextResponse.json(
-          { error: 'Wallet address and vote are required' },
+          { error: 'Vote is required' },
           { status: 400 }
         );
       }
@@ -36,30 +43,31 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (action === 'participation') {
-      if (!walletAddress) {
+    if (action === 'add-position') {
+      if (!position) {
         return NextResponse.json(
-          { error: 'Wallet address is required' },
+          { error: 'Position is required' },
           { status: 400 }
         );
       }
 
-      const participation = governanceTracker.getParticipation(walletAddress);
+      governanceTracker.addPosition(walletAddress, position);
       return NextResponse.json({
         success: true,
-        data: participation,
+        data: { message: 'Position added' },
+      });
+    }
+
+    if (action === 'summary') {
+      const summary = governanceTracker.getSummary(walletAddress);
+      return NextResponse.json({
+        success: true,
+        data: summary,
       });
     }
 
     if (action === 'proposals') {
-      if (!dao || !chainId) {
-        return NextResponse.json(
-          { error: 'DAO and chain ID are required' },
-          { status: 400 }
-        );
-      }
-
-      const proposals = governanceTracker.getProposals(dao, chainId);
+      const proposals = governanceTracker.getProposals(walletAddress, dao, status);
       return NextResponse.json({
         success: true,
         data: { proposals },
@@ -67,14 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'votes') {
-      if (!walletAddress) {
-        return NextResponse.json(
-          { error: 'Wallet address is required' },
-          { status: 400 }
-        );
-      }
-
-      const votes = governanceTracker.getVotes(walletAddress, options || {});
+      const votes = governanceTracker.getVotes(walletAddress, proposalId);
       return NextResponse.json({
         success: true,
         data: { votes },
@@ -82,10 +83,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'active') {
-      const proposals = governanceTracker.getActiveProposals(dao, chainId);
+      const active = governanceTracker.getActiveProposals(walletAddress);
       return NextResponse.json({
         success: true,
-        data: { proposals },
+        data: { proposals: active },
+      });
+    }
+
+    if (action === 'voting-power') {
+      if (!dao || !chainId) {
+        return NextResponse.json(
+          { error: 'DAO and chain ID are required' },
+          { status: 400 }
+        );
+      }
+
+      const power = governanceTracker.getVotingPower(walletAddress, dao, chainId);
+      return NextResponse.json({
+        success: true,
+        data: { votingPower: power },
       });
     }
 
@@ -101,4 +117,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

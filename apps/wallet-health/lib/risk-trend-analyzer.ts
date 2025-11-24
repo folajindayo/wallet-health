@@ -1,273 +1,316 @@
 /**
- * Risk Trend Analyzer Utility
- * Analyzes risk score trends over time
+ * Risk Trend Analyzer
+ * Analyzes risk trends over time and predicts future risks
  */
 
 export interface RiskSnapshot {
   timestamp: number;
   score: number;
   riskLevel: 'safe' | 'moderate' | 'critical';
-  factors: RiskFactor[];
-}
-
-export interface RiskFactor {
-  name: string;
-  impact: number; // -100 to +100
-  severity: 'low' | 'medium' | 'high';
+  factors: {
+    activeApprovalsCount: number;
+    unverifiedContractsCount: number;
+    newContractsCount: number;
+    spamTokensCount: number;
+  };
+  metadata?: Record<string, any>;
 }
 
 export interface RiskTrend {
-  currentScore: number;
-  previousScore: number;
-  change: number;
-  changePercent: number;
-  trend: 'improving' | 'stable' | 'deteriorating';
-  velocity: number; // Rate of change per day
-  factors: {
-    improving: RiskFactor[];
-    deteriorating: RiskFactor[];
-    new: RiskFactor[];
-    resolved: RiskFactor[];
-  };
+  period: '7d' | '30d' | '90d' | '1y';
+  trend: 'improving' | 'declining' | 'stable';
+  trendStrength: 'strong' | 'moderate' | 'weak';
+  change: number; // percentage change
+  snapshots: RiskSnapshot[];
   prediction?: {
     nextScore: number;
-    confidence: number; // 0-100
-    timeframe: number; // days
+    nextRiskLevel: 'safe' | 'moderate' | 'critical';
+    confidence: 'high' | 'medium' | 'low';
+    timeframe: string;
   };
-}
-
-export interface RiskHistory {
-  snapshots: RiskSnapshot[];
-  averageScore: number;
-  minScore: number;
-  maxScore: number;
-  volatility: number;
-  periods: {
-    last24h: RiskSnapshot[];
-    last7d: RiskSnapshot[];
-    last30d: RiskSnapshot[];
-  };
+  insights: string[];
+  warnings: string[];
 }
 
 export class RiskTrendAnalyzer {
-  private snapshots: RiskSnapshot[] = [];
+  private snapshots: Map<string, RiskSnapshot[]> = new Map(); // wallet -> snapshots
 
   /**
-   * Add a risk snapshot
+   * Add risk snapshot
    */
-  addSnapshot(snapshot: RiskSnapshot): void {
-    this.snapshots.push(snapshot);
-    
-    // Keep sorted by timestamp
-    this.snapshots.sort((a, b) => a.timestamp - b.timestamp);
-    
-    // Keep only last 1000 snapshots
-    if (this.snapshots.length > 1000) {
-      this.snapshots = this.snapshots.slice(-1000);
+  addSnapshot(walletAddress: string, snapshot: RiskSnapshot): void {
+    const walletKey = walletAddress.toLowerCase();
+    if (!this.snapshots.has(walletKey)) {
+      this.snapshots.set(walletKey, []);
     }
+
+    this.snapshots.get(walletKey)!.push(snapshot);
+
+    // Keep last 1000 snapshots
+    const snapshots = this.snapshots.get(walletKey)!;
+    if (snapshots.length > 1000) {
+      snapshots.shift();
+    }
+
+    // Sort by timestamp
+    snapshots.sort((a, b) => a.timestamp - b.timestamp);
   }
 
   /**
    * Analyze risk trend
    */
-  analyzeTrend(): RiskTrend | null {
-    if (this.snapshots.length < 2) {
-      return null;
+  analyzeTrend(
+    walletAddress: string,
+    period: '7d' | '30d' | '90d' | '1y' = '30d'
+  ): RiskTrend {
+    const walletKey = walletAddress.toLowerCase();
+    const snapshots = this.snapshots.get(walletKey) || [];
+
+    if (snapshots.length < 2) {
+      throw new Error('Insufficient snapshot data for trend analysis');
     }
 
-    const current = this.snapshots[this.snapshots.length - 1];
-    const previous = this.snapshots[this.snapshots.length - 2];
+    const now = Date.now();
+    let cutoff: number;
 
-    const change = current.score - previous.score;
-    const changePercent = previous.score > 0 ? (change / previous.score) * 100 : 0;
+    switch (period) {
+      case '7d':
+        cutoff = now - 7 * 24 * 60 * 60 * 1000;
+        break;
+      case '30d':
+        cutoff = now - 30 * 24 * 60 * 60 * 1000;
+        break;
+      case '90d':
+        cutoff = now - 90 * 24 * 60 * 60 * 1000;
+        break;
+      case '1y':
+        cutoff = now - 365 * 24 * 60 * 60 * 1000;
+        break;
+    }
+
+    const periodSnapshots = snapshots.filter(s => s.timestamp >= cutoff);
+
+    if (periodSnapshots.length < 2) {
+      throw new Error('Insufficient data for selected period');
+    }
+
+    const first = periodSnapshots[0];
+    const last = periodSnapshots[periodSnapshots.length - 1];
+    const scoreChange = last.score - first.score;
+    const change = first.score > 0 ? (scoreChange / first.score) * 100 : 0;
 
     // Determine trend
-    let trend: 'improving' | 'stable' | 'deteriorating';
-    if (change > 5) {
+    let trend: 'improving' | 'declining' | 'stable';
+    let trendStrength: 'strong' | 'moderate' | 'weak';
+
+    if (change > 10) {
       trend = 'improving';
-    } else if (change < -5) {
-      trend = 'deteriorating';
+      trendStrength = change > 20 ? 'strong' : 'moderate';
+    } else if (change < -10) {
+      trend = 'declining';
+      trendStrength = change < -20 ? 'strong' : 'moderate';
     } else {
       trend = 'stable';
+      trendStrength = 'weak';
     }
 
-    // Calculate velocity (change per day)
-    const timeDiff = current.timestamp - previous.timestamp;
-    const daysDiff = timeDiff / (24 * 60 * 60 * 1000);
-    const velocity = daysDiff > 0 ? change / daysDiff : 0;
+    // Generate prediction
+    const prediction = this.predictFutureRisk(periodSnapshots);
 
-    // Analyze factor changes
-    const factors = this.analyzeFactorChanges(previous, current);
+    // Generate insights
+    const insights = this.generateInsights(periodSnapshots, trend, change);
 
-    // Predict future score
-    const prediction = this.predictFutureScore();
+    // Generate warnings
+    const warnings = this.generateWarnings(periodSnapshots, last);
 
     return {
-      currentScore: current.score,
-      previousScore: previous.score,
-      change,
-      changePercent,
+      period,
       trend,
-      velocity,
-      factors,
+      trendStrength,
+      change: Math.round(change * 100) / 100,
+      snapshots: periodSnapshots,
       prediction,
+      insights,
+      warnings,
     };
   }
 
   /**
-   * Analyze factor changes
+   * Predict future risk
    */
-  private analyzeFactorChanges(
-    previous: RiskSnapshot,
-    current: RiskSnapshot
-  ): RiskTrend['factors'] {
-    const previousFactors = new Map(previous.factors.map(f => [f.name, f]));
-    const currentFactors = new Map(current.factors.map(f => [f.name, f]));
-
-    const improving: RiskFactor[] = [];
-    const deteriorating: RiskFactor[] = [];
-    const newFactors: RiskFactor[] = [];
-    const resolved: RiskFactor[] = [];
-
-    // Check for improved factors
-    currentFactors.forEach((currentFactor, name) => {
-      const prevFactor = previousFactors.get(name);
-      if (prevFactor) {
-        if (currentFactor.impact > prevFactor.impact) {
-          improving.push(currentFactor);
-        } else if (currentFactor.impact < prevFactor.impact) {
-          deteriorating.push(currentFactor);
-        }
-      } else {
-        newFactors.push(currentFactor);
-      }
-    });
-
-    // Check for resolved factors
-    previousFactors.forEach((prevFactor, name) => {
-      if (!currentFactors.has(name)) {
-        resolved.push(prevFactor);
-      }
-    });
-
-    return {
-      improving,
-      deteriorating,
-      new: newFactors,
-      resolved,
-    };
-  }
-
-  /**
-   * Predict future risk score
-   */
-  private predictFutureScore(): RiskTrend['prediction'] | undefined {
-    if (this.snapshots.length < 3) {
+  private predictFutureRisk(snapshots: RiskSnapshot[]): RiskTrend['prediction'] {
+    if (snapshots.length < 3) {
       return undefined;
     }
 
-    // Use linear regression for prediction
-    const recent = this.snapshots.slice(-10);
+    // Simple linear regression for prediction
+    const recent = snapshots.slice(-10);
     const scores = recent.map(s => s.score);
     const timestamps = recent.map(s => s.timestamp);
 
-    // Calculate linear regression
-    const n = scores.length;
+    // Calculate trend
+    const n = recent.length;
     const sumX = timestamps.reduce((sum, t) => sum + t, 0);
     const sumY = scores.reduce((sum, s) => sum + s, 0);
     const sumXY = timestamps.reduce((sum, t, i) => sum + t * scores[i], 0);
-    const sumXX = timestamps.reduce((sum, t) => sum + t * t, 0);
+    const sumX2 = timestamps.reduce((sum, t) => sum + t * t, 0);
 
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
 
-    // Predict score in 7 days
-    const futureTimestamp = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    const predictedScore = slope * futureTimestamp + intercept;
+    // Predict next week
+    const nextWeek = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    const predictedScore = Math.max(0, Math.min(100, Math.round(slope * nextWeek + intercept)));
 
-    // Clamp to 0-100
-    const clampedScore = Math.max(0, Math.min(100, Math.round(predictedScore)));
+    let nextRiskLevel: 'safe' | 'moderate' | 'critical';
+    if (predictedScore >= 80) {
+      nextRiskLevel = 'safe';
+    } else if (predictedScore >= 50) {
+      nextRiskLevel = 'moderate';
+    } else {
+      nextRiskLevel = 'critical';
+    }
 
-    // Calculate confidence based on R-squared
-    const meanY = sumY / n;
-    const ssRes = scores.reduce((sum, s, i) => {
-      const predicted = slope * timestamps[i] + intercept;
-      return sum + Math.pow(s - predicted, 2);
-    }, 0);
-    const ssTot = scores.reduce((sum, s) => sum + Math.pow(s - meanY, 2), 0);
-    const rSquared = 1 - ssRes / ssTot;
-    const confidence = Math.max(0, Math.min(100, Math.round(rSquared * 100)));
+    // Calculate confidence based on data points and variance
+    const variance = scores.reduce(
+      (sum, s, i) => sum + Math.pow(s - (slope * timestamps[i] + intercept), 2),
+      0
+    ) / n;
+    const confidence = variance < 100 ? 'high' : variance < 400 ? 'medium' : 'low';
 
     return {
-      nextScore: clampedScore,
+      nextScore: predictedScore,
+      nextRiskLevel,
       confidence,
-      timeframe: 7,
+      timeframe: '1 week',
     };
   }
 
   /**
-   * Get risk history
+   * Generate insights
    */
-  getHistory(): RiskHistory {
-    const now = Date.now();
-    const last24h = now - 24 * 60 * 60 * 1000;
-    const last7d = now - 7 * 24 * 60 * 60 * 1000;
-    const last30d = now - 30 * 24 * 60 * 60 * 1000;
+  private generateInsights(
+    snapshots: RiskSnapshot[],
+    trend: 'improving' | 'declining' | 'stable',
+    change: number
+  ): string[] {
+    const insights: string[] = [];
 
-    const scores = this.snapshots.map(s => s.score);
-    const averageScore = scores.length > 0
-      ? scores.reduce((sum, s) => sum + s, 0) / scores.length
-      : 0;
-    const minScore = scores.length > 0 ? Math.min(...scores) : 0;
-    const maxScore = scores.length > 0 ? Math.max(...scores) : 0;
+    if (trend === 'improving') {
+      insights.push(`Risk score improved by ${Math.abs(Math.round(change))}%`);
+    } else if (trend === 'declining') {
+      insights.push(`Risk score declined by ${Math.abs(Math.round(change))}% - action needed`);
+    }
 
-    // Calculate volatility (standard deviation)
-    const variance = scores.length > 0
-      ? scores.reduce((sum, s) => sum + Math.pow(s - averageScore, 2), 0) / scores.length
-      : 0;
-    const volatility = Math.sqrt(variance);
+    // Check factor changes
+    const first = snapshots[0];
+    const last = snapshots[snapshots.length - 1];
+
+    if (last.factors.unverifiedContractsCount > first.factors.unverifiedContractsCount) {
+      insights.push('Number of unverified contracts increased');
+    }
+
+    if (last.factors.activeApprovalsCount > first.factors.activeApprovalsCount + 5) {
+      insights.push('Significant increase in active approvals');
+    }
+
+    return insights;
+  }
+
+  /**
+   * Generate warnings
+   */
+  private generateWarnings(
+    snapshots: RiskSnapshot[],
+    current: RiskSnapshot
+  ): string[] {
+    const warnings: string[] = [];
+
+    if (current.riskLevel === 'critical') {
+      warnings.push('Current risk level is critical - immediate action required');
+    }
+
+    // Check for rapid decline
+    if (snapshots.length >= 3) {
+      const recent = snapshots.slice(-3);
+      const decline = recent[0].score - recent[recent.length - 1].score;
+      if (decline > 20) {
+        warnings.push('Rapid decline in risk score detected');
+      }
+    }
+
+    if (current.factors.unverifiedContractsCount > 0) {
+      warnings.push(`${current.factors.unverifiedContractsCount} unverified contract(s) detected`);
+    }
+
+    return warnings;
+  }
+
+  /**
+   * Get snapshot history
+   */
+  getSnapshotHistory(
+    walletAddress: string,
+    limit?: number
+  ): RiskSnapshot[] {
+    const walletKey = walletAddress.toLowerCase();
+    const snapshots = this.snapshots.get(walletKey) || [];
+    return limit ? snapshots.slice(-limit) : snapshots;
+  }
+
+  /**
+   * Compare risk across multiple wallets
+   */
+  compareWallets(walletAddresses: string[]): {
+    averageScore: number;
+    bestScore: number;
+    worstScore: number;
+    rankings: Array<{
+      walletAddress: string;
+      currentScore: number;
+      trend: 'improving' | 'declining' | 'stable';
+    }>;
+  } {
+    const rankings: Array<{
+      walletAddress: string;
+      currentScore: number;
+      trend: 'improving' | 'declining' | 'stable';
+    }> = [];
+
+    walletAddresses.forEach(address => {
+      const snapshots = this.snapshots.get(address.toLowerCase()) || [];
+      if (snapshots.length === 0) return;
+
+      const current = snapshots[snapshots.length - 1];
+      let trend: 'improving' | 'declining' | 'stable' = 'stable';
+
+      if (snapshots.length >= 2) {
+        const previous = snapshots[snapshots.length - 2];
+        const change = current.score - previous.score;
+        if (change > 5) trend = 'improving';
+        else if (change < -5) trend = 'declining';
+      }
+
+      rankings.push({
+        walletAddress: address,
+        currentScore: current.score,
+        trend,
+      });
+    });
+
+    rankings.sort((a, b) => b.currentScore - a.currentScore);
+
+    const scores = rankings.map(r => r.currentScore);
+    const averageScore = scores.reduce((sum, s) => sum + s, 0) / scores.length;
 
     return {
-      snapshots: [...this.snapshots],
       averageScore: Math.round(averageScore * 100) / 100,
-      minScore,
-      maxScore,
-      volatility: Math.round(volatility * 100) / 100,
-      periods: {
-        last24h: this.snapshots.filter(s => s.timestamp >= last24h),
-        last7d: this.snapshots.filter(s => s.timestamp >= last7d),
-        last30d: this.snapshots.filter(s => s.timestamp >= last30d),
-      },
+      bestScore: Math.max(...scores),
+      worstScore: Math.min(...scores),
+      rankings,
     };
-  }
-
-  /**
-   * Get risk score over time
-   */
-  getScoreOverTime(startTime?: number, endTime?: number): Array<{ timestamp: number; score: number }> {
-    let filtered = this.snapshots;
-
-    if (startTime) {
-      filtered = filtered.filter(s => s.timestamp >= startTime);
-    }
-    if (endTime) {
-      filtered = filtered.filter(s => s.timestamp <= endTime);
-    }
-
-    return filtered.map(s => ({
-      timestamp: s.timestamp,
-      score: s.score,
-    }));
-  }
-
-  /**
-   * Clear all snapshots
-   */
-  clear(): void {
-    this.snapshots = [];
   }
 }
 
 // Singleton instance
 export const riskTrendAnalyzer = new RiskTrendAnalyzer();
-

@@ -1,285 +1,227 @@
 /**
- * Gas Price Predictor Utility
- * Predicts future gas prices based on historical data
+ * Gas Price Predictor
+ * Predicts optimal gas prices based on historical patterns
  */
 
-export interface GasPriceDataPoint {
-  timestamp: number;
-  slow: number; // gwei
-  standard: number; // gwei
-  fast: number; // gwei
-  baseFee?: number; // gwei
-  blockNumber: number;
-}
-
 export interface GasPricePrediction {
-  timeframe: '1h' | '6h' | '24h' | '7d';
-  predictedSlow: number;
-  predictedStandard: number;
-  predictedFast: number;
-  confidence: number; // 0-100
+  chainId: number;
+  currentPrice: number; // gwei
+  predictions: {
+    low: number;
+    standard: number;
+    fast: number;
+    instant: number;
+  };
+  confidence: 'high' | 'medium' | 'low';
+  recommendedPrice: number;
+  recommendedWaitTime: string;
+  historicalAverage: number;
   trend: 'increasing' | 'decreasing' | 'stable';
-  factors: Array<{
-    factor: string;
-    impact: 'positive' | 'negative' | 'neutral';
-    description: string;
-  }>;
+  factors: string[];
 }
 
-export interface GasPriceForecast {
-  current: GasPriceDataPoint;
-  predictions: GasPricePrediction[];
-  recommendations: string[];
-  optimalTime?: {
-    timeframe: string;
-    estimatedPrice: number;
-    reason: string;
-  };
+export interface GasPriceHistory {
+  timestamp: number;
+  low: number;
+  standard: number;
+  fast: number;
+  instant: number;
 }
 
 export class GasPricePredictor {
-  private historicalData: GasPriceDataPoint[] = [];
-  private readonly MAX_DATA_POINTS = 1000;
+  private history: Map<number, GasPriceHistory[]> = new Map(); // chainId -> history
 
   /**
-   * Add historical data point
+   * Add gas price data point
    */
-  addDataPoint(data: GasPriceDataPoint): void {
-    this.historicalData.push(data);
-    
-    // Keep sorted by timestamp
-    this.historicalData.sort((a, b) => a.timestamp - b.timestamp);
-    
-    // Keep only last N data points
-    if (this.historicalData.length > this.MAX_DATA_POINTS) {
-      this.historicalData = this.historicalData.slice(-this.MAX_DATA_POINTS);
+  addDataPoint(
+    chainId: number,
+    prices: { low: number; standard: number; fast: number; instant: number }
+  ): void {
+    if (!this.history.has(chainId)) {
+      this.history.set(chainId, []);
+    }
+
+    this.history.get(chainId)!.push({
+      timestamp: Date.now(),
+      ...prices,
+    });
+
+    // Keep last 1000 data points per chain
+    const history = this.history.get(chainId)!;
+    if (history.length > 1000) {
+      history.shift();
     }
   }
 
   /**
-   * Add multiple data points
+   * Predict gas prices
    */
-  addDataPoints(dataPoints: GasPriceDataPoint[]): void {
-    dataPoints.forEach(point => this.addDataPoint(point));
-  }
-
-  /**
-   * Predict gas price for a timeframe
-   */
-  predict(timeframe: GasPricePrediction['timeframe']): GasPricePrediction | null {
-    if (this.historicalData.length < 2) {
-      return null;
+  predict(
+    chainId: number,
+    urgency: 'low' | 'medium' | 'high' = 'medium',
+    timeHorizon: '1h' | '6h' | '24h' = '1h'
+  ): GasPricePrediction | null {
+    const history = this.history.get(chainId);
+    if (!history || history.length < 10) {
+      return null; // Not enough data
     }
 
-    // Calculate timeframe in milliseconds
-    const timeframeMs = {
-      '1h': 60 * 60 * 1000,
-      '6h': 6 * 60 * 60 * 1000,
-      '24h': 24 * 60 * 60 * 1000,
-      '7d': 7 * 24 * 60 * 60 * 1000,
-    }[timeframe];
-
-    // Get recent data within timeframe
+    // Get recent history (last 24 hours)
     const now = Date.now();
-    const cutoff = now - timeframeMs;
-    const recentData = this.historicalData.filter(d => d.timestamp >= cutoff);
+    const cutoff = now - 24 * 60 * 60 * 1000;
+    const recent = history.filter(h => h.timestamp >= cutoff);
 
-    if (recentData.length < 2) {
-      return null;
+    if (recent.length < 5) {
+      return null; // Not enough recent data
     }
 
-    // Calculate moving average
-    const avgSlow = recentData.reduce((sum, d) => sum + d.slow, 0) / recentData.length;
-    const avgStandard = recentData.reduce((sum, d) => sum + d.standard, 0) / recentData.length;
-    const avgFast = recentData.reduce((sum, d) => sum + d.fast, 0) / recentData.length;
+    // Calculate current averages
+    const currentLow = recent[recent.length - 1].low;
+    const currentStandard = recent[recent.length - 1].standard;
+    const currentFast = recent[recent.length - 1].fast;
+    const currentInstant = recent[recent.length - 1].instant;
 
-    // Calculate trend
-    const firstHalf = recentData.slice(0, Math.floor(recentData.length / 2));
-    const secondHalf = recentData.slice(Math.floor(recentData.length / 2));
+    // Calculate historical averages
+    const avgLow = recent.reduce((sum, h) => sum + h.low, 0) / recent.length;
+    const avgStandard = recent.reduce((sum, h) => sum + h.standard, 0) / recent.length;
+    const avgFast = recent.reduce((sum, h) => sum + h.fast, 0) / recent.length;
+    const avgInstant = recent.reduce((sum, h) => sum + h.instant, 0) / recent.length;
 
-    const firstAvg = firstHalf.reduce((sum, d) => sum + d.standard, 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((sum, d) => sum + d.standard, 0) / secondHalf.length;
+    // Simple trend detection
+    const firstHalf = recent.slice(0, Math.floor(recent.length / 2));
+    const secondHalf = recent.slice(Math.floor(recent.length / 2));
 
-    let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
-    if (secondAvg > firstAvg * 1.1) {
-      trend = 'increasing';
-    } else if (secondAvg < firstAvg * 0.9) {
-      trend = 'decreasing';
+    const firstAvg = firstHalf.reduce((sum, h) => sum + h.standard, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((sum, h) => sum + h.standard, 0) / secondHalf.length;
+
+    let trend: 'increasing' | 'decreasing' | 'stable';
+    const change = ((secondAvg - firstAvg) / firstAvg) * 100;
+
+    if (change > 10) trend = 'increasing';
+    else if (change < -10) trend = 'decreasing';
+    else trend = 'stable';
+
+    // Predict future prices (simple linear projection)
+    const trendFactor = change / 100;
+    const timeMultiplier = timeHorizon === '1h' ? 1 : timeHorizon === '6h' ? 6 : 24;
+
+    const predictions = {
+      low: Math.max(0, currentLow * (1 + trendFactor * timeMultiplier * 0.1)),
+      standard: Math.max(0, currentStandard * (1 + trendFactor * timeMultiplier * 0.1)),
+      fast: Math.max(0, currentFast * (1 + trendFactor * timeMultiplier * 0.1)),
+      instant: Math.max(0, currentInstant * (1 + trendFactor * timeMultiplier * 0.1)),
+    };
+
+    // Determine confidence
+    const variance = recent.reduce((sum, h) => {
+      const diff = h.standard - avgStandard;
+      return sum + diff * diff;
+    }, 0) / recent.length;
+    const stdDev = Math.sqrt(variance);
+    const coefficientOfVariation = avgStandard > 0 ? stdDev / avgStandard : 0;
+
+    let confidence: 'high' | 'medium' | 'low';
+    if (coefficientOfVariation < 0.1) confidence = 'high';
+    else if (coefficientOfVariation < 0.3) confidence = 'medium';
+    else confidence = 'low';
+
+    // Recommend price based on urgency
+    let recommendedPrice: number;
+    let recommendedWaitTime: string;
+
+    if (urgency === 'low') {
+      recommendedPrice = predictions.low;
+      recommendedWaitTime = 'Wait 5-15 minutes for lower prices';
+    } else if (urgency === 'high') {
+      recommendedPrice = predictions.fast;
+      recommendedWaitTime = 'Use fast gas for immediate confirmation';
+    } else {
+      recommendedPrice = predictions.standard;
+      recommendedWaitTime = 'Standard gas should confirm in 1-3 minutes';
     }
 
-    // Calculate confidence based on data points and variance
-    const variance = this.calculateVariance(recentData.map(d => d.standard));
-    const confidence = Math.max(0, Math.min(100, 100 - variance / 10));
-
-    // Predict prices (simple linear extrapolation)
-    const trendFactor = trend === 'increasing' ? 1.05 : trend === 'decreasing' ? 0.95 : 1.0;
-    const predictedSlow = Math.round(avgSlow * trendFactor);
-    const predictedStandard = Math.round(avgStandard * trendFactor);
-    const predictedFast = Math.round(avgFast * trendFactor);
-
-    // Analyze factors
-    const factors = this.analyzeFactors(recentData, trend);
+    // Generate factors
+    const factors: string[] = [];
+    if (trend === 'increasing') {
+      factors.push('Gas prices are trending upward - consider waiting');
+    } else if (trend === 'decreasing') {
+      factors.push('Gas prices are trending downward - good time to transact');
+    }
+    if (currentStandard < avgStandard * 0.8) {
+      factors.push('Current prices are below 24h average');
+    } else if (currentStandard > avgStandard * 1.2) {
+      factors.push('Current prices are above 24h average - consider waiting');
+    }
 
     return {
-      timeframe,
-      predictedSlow,
-      predictedStandard,
-      predictedFast,
-      confidence: Math.round(confidence),
+      chainId,
+      currentPrice: currentStandard,
+      predictions: {
+        low: Math.round(predictions.low * 100) / 100,
+        standard: Math.round(predictions.standard * 100) / 100,
+        fast: Math.round(predictions.fast * 100) / 100,
+        instant: Math.round(predictions.instant * 100) / 100,
+      },
+      confidence,
+      recommendedPrice: Math.round(recommendedPrice * 100) / 100,
+      recommendedWaitTime,
+      historicalAverage: Math.round(avgStandard * 100) / 100,
       trend,
       factors,
     };
   }
 
   /**
-   * Generate forecast
+   * Get optimal gas price recommendation
    */
-  generateForecast(): GasPriceForecast | null {
-    if (this.historicalData.length === 0) {
-      return null;
+  getOptimalPrice(
+    chainId: number,
+    urgency: 'low' | 'medium' | 'high',
+    maxWaitMinutes: number = 15
+  ): {
+    recommendedPrice: number;
+    estimatedWait: string;
+    savings: number;
+    savingsPercentage: number;
+  } | null {
+    const prediction = this.predict(chainId, urgency, '1h');
+    if (!prediction) return null;
+
+    const current = prediction.currentPrice;
+    let recommendedPrice: number;
+    let estimatedWait: string;
+
+    if (urgency === 'low' && maxWaitMinutes >= 10) {
+      recommendedPrice = prediction.predictions.low;
+      estimatedWait = '10-15 minutes';
+    } else if (urgency === 'medium') {
+      recommendedPrice = prediction.predictions.standard;
+      estimatedWait = '1-3 minutes';
+    } else {
+      recommendedPrice = prediction.predictions.fast;
+      estimatedWait = '30-60 seconds';
     }
 
-    const current = this.historicalData[this.historicalData.length - 1];
-
-    // Generate predictions for different timeframes
-    const predictions: GasPricePrediction[] = [];
-    const timeframes: GasPricePrediction['timeframe'][] = ['1h', '6h', '24h', '7d'];
-
-    timeframes.forEach(timeframe => {
-      const prediction = this.predict(timeframe);
-      if (prediction) {
-        predictions.push(prediction);
-      }
-    });
-
-    // Generate recommendations
-    const recommendations: string[] = [];
-    
-    const shortTermPrediction = predictions.find(p => p.timeframe === '1h');
-    if (shortTermPrediction) {
-      if (shortTermPrediction.trend === 'increasing') {
-        recommendations.push('Gas prices are increasing. Consider executing transactions soon.');
-      } else if (shortTermPrediction.trend === 'decreasing') {
-        recommendations.push('Gas prices are decreasing. You may want to wait for lower prices.');
-      }
-    }
-
-    // Find optimal time
-    const optimalTime = this.findOptimalTime(predictions);
+    const savings = current - recommendedPrice;
+    const savingsPercentage = current > 0 ? (savings / current) * 100 : 0;
 
     return {
-      current,
-      predictions,
-      recommendations,
-      optimalTime,
+      recommendedPrice: Math.round(recommendedPrice * 100) / 100,
+      estimatedWait,
+      savings: Math.round(savings * 100) / 100,
+      savingsPercentage: Math.round(savingsPercentage * 100) / 100,
     };
   }
 
   /**
-   * Calculate variance
+   * Get gas price history
    */
-  private calculateVariance(values: number[]): number {
-    if (values.length === 0) return 0;
-
-    const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
-    const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
-    return variance;
-  }
-
-  /**
-   * Analyze factors affecting gas prices
-   */
-  private analyzeFactors(
-    data: GasPriceDataPoint[],
-    trend: 'increasing' | 'decreasing' | 'stable'
-  ): GasPricePrediction['factors'] {
-    const factors: GasPricePrediction['factors'] = [];
-
-    // Network congestion
-    const avgPrice = data.reduce((sum, d) => sum + d.standard, 0) / data.length;
-    if (avgPrice > 50) {
-      factors.push({
-        factor: 'Network Congestion',
-        impact: 'negative',
-        description: 'High gas prices indicate network congestion',
-      });
-    } else if (avgPrice < 20) {
-      factors.push({
-        factor: 'Low Network Activity',
-        impact: 'positive',
-        description: 'Low gas prices indicate low network activity',
-      });
-    }
-
-    // Trend factor
-    if (trend === 'increasing') {
-      factors.push({
-        factor: 'Price Trend',
-        impact: 'negative',
-        description: 'Gas prices are trending upward',
-      });
-    } else if (trend === 'decreasing') {
-      factors.push({
-        factor: 'Price Trend',
-        impact: 'positive',
-        description: 'Gas prices are trending downward',
-      });
-    }
-
-    // Volatility
-    const prices = data.map(d => d.standard);
-    const variance = this.calculateVariance(prices);
-    if (variance > 100) {
-      factors.push({
-        factor: 'High Volatility',
-        impact: 'neutral',
-        description: 'Gas prices are highly volatile',
-      });
-    }
-
-    return factors;
-  }
-
-  /**
-   * Find optimal time to execute transaction
-   */
-  private findOptimalTime(
-    predictions: GasPricePrediction[]
-  ): GasPriceForecast['optimalTime'] {
-    if (predictions.length === 0) {
-      return undefined;
-    }
-
-    // Find prediction with lowest price
-    const lowestPrediction = predictions.reduce((lowest, current) => {
-      return current.predictedStandard < lowest.predictedStandard ? current : lowest;
-    });
-
-    return {
-      timeframe: lowestPrediction.timeframe,
-      estimatedPrice: lowestPrediction.predictedStandard,
-      reason: `Lowest predicted price in ${lowestPrediction.timeframe}`,
-    };
-  }
-
-  /**
-   * Get historical data
-   */
-  getHistoricalData(limit?: number): GasPriceDataPoint[] {
-    if (limit) {
-      return this.historicalData.slice(-limit);
-    }
-    return [...this.historicalData];
-  }
-
-  /**
-   * Clear historical data
-   */
-  clear(): void {
-    this.historicalData = [];
+  getHistory(chainId: number, limit?: number): GasPriceHistory[] {
+    const history = this.history.get(chainId) || [];
+    return limit ? history.slice(-limit) : history;
   }
 }
 
 // Singleton instance
 export const gasPricePredictor = new GasPricePredictor();
-

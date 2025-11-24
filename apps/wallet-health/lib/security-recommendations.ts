@@ -1,152 +1,168 @@
 /**
  * Security Recommendations Engine
- * Generate actionable security recommendations based on wallet analysis
+ * Generates personalized security recommendations based on wallet analysis
  */
+
+import type { TokenApproval, RiskAlert } from '@wallet-health/types';
 
 export interface SecurityRecommendation {
   id: string;
-  type: 'approval' | 'token' | 'contract' | 'general' | 'defi' | 'nft';
+  category: 'approvals' | 'tokens' | 'contracts' | 'general' | 'privacy' | 'backup';
   severity: 'critical' | 'high' | 'medium' | 'low';
   title: string;
   description: string;
   action: string;
-  impact: string;
+  actionSteps: string[];
   estimatedTime: string;
-  relatedAddresses?: string[];
-  relatedTokens?: string[];
-  priority: number;
+  priority: number; // 1-10, higher = more urgent
+  relatedAlerts?: string[]; // Alert IDs
+  metadata?: Record<string, any>;
 }
 
 export interface RecommendationContext {
-  approvals: Array<{
-    token: string;
-    spender: string;
-    isUnlimited: boolean;
-    isRisky: boolean;
-    lastUsed?: number;
-  }>;
-  tokens: Array<{
-    address: string;
-    symbol: string;
-    isSpam?: boolean;
-    isPhishing?: boolean;
-  }>;
-  contracts: Array<{
-    address: string;
-    isVerified: boolean;
-    isNew: boolean;
-    riskScore?: number;
-  }>;
+  approvals: TokenApproval[];
+  tokens: Array<{ address: string; isSpam: boolean }>;
   riskScore: number;
-  alerts: Array<{
-    severity: string;
-    type: string;
-  }>;
+  riskLevel: 'safe' | 'moderate' | 'critical';
+  alerts: RiskAlert[];
+  hasENS?: boolean;
+  multiSig?: boolean;
+  recentActivity?: number; // days
+}
+
+export interface RecommendationReport {
+  recommendations: SecurityRecommendation[];
+  summary: {
+    total: number;
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+    estimatedTotalTime: string;
+  };
+  prioritized: SecurityRecommendation[];
+  quickWins: SecurityRecommendation[]; // Low effort, high impact
 }
 
 export class SecurityRecommendationsEngine {
   /**
    * Generate recommendations based on context
    */
-  generateRecommendations(context: RecommendationContext): SecurityRecommendation[] {
+  generateRecommendations(context: RecommendationContext): RecommendationReport {
     const recommendations: SecurityRecommendation[] = [];
 
     // Analyze approvals
-    recommendations.push(...this.analyzeApprovals(context.approvals));
+    recommendations.push(...this.analyzeApprovals(context));
 
     // Analyze tokens
-    recommendations.push(...this.analyzeTokens(context.tokens));
+    recommendations.push(...this.analyzeTokens(context));
 
     // Analyze contracts
-    recommendations.push(...this.analyzeContracts(context.contracts));
+    recommendations.push(...this.analyzeContracts(context));
 
-    // General recommendations based on risk score
+    // General security recommendations
     recommendations.push(...this.generateGeneralRecommendations(context));
 
-    // Sort by priority (severity + impact)
-    recommendations.sort((a, b) => {
-      const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-      const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
-      if (severityDiff !== 0) return severityDiff;
-      return b.priority - a.priority;
-    });
+    // Privacy recommendations
+    recommendations.push(...this.generatePrivacyRecommendations(context));
 
-    return recommendations;
+    // Backup recommendations
+    recommendations.push(...this.generateBackupRecommendations(context));
+
+    // Sort by priority
+    recommendations.sort((a, b) => b.priority - a.priority);
+
+    // Calculate summary
+    const summary = {
+      total: recommendations.length,
+      critical: recommendations.filter(r => r.severity === 'critical').length,
+      high: recommendations.filter(r => r.severity === 'high').length,
+      medium: recommendations.filter(r => r.severity === 'medium').length,
+      low: recommendations.filter(r => r.severity === 'low').length,
+      estimatedTotalTime: this.calculateTotalTime(recommendations),
+    };
+
+    // Get prioritized (top 10)
+    const prioritized = recommendations.slice(0, 10);
+
+    // Get quick wins (low effort, high impact)
+    const quickWins = recommendations.filter(
+      r => r.priority >= 7 && r.estimatedTime.includes('minute')
+    );
+
+    return {
+      recommendations,
+      summary,
+      prioritized,
+      quickWins,
+    };
   }
 
   /**
-   * Analyze token approvals
+   * Analyze approvals and generate recommendations
    */
-  private analyzeApprovals(approvals: RecommendationContext['approvals']): SecurityRecommendation[] {
+  private analyzeApprovals(context: RecommendationContext): SecurityRecommendation[] {
     const recommendations: SecurityRecommendation[] = [];
 
-    const unlimitedApprovals = approvals.filter(a => a.isUnlimited);
+    const unverifiedApprovals = context.approvals.filter(a => a.isVerified === false);
+    if (unverifiedApprovals.length > 0) {
+      recommendations.push({
+        id: 'revoke-unverified',
+        category: 'approvals',
+        severity: 'critical',
+        title: 'Revoke Unverified Contract Approvals',
+        description: `You have ${unverifiedApprovals.length} approval(s) to unverified contracts. These pose a significant security risk.`,
+        action: 'Revoke all unverified contract approvals immediately',
+        actionSteps: [
+          'Review each unverified contract approval',
+          'Verify if the contract is legitimate',
+          'Revoke approvals to suspicious contracts',
+          'Use the approval revoker tool for batch revocation',
+        ],
+        estimatedTime: '15-30 minutes',
+        priority: 10,
+        relatedAlerts: context.alerts
+          .filter(a => a.id === 'unverified-contracts')
+          .map(a => a.id),
+      });
+    }
+
+    const unlimitedApprovals = context.approvals.filter(a => a.isUnlimited);
     if (unlimitedApprovals.length > 0) {
       recommendations.push({
-        id: `rec-approval-unlimited-${Date.now()}`,
-        type: 'approval',
-        severity: 'critical',
-        title: 'Revoke Unlimited Token Approvals',
-        description: `You have ${unlimitedApprovals.length} unlimited token approval(s). These allow contracts to spend unlimited amounts of your tokens.`,
-        action: 'Review and revoke unlimited approvals using the approval revoker tool.',
-        impact: 'High - Eliminates risk of unlimited token drain',
-        estimatedTime: '5-10 minutes',
-        relatedAddresses: unlimitedApprovals.map(a => a.spender),
-        relatedTokens: unlimitedApprovals.map(a => a.token),
-        priority: 100,
-      });
-    }
-
-    const riskyApprovals = approvals.filter(a => a.isRisky && !a.isUnlimited);
-    if (riskyApprovals.length > 0) {
-      recommendations.push({
-        id: `rec-approval-risky-${Date.now()}`,
-        type: 'approval',
+        id: 'limit-approvals',
+        category: 'approvals',
         severity: 'high',
-        title: 'Review Risky Token Approvals',
-        description: `You have ${riskyApprovals.length} approval(s) to potentially risky contracts.`,
-        action: 'Review each approval and revoke if not needed.',
-        impact: 'Medium - Reduces exposure to risky contracts',
-        estimatedTime: '10-15 minutes',
-        relatedAddresses: riskyApprovals.map(a => a.spender),
-        relatedTokens: riskyApprovals.map(a => a.token),
-        priority: 80,
+        title: 'Replace Unlimited Approvals',
+        description: `You have ${unlimitedApprovals.length} unlimited approval(s). Consider replacing them with specific amounts.`,
+        action: 'Replace unlimited approvals with specific amounts',
+        actionSteps: [
+          'Identify which approvals need unlimited access',
+          'Calculate the maximum amount you need',
+          'Revoke unlimited approvals',
+          'Re-approve with specific amounts',
+        ],
+        estimatedTime: '20-40 minutes',
+        priority: 8,
       });
     }
 
-    const unusedApprovals = approvals.filter(a => {
-      if (!a.lastUsed) return false;
-      const daysSinceUse = (Date.now() - a.lastUsed) / (24 * 60 * 60 * 1000);
-      return daysSinceUse > 90;
-    });
-
-    if (unusedApprovals.length > 0) {
+    if (context.approvals.length > 10) {
       recommendations.push({
-        id: `rec-approval-unused-${Date.now()}`,
-        type: 'approval',
-        severity: 'low',
-        title: 'Clean Up Unused Approvals',
-        description: `You have ${unusedApprovals.length} approval(s) that haven't been used in over 90 days.`,
-        action: 'Revoke unused approvals to reduce attack surface.',
-        impact: 'Low - Improves wallet hygiene',
-        estimatedTime: '5 minutes',
-        relatedAddresses: unusedApprovals.map(a => a.spender),
-        relatedTokens: unusedApprovals.map(a => a.token),
-        priority: 40,
-      });
-    }
-
-    if (approvals.length > 20) {
-      recommendations.push({
-        id: `rec-approval-too-many-${Date.now()}`,
-        type: 'approval',
+        id: 'review-approvals',
+        category: 'approvals',
         severity: 'medium',
-        title: 'Too Many Active Approvals',
-        description: `You have ${approvals.length} active approvals. Consider reviewing and cleaning up unnecessary ones.`,
-        action: 'Use the approval optimizer to identify and revoke unnecessary approvals.',
-        impact: 'Medium - Reduces complexity and attack surface',
-        estimatedTime: '15-20 minutes',
-        priority: 60,
+        title: 'Review and Clean Up Approvals',
+        description: `You have ${context.approvals.length} active approvals. Review and revoke unused ones.`,
+        action: 'Review all approvals and revoke unused ones',
+        actionSteps: [
+          'List all active approvals',
+          'Identify which ones are still needed',
+          'Revoke unused approvals',
+          'Set calendar reminder to review quarterly',
+        ],
+        estimatedTime: '30-60 minutes',
+        priority: 6,
       });
     }
 
@@ -154,40 +170,28 @@ export class SecurityRecommendationsEngine {
   }
 
   /**
-   * Analyze tokens
+   * Analyze tokens and generate recommendations
    */
-  private analyzeTokens(tokens: RecommendationContext['tokens']): SecurityRecommendation[] {
+  private analyzeTokens(context: RecommendationContext): SecurityRecommendation[] {
     const recommendations: SecurityRecommendation[] = [];
 
-    const spamTokens = tokens.filter(t => t.isSpam);
+    const spamTokens = context.tokens.filter(t => t.isSpam);
     if (spamTokens.length > 0) {
       recommendations.push({
-        id: `rec-token-spam-${Date.now()}`,
-        type: 'token',
-        severity: 'high',
-        title: 'Remove Spam Tokens',
-        description: `You have ${spamTokens.length} spam token(s) in your wallet. These are often used for phishing.`,
-        action: 'Hide or remove spam tokens from your wallet view.',
-        impact: 'Medium - Reduces phishing risk',
-        estimatedTime: '2 minutes',
-        relatedTokens: spamTokens.map(t => t.address),
-        priority: 70,
-      });
-    }
-
-    const phishingTokens = tokens.filter(t => t.isPhishing);
-    if (phishingTokens.length > 0) {
-      recommendations.push({
-        id: `rec-token-phishing-${Date.now()}`,
-        type: 'token',
-        severity: 'critical',
-        title: '⚠️ CRITICAL: Remove Phishing Tokens',
-        description: `You have ${phishingTokens.length} phishing token(s). DO NOT interact with these tokens.`,
-        action: 'Immediately hide these tokens and never approve or interact with them.',
-        impact: 'Critical - Prevents potential token theft',
-        estimatedTime: '1 minute',
-        relatedTokens: phishingTokens.map(t => t.address),
-        priority: 100,
+        id: 'hide-spam-tokens',
+        category: 'tokens',
+        severity: 'medium',
+        title: 'Hide Spam Tokens',
+        description: `You have ${spamTokens.length} spam or phishing token(s) in your wallet. Hide them to avoid confusion.`,
+        action: 'Hide spam tokens from your wallet view',
+        actionSteps: [
+          'Review detected spam tokens',
+          'Hide them in your wallet interface',
+          'Never interact with spam tokens',
+          'Be cautious of future airdrops',
+        ],
+        estimatedTime: '5 minutes',
+        priority: 5,
       });
     }
 
@@ -195,56 +199,30 @@ export class SecurityRecommendationsEngine {
   }
 
   /**
-   * Analyze contracts
+   * Analyze contracts and generate recommendations
    */
-  private analyzeContracts(contracts: RecommendationContext['contracts']): SecurityRecommendation[] {
+  private analyzeContracts(context: RecommendationContext): SecurityRecommendation[] {
     const recommendations: SecurityRecommendation[] = [];
 
-    const unverifiedContracts = contracts.filter(c => !c.isVerified);
-    if (unverifiedContracts.length > 0) {
-      recommendations.push({
-        id: `rec-contract-unverified-${Date.now()}`,
-        type: 'contract',
-        severity: 'high',
-        title: 'Review Unverified Contracts',
-        description: `You have interactions with ${unverifiedContracts.length} unverified contract(s). Unverified contracts cannot be audited.`,
-        action: 'Review each contract and revoke approvals if not needed.',
-        impact: 'High - Reduces risk from unaudited contracts',
-        estimatedTime: '15-20 minutes',
-        relatedAddresses: unverifiedContracts.map(c => c.address),
-        priority: 85,
-      });
-    }
-
-    const newContracts = contracts.filter(c => c.isNew);
+    const newContracts = context.approvals.filter(
+      a => a.contractAge && a.contractAge < 30
+    );
     if (newContracts.length > 0) {
       recommendations.push({
-        id: `rec-contract-new-${Date.now()}`,
-        type: 'contract',
+        id: 'review-new-contracts',
+        category: 'contracts',
         severity: 'medium',
-        title: 'Exercise Caution with New Contracts',
-        description: `You have interactions with ${newContracts.length} recently deployed contract(s). New contracts may have undiscovered vulnerabilities.`,
-        action: 'Monitor these contracts closely and consider revoking approvals until they are proven safe.',
-        impact: 'Medium - Reduces exposure to new contracts',
-        estimatedTime: '10 minutes',
-        relatedAddresses: newContracts.map(c => c.address),
-        priority: 65,
-      });
-    }
-
-    const highRiskContracts = contracts.filter(c => c.riskScore && c.riskScore > 80);
-    if (highRiskContracts.length > 0) {
-      recommendations.push({
-        id: `rec-contract-high-risk-${Date.now()}`,
-        type: 'contract',
-        severity: 'critical',
-        title: 'High-Risk Contracts Detected',
-        description: `You have interactions with ${highRiskContracts.length} high-risk contract(s).`,
-        action: 'Immediately review and revoke all approvals to these contracts.',
-        impact: 'Critical - Prevents potential exploits',
-        estimatedTime: '5 minutes',
-        relatedAddresses: highRiskContracts.map(c => c.address),
-        priority: 95,
+        title: 'Review New Contract Interactions',
+        description: `You have ${newContracts.length} approval(s) to contracts less than 30 days old. Verify their legitimacy.`,
+        action: 'Review and verify new contract interactions',
+        actionSteps: [
+          'Check contract verification status',
+          'Review contract source code if available',
+          'Verify contract is from trusted source',
+          'Consider revoking if suspicious',
+        ],
+        estimatedTime: '15-30 minutes',
+        priority: 7,
       });
     }
 
@@ -252,83 +230,122 @@ export class SecurityRecommendationsEngine {
   }
 
   /**
-   * Generate general recommendations
+   * Generate general security recommendations
    */
   private generateGeneralRecommendations(context: RecommendationContext): SecurityRecommendation[] {
     const recommendations: SecurityRecommendation[] = [];
 
-    if (context.riskScore < 50) {
+    if (context.riskLevel === 'critical') {
       recommendations.push({
-        id: `rec-general-critical-${Date.now()}`,
-        type: 'general',
+        id: 'immediate-action',
+        category: 'general',
         severity: 'critical',
-        title: '⚠️ CRITICAL: Immediate Action Required',
-        description: 'Your wallet has a critical risk score. Immediate action is required to secure your assets.',
-        action: 'Review all recommendations and take immediate action on critical items.',
-        impact: 'Critical - Prevents potential loss of funds',
-        estimatedTime: '30-60 minutes',
-        priority: 100,
-      });
-    } else if (context.riskScore < 70) {
-      recommendations.push({
-        id: `rec-general-moderate-${Date.now()}`,
-        type: 'general',
-        severity: 'medium',
-        title: 'Moderate Risk Detected',
-        description: 'Your wallet has some security concerns that should be addressed.',
-        action: 'Review and address the recommendations listed above.',
-        impact: 'Medium - Improves overall security',
-        estimatedTime: '20-30 minutes',
-        priority: 50,
+        title: 'Immediate Security Action Required',
+        description: 'Your wallet has critical security risks. Take immediate action.',
+        action: 'Address all critical security issues immediately',
+        actionSteps: [
+          'Review all critical recommendations',
+          'Revoke suspicious approvals',
+          'Transfer funds to a new wallet if compromised',
+          'Enable additional security measures',
+        ],
+        estimatedTime: '1-2 hours',
+        priority: 10,
       });
     }
 
-    const criticalAlerts = context.alerts.filter(a => a.severity === 'critical');
-    if (criticalAlerts.length > 0) {
+    if (!context.hasENS) {
       recommendations.push({
-        id: `rec-general-alerts-${Date.now()}`,
-        type: 'general',
-        severity: 'critical',
-        title: 'Critical Alerts Require Attention',
-        description: `You have ${criticalAlerts.length} critical alert(s) that need immediate attention.`,
-        action: 'Review all critical alerts and take appropriate action.',
-        impact: 'Critical - Addresses immediate security threats',
-        estimatedTime: '15-30 minutes',
-        priority: 90,
+        id: 'setup-ens',
+        category: 'general',
+        severity: 'low',
+        title: 'Consider Setting Up ENS Domain',
+        description: 'An ENS domain can improve wallet security and make it easier to verify ownership.',
+        action: 'Set up an ENS domain for your wallet',
+        actionSteps: [
+          'Search for available ENS domain',
+          'Register domain',
+          'Set reverse record',
+          'Use ENS for transactions when possible',
+        ],
+        estimatedTime: '10-15 minutes',
+        priority: 3,
       });
     }
+
+    if (!context.multiSig && context.riskScore < 80) {
+      recommendations.push({
+        id: 'consider-multisig',
+        category: 'general',
+        severity: 'low',
+        title: 'Consider Multi-Signature Wallet',
+        description: 'For high-value wallets, consider using a multi-signature wallet for added security.',
+        action: 'Set up a multi-signature wallet',
+        actionSteps: [
+          'Research multi-sig solutions (Gnosis Safe, Argent)',
+          'Set up wallet with trusted co-signers',
+          'Transfer funds gradually',
+          'Test recovery process',
+        ],
+        estimatedTime: '1-2 hours',
+        priority: 4,
+      });
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Generate privacy recommendations
+   */
+  private generatePrivacyRecommendations(context: RecommendationContext): SecurityRecommendation[] {
+    const recommendations: SecurityRecommendation[] = [];
 
     recommendations.push({
-      id: `rec-general-monitoring-${Date.now()}`,
-      type: 'general',
+      id: 'use-privacy-tools',
+      category: 'privacy',
       severity: 'low',
-      title: 'Enable Real-time Monitoring',
-      description: 'Enable real-time wallet monitoring to receive instant alerts for suspicious activity.',
-      action: 'Enable monitoring in your wallet settings.',
-      impact: 'Low - Provides ongoing security monitoring',
-      estimatedTime: '2 minutes',
-      priority: 30,
+      title: 'Use Privacy Tools',
+      description: 'Consider using privacy tools like Tornado Cash or similar for sensitive transactions.',
+      action: 'Research and use privacy tools when needed',
+      actionSteps: [
+        'Research privacy tools for your chain',
+        'Understand legal implications',
+        'Use for sensitive transactions only',
+        'Follow best practices',
+      ],
+      estimatedTime: '30-60 minutes',
+      priority: 3,
     });
 
     return recommendations;
   }
 
   /**
-   * Get recommendation by ID
+   * Generate backup recommendations
    */
-  getRecommendation(id: string, context: RecommendationContext): SecurityRecommendation | null {
-    const recommendations = this.generateRecommendations(context);
-    return recommendations.find(r => r.id === id) || null;
-  }
+  private generateBackupRecommendations(context: RecommendationContext): SecurityRecommendation[] {
+    const recommendations: SecurityRecommendation[] = [];
 
-  /**
-   * Get recommendations by type
-   */
-  getRecommendationsByType(
-    type: SecurityRecommendation['type'],
-    context: RecommendationContext
-  ): SecurityRecommendation[] {
-    return this.generateRecommendations(context).filter(r => r.type === type);
+    recommendations.push({
+      id: 'secure-backup',
+      category: 'backup',
+      severity: 'high',
+      title: 'Secure Your Recovery Phrase',
+      description: 'Ensure your recovery phrase is stored securely and never stored digitally.',
+      action: 'Verify recovery phrase backup security',
+      actionSteps: [
+        'Verify recovery phrase is written down',
+        'Store in secure physical location',
+        'Never store digitally or in cloud',
+        'Consider using hardware wallet',
+        'Test recovery process',
+      ],
+      estimatedTime: '30 minutes',
+      priority: 9,
+    });
+
+    return recommendations;
   }
 
   /**
@@ -338,10 +355,47 @@ export class SecurityRecommendationsEngine {
     severity: SecurityRecommendation['severity'],
     context: RecommendationContext
   ): SecurityRecommendation[] {
-    return this.generateRecommendations(context).filter(r => r.severity === severity);
+    const report = this.generateRecommendations(context);
+    return report.recommendations.filter(r => r.severity === severity);
+  }
+
+  /**
+   * Get recommendations by category
+   */
+  getRecommendationsByCategory(
+    category: SecurityRecommendation['category'],
+    context: RecommendationContext
+  ): SecurityRecommendation[] {
+    const report = this.generateRecommendations(context);
+    return report.recommendations.filter(r => r.category === category);
+  }
+
+  /**
+   * Calculate total estimated time
+   */
+  private calculateTotalTime(recommendations: SecurityRecommendation[]): string {
+    let totalMinutes = 0;
+
+    recommendations.forEach(rec => {
+      const timeStr = rec.estimatedTime;
+      if (timeStr.includes('minute')) {
+        const match = timeStr.match(/(\d+)/);
+        if (match) totalMinutes += parseInt(match[1]);
+      } else if (timeStr.includes('hour')) {
+        const match = timeStr.match(/(\d+)/);
+        if (match) totalMinutes += parseInt(match[1]) * 60;
+      }
+    });
+
+    if (totalMinutes < 60) {
+      return `${totalMinutes} minutes`;
+    } else {
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours} hours`;
+    }
   }
 }
 
 // Singleton instance
 export const securityRecommendationsEngine = new SecurityRecommendationsEngine();
-
