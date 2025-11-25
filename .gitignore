@@ -34,3 +34,8 @@ package-lock.json
 wallet.txt
 farm.sh
 farm.log
+
+# Auto-generated directories
+scripts/
+*.log
+.DS_Store
