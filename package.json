@@ -9,9 +9,12 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "eslint . --ext .ts,.js",
     "clean": "turbo run clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "type-check": "tsc --noEmit",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "devDependencies": {
     "prettier": "^3.1.1",
@@ -23,4 +26,3 @@
   },
   "packageManager": "pnpm@8.15.0"
 }
-
